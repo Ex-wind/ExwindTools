@@ -483,6 +483,12 @@ EXWIND_ApplyNames = function()
             overlay = ExwindFactory:Acquire("MythicIconOverlay", frame)
 
             overlay:SetAllPoints(frame)
+            -- 传送安全点击层位于图标 FrameLevel + 20。覆盖文字必须在其上方，
+            -- 否则分数／层数会被点击层所属的 Frame 层级遮住。
+            overlay:SetFrameLevel(frame:GetFrameLevel() + 30)
+            overlay.name:SetDrawLayer("OVERLAY", 7)
+            overlay.level:SetDrawLayer("OVERLAY", 7)
+            overlay.score:SetDrawLayer("OVERLAY", 7)
             -- 让鼠标事件穿透 Overlay，这样原图标的 Tooltip 能正常工作
             overlay:EnableMouse(false)
 

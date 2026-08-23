@@ -1,0 +1,3 @@
+[submodule "ExwindCore"]
+	path = ExwindCore
+	url = ../ExwindCore.git

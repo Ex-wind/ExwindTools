@@ -28,6 +28,7 @@ local MODULE_SPEC = {
         root = {
             alertChannel = "Master",
             alertEnabled = false,
+            alertHostileOnly = false,
             alertLSM = "None",
             alertPath = "",
             alertSource = "lsm",
@@ -204,6 +205,10 @@ local MODULE_SPEC = {
                 label = L["提示音设置"],
                 measure = true,
                 opts = {
+                    secondaryCheckbox = {
+                        key = "alertHostileOnly",
+                        label = L["仅敌方单位"],
+                    },
                     sources = {
                         "lsm",
                         "file",
@@ -609,6 +614,7 @@ RefreshActiveSurfaces = function(controller, _, phase)
 end
 local function PlaySound(force)
     if not force and not DB.alertEnabled then return false end
+    if not force and DB.alertHostileOnly and not UnitCanAttack("player", "focus") then return false end
     local source = DB.alertSource or "lsm"
     if source == "tts" then
         local text = tostring(DB.alertTtsText or "")

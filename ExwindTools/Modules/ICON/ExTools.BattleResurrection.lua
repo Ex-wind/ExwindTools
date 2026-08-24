@@ -13,6 +13,39 @@ local MODULE_KEY = "ExTools.BattleResurrection"
 local SPELL_ID_REBIRTH = 20484
 local RUNTIME_ITEM_ID = "battle-resurrection:runtime"
 local RefreshActiveSurfaces
+local C_StringUtil, Enum = _G.C_StringUtil, _G.Enum
+
+-- 战复充能计时固定显示为 MM:SS。仍由原生 DurationTextBinding 驱动，模块不读取或
+-- 计算 Duration Object 的内部时间。
+local BATTLE_RES_MINUTES_FORMATTER = C_StringUtil.CreateNumericRuleFormatter()
+BATTLE_RES_MINUTES_FORMATTER:SetBreakpoints({ {
+    threshold = 0,
+    format = "%02.0f",
+    components = { { div = 60, step = 1, rounding = Enum.NumericRuleFormatRounding.Down } },
+} })
+local BATTLE_RES_SECONDS_FORMATTER = C_StringUtil.CreateNumericRuleFormatter()
+BATTLE_RES_SECONDS_FORMATTER:SetBreakpoints({ {
+    threshold = 0,
+    format = "%02.0f",
+    components = { { mod = 60, step = 1, rounding = Enum.NumericRuleFormatRounding.Down } },
+} })
+
+local function FormatBattleResTime(seconds)
+    seconds = math.max(0, tonumber(seconds) or 0)
+    return string.format("%02d:%02d", math.floor(seconds / 60), math.floor(seconds % 60))
+end
+
+local function BuildBattleResDurationTextOptions()
+    return {
+        formatString = "{}:{}",
+        components = {
+            { property = Enum.DurationTextBindingProperty.RemainingDuration, formatter = BATTLE_RES_MINUTES_FORMATTER },
+            { property = Enum.DurationTextBindingProperty.RemainingDuration, formatter = BATTLE_RES_SECONDS_FORMATTER },
+        },
+        expiredText = "00:00",
+        zeroDurationText = "00:00",
+    }
+end
 
 
 -- 模块自己的默认值与所有 Grid 几何；中央只校验、持久化并渲染本声明。
@@ -331,6 +364,7 @@ end
 local function BuildSampleEntry(sample)
     return BuildEntry(sample.itemID, sample.icon, sample.stacks, {
         static = true, remaining = sample.cooldownSeconds, duration = sample.cooldownDuration,
+        text = FormatBattleResTime(sample.cooldownSeconds),
     })
 end
 
@@ -361,8 +395,12 @@ local function RefreshBattleResurrection()
         central:Clear()
         return
     end
-    local cooldown = durationObject ~= nil and { mode = "DURATION", duration = durationObject, clearIfZero = true } or
-        nil
+    local cooldown = durationObject ~= nil and {
+        mode = "DURATION",
+        duration = durationObject,
+        clearIfZero = true,
+        durationTextOptions = BuildBattleResDurationTextOptions(),
+    } or nil
     central:SetRuntime({ BuildEntry(RUNTIME_ITEM_ID, 136080, current, cooldown) }, LAYOUT)
 end
 
@@ -372,7 +410,12 @@ RefreshActiveSurfaces = function(controller)
     end
     if controller.runtimeEntries and controller.runtimeEntries[1] and DB.enabled == true and IsActiveEnvironment() then
         local current, durationObject = GetChargeState()
-        local cooldown = durationObject and { mode = "DURATION", duration = durationObject, clearIfZero = true } or nil
+        local cooldown = durationObject and {
+            mode = "DURATION",
+            duration = durationObject,
+            clearIfZero = true,
+            durationTextOptions = BuildBattleResDurationTextOptions(),
+        } or nil
         controller.runtimeEntries[1].presentation = BuildEntry(RUNTIME_ITEM_ID, 136080, current, cooldown).presentation
     end
 end

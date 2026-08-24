@@ -12,4 +12,6 @@
 
 # 业务模块
 Storage.lua
+Changelog\ExwindTools_ChangelogData.lua
+Changelog\ExwindTools_Changelog.lua
 Modules\load_modules.xml

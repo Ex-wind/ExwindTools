@@ -287,6 +287,29 @@ local function EnsureAnchor()
         anchorFrame
 end
 
+local function FindSlashHandler(slash)
+    if type(slash) ~= "string" or slash == "" then return nil end
+    slash = slash:upper()
+    local handler = _G.hash_SlashCmdList and _G.hash_SlashCmdList[slash]
+    if type(handler) == "function" then return handler end
+
+    -- LoadOnDemand/late-loaded AddOns can register after Blizzard has built
+    -- hash_SlashCmdList.  Their live handler remains in SlashCmdList until the
+    -- next hash rebuild, so resolve aliases there as a compatibility fallback.
+    for key, candidate in pairs(_G.SlashCmdList or {}) do
+        if type(candidate) == "function" then
+            local index = 1
+            while true do
+                local registered = _G["SLASH_" .. tostring(key) .. index]
+                if not registered then break end
+                if tostring(registered):upper() == slash then return candidate end
+                index = index + 1
+            end
+        end
+    end
+    return nil
+end
+
 local function Execute(channel)
     local raw = Trim(DB()[channel.id .. "_channel"]); if raw == "" then raw = channel.command or "" end
     if channel.isWorld and raw ~= "" and not raw:match("^/") then
@@ -297,10 +320,10 @@ local function Execute(channel)
     if raw ~= "" and not raw:match("^/") then raw = "/" .. raw end
     if channel.isCommand then
         local slash, args = raw:match("^(/[^%s]+)%s*(.*)")
-        -- 暴雪启动后会把 SlashCmdList 的实体项导入 hash_SlashCmdList，再清空
-        -- 原表；遍历原表会漏掉 /ROLL，随后错误落入 ChatFrame_OpenChat（/S）。
-        -- 只调用暴雪已解析的非安全 slash handler；受保护命令不能由插件伪造执行。
-        local handler = slash and _G.hash_SlashCmdList and _G.hash_SlashCmdList[slash:upper()]
+        -- 启动阶段优先使用暴雪生成的 hash；对后加载插件，再扫描仍保留在
+        -- SlashCmdList 中的别名。只调用已注册的非安全 handler；受保护命令
+        -- 不能由插件伪造执行。
+        local handler = FindSlashHandler(slash)
         if type(handler) == "function" then
             local ok = pcall(handler, args or "")
             if ok then return end
@@ -376,7 +399,7 @@ local function BuildItem(entry, p)
     local size = p.bodySize.width
     local lineHeight = GetLabelLineHeight(p.font)
     return {
-        style = { icon = { width = size, height = size, showIcon = false, showBorder = false }, text = { label = { font = p.font.font, size = p.font.size, outline = p.font.outline, r = entry.r, g = entry.g, b = entry.b, a = 1, shadow = p.font.shadow, shadowX = p.font.shadowX, shadowY = p.font.shadowY, justifyH = "CENTER", justifyV = "MIDDLE", height = lineHeight } } },
+        style = { icon = { width = size, height = size, showIcon = false, showBorder = false }, text = { label = { font = p.font.font, size = p.font.size, outline = p.font.outline, r = entry.r, g = entry.g, b = entry.b, a = 1, shadow = p.font.shadow, shadowX = p.font.shadowX, shadowY = p.font.shadowY, justifyH = "CENTER", justifyV = "MIDDLE", unboundedWidth = true, height = lineHeight } } },
         coreLayout = { label = { bounds = { width = size, height = lineHeight }, anchor = { point = "CENTER", relativeElement = "core.root", relativePoint = "CENTER" } } },
         bodySize = p.bodySize,
         label = entry.label,

@@ -22,6 +22,49 @@ local REFRESH_INTERVAL = 0.10
 local AURA_SLOT_KEY = "watched_debuff"
 local AURA_TEMPLATE = "ExToolsCombatMobDebuffGridAuraButtonTemplate"
 
+local SPEC_OPTION_DEFS = {
+    { specID = 71, className = "战士", specName = "武器", colorHex = "C79C6E" },
+    { specID = 72, className = "战士", specName = "狂怒", colorHex = "C79C6E" },
+    { specID = 73, className = "战士", specName = "防护", colorHex = "C79C6E" },
+    { specID = 65, className = "圣骑士", specName = "神圣", colorHex = "F48CBA" },
+    { specID = 66, className = "圣骑士", specName = "防护", colorHex = "F48CBA" },
+    { specID = 70, className = "圣骑士", specName = "惩戒", colorHex = "F48CBA" },
+    { specID = 253, className = "猎人", specName = "野兽控制", colorHex = "ABD473" },
+    { specID = 254, className = "猎人", specName = "射击", colorHex = "ABD473" },
+    { specID = 255, className = "猎人", specName = "生存", colorHex = "ABD473" },
+    { specID = 259, className = "潜行者", specName = "奇袭", colorHex = "FFF468" },
+    { specID = 260, className = "潜行者", specName = "狂徒", colorHex = "FFF468" },
+    { specID = 261, className = "潜行者", specName = "敏锐", colorHex = "FFF468" },
+    { specID = 256, className = "牧师", specName = "戒律", colorHex = "FFFFFF" },
+    { specID = 257, className = "牧师", specName = "神圣", colorHex = "FFFFFF" },
+    { specID = 258, className = "牧师", specName = "暗影", colorHex = "FFFFFF" },
+    { specID = 250, className = "死亡骑士", specName = "鲜血", colorHex = "C41E3A" },
+    { specID = 251, className = "死亡骑士", specName = "冰霜", colorHex = "C41E3A" },
+    { specID = 252, className = "死亡骑士", specName = "邪恶", colorHex = "C41E3A" },
+    { specID = 262, className = "萨满祭司", specName = "元素", colorHex = "0070DD" },
+    { specID = 263, className = "萨满祭司", specName = "增强", colorHex = "0070DD" },
+    { specID = 264, className = "萨满祭司", specName = "恢复", colorHex = "0070DD" },
+    { specID = 62, className = "法师", specName = "奥术", colorHex = "3FC7EB" },
+    { specID = 63, className = "法师", specName = "火焰", colorHex = "3FC7EB" },
+    { specID = 64, className = "法师", specName = "冰霜", colorHex = "3FC7EB" },
+    { specID = 265, className = "术士", specName = "痛苦", colorHex = "8788EE" },
+    { specID = 266, className = "术士", specName = "恶魔学识", colorHex = "8788EE" },
+    { specID = 267, className = "术士", specName = "毁灭", colorHex = "8788EE" },
+    { specID = 268, className = "武僧", specName = "酒仙", colorHex = "00FF98" },
+    { specID = 269, className = "武僧", specName = "踏风", colorHex = "00FF98" },
+    { specID = 270, className = "武僧", specName = "织雾", colorHex = "00FF98" },
+    { specID = 102, className = "德鲁伊", specName = "平衡", colorHex = "FF7C0A" },
+    { specID = 103, className = "德鲁伊", specName = "野性", colorHex = "FF7C0A" },
+    { specID = 104, className = "德鲁伊", specName = "守护", colorHex = "FF7C0A" },
+    { specID = 105, className = "德鲁伊", specName = "恢复", colorHex = "FF7C0A" },
+    { specID = 577, className = "恶魔猎手", specName = "浩劫", colorHex = "A330C9" },
+    { specID = 581, className = "恶魔猎手", specName = "复仇", colorHex = "A330C9" },
+    { specID = 1467, className = "唤魔师", specName = "湮灭", colorHex = "33937F" },
+    { specID = 1468, className = "唤魔师", specName = "恩护", colorHex = "33937F" },
+    { specID = 1473, className = "唤魔师", specName = "增辉", colorHex = "33937F" },
+    { specID = 1480, className = "恶魔猎手", specName = "噬灭", colorHex = "A330C9" },
+}
+
 local RefreshRuntime
 local EnsureAnchorController
 local EnsureAnchor
@@ -66,6 +109,43 @@ local function GetGridSettings(db)
         debuffColorB = ClampNumber(db.debuffColorB, 0, 1, 0.08),
         debuffColorA = ClampNumber(db.debuffColorA, 0, 1, 1),
     }
+end
+
+local function GetSpecOptionValue(specID)
+    return tostring(specID)
+end
+
+local function BuildSpecOptions()
+    local options = {}
+    for _, def in ipairs(SPEC_OPTION_DEFS) do
+        options[#options + 1] = {
+            string.format("|cff%s%s|r - %s", def.colorHex, L[def.className] or def.className, L[def.specName] or def.specName),
+            GetSpecOptionValue(def.specID),
+        }
+    end
+    return options
+end
+
+local function BuildDefaultEnabledSpecs()
+    local enabledSpecs = {}
+    for _, def in ipairs(SPEC_OPTION_DEFS) do
+        enabledSpecs[GetSpecOptionValue(def.specID)] = true
+    end
+    return enabledSpecs
+end
+
+local SPEC_OPTIONS = BuildSpecOptions()
+
+local function IsCurrentSpecEnabled(db)
+    local state = ExwindTools.State
+    local specID = state and tonumber(state.SpecID) or nil
+    if not specID or specID <= 0 then
+        return true
+    end
+
+    local enabledSpecs = db and db.enabledSpecs
+    -- 未记录的专精保持启用，避免未来新增专精因旧配置而被静默禁用。
+    return type(enabledSpecs) ~= "table" or enabledSpecs[GetSpecOptionValue(specID)] ~= false
 end
 
 local function IsHostileLivingNameplate(unit)
@@ -181,46 +261,50 @@ ExwindTools:RegisterModuleLayout(MODULE_KEY, {
     { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["周围怪物DEBUFF监控"], labelSize = 25 },
     { key = "moduleCommon", type = "modulecommonsettings", x = 1, y = 10, w = 200, h = 18,
         label = L["模块设置"], opts = COMMON_OPTS },
-    { key = "anchor", type = "anchorgroup", x = 1, y = 31, w = 200, h = 25,
+    { key = "loadSpecHeader", type = "subheader", x = 3, y = 31, w = 194, h = 5, label = L["加载条件"] },
+    { key = "enabledSpecs", type = "multiselect", x = 3, y = 39, w = 194, h = 8,
+        label = L["启用专精"], items = SPEC_OPTIONS },
+    { key = "anchor", type = "anchorgroup", x = 1, y = 50, w = 200, h = 25,
         label = L["锚点设置"], opts = ANCHOR_OPTS },
-    { key = "appearance", type = "subheader", x = 3, y = 59, w = 194, h = 5, label = L["格子外观"] },
-    { key = "cellWidth", type = "slider", x = 3, y = 67, w = 46, h = 6,
+    { key = "appearance", type = "subheader", x = 3, y = 78, w = 194, h = 5, label = L["格子外观"] },
+    { key = "cellWidth", type = "slider", x = 3, y = 86, w = 46, h = 6,
         label = L["方块宽度"], min = 8, max = 100, step = 1 },
-    { key = "cellHeight", type = "slider", x = 53, y = 67, w = 46, h = 6,
+    { key = "cellHeight", type = "slider", x = 53, y = 86, w = 46, h = 6,
         label = L["方块高度"], min = 8, max = 100, step = 1 },
-    { key = "cellGap", type = "slider", x = 103, y = 67, w = 46, h = 6,
+    { key = "cellGap", type = "slider", x = 103, y = 86, w = 46, h = 6,
         label = L["方块间距"], min = 0, max = 30, step = 1 },
-    { key = "cellsPerRow", type = "slider", x = 153, y = 67, w = 46, h = 6,
+    { key = "cellsPerRow", type = "slider", x = 153, y = 86, w = 46, h = 6,
         label = L["每行方块数"], min = 1, max = 20, step = 1 },
-    { key = "noDebuffColor", type = "color", x = 3, y = 81, w = 46, h = 6,
+    { key = "noDebuffColor", type = "color", x = 3, y = 100, w = 46, h = 6,
         label = L["没有 Debuff 时的颜色"] },
-    { key = "debuffColor", type = "color", x = 53, y = 81, w = 46, h = 6,
+    { key = "debuffColor", type = "color", x = 53, y = 100, w = 46, h = 6,
         label = L["有 Debuff 时的颜色"] },
-    { key = "debuffSpellID", type = "input", x = 103, y = 81, w = 46, h = 6,
+    { key = "debuffSpellID", type = "input", x = 103, y = 100, w = 46, h = 6,
         label = L["Debuff ID 1"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID2", type = "input", x = 153, y = 81, w = 46, h = 6,
+    { key = "debuffSpellID2", type = "input", x = 153, y = 100, w = 46, h = 6,
         label = L["Debuff ID 2"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID3", type = "input", x = 3, y = 94, w = 46, h = 6,
+    { key = "debuffSpellID3", type = "input", x = 3, y = 113, w = 46, h = 6,
         label = L["Debuff ID 3"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID4", type = "input", x = 53, y = 94, w = 46, h = 6,
+    { key = "debuffSpellID4", type = "input", x = 53, y = 113, w = 46, h = 6,
         label = L["Debuff ID 4"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID5", type = "input", x = 103, y = 94, w = 46, h = 6,
+    { key = "debuffSpellID5", type = "input", x = 103, y = 113, w = 46, h = 6,
         label = L["Debuff ID 5"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID6", type = "input", x = 153, y = 94, w = 46, h = 6,
+    { key = "debuffSpellID6", type = "input", x = 153, y = 113, w = 46, h = 6,
         label = L["Debuff ID 6"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID7", type = "input", x = 3, y = 107, w = 46, h = 6,
+    { key = "debuffSpellID7", type = "input", x = 3, y = 126, w = 46, h = 6,
         label = L["Debuff ID 7"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID8", type = "input", x = 53, y = 107, w = 46, h = 6,
+    { key = "debuffSpellID8", type = "input", x = 53, y = 126, w = 46, h = 6,
         label = L["Debuff ID 8"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID9", type = "input", x = 103, y = 107, w = 46, h = 6,
+    { key = "debuffSpellID9", type = "input", x = 103, y = 126, w = 46, h = 6,
         label = L["Debuff ID 9"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID10", type = "input", x = 153, y = 107, w = 46, h = 6,
+    { key = "debuffSpellID10", type = "input", x = 153, y = 126, w = 46, h = 6,
         label = L["Debuff ID 10"], labelPos = "top", labelSize = 16 },
 })
 
 local DEFAULTS = {
     root = {
         enabled = false,
+        enabledSpecs = BuildDefaultEnabledSpecs(),
         debuffSpellID = "",
         debuffSpellID2 = "",
         debuffSpellID3 = "",
@@ -252,7 +336,7 @@ local DEFAULTS = {
 
 ExwindTools:DeclareModuleDefaults(MODULE_KEY, DEFAULTS, {
     { group = "root", root = true, fields = {
-        "enabled", "debuffSpellID", "debuffSpellID2", "debuffSpellID3", "debuffSpellID4", "debuffSpellID5",
+        "enabled", "enabledSpecs", "debuffSpellID", "debuffSpellID2", "debuffSpellID3", "debuffSpellID4", "debuffSpellID5",
         "debuffSpellID6", "debuffSpellID7", "debuffSpellID8", "debuffSpellID9", "debuffSpellID10",
         "cellWidth", "cellHeight", "cellGap", "cellsPerRow",
         "noDebuffColorR", "noDebuffColorG", "noDebuffColorB", "noDebuffColorA",
@@ -330,15 +414,12 @@ local function BuildSpellFilter(spellIDs)
     }
 end
 
-local function ApplyAuraRecordStyle(record, settings, isInitialize)
+-- CustomAuraContainer 在 initializeFrame 后会限制带秘密 Aura 的按钮访问。
+-- 红格视觉只能在该创建回调中初始化，不能在名条/战斗刷新时重设。
+local function ApplyAuraRecordStyle(record, settings)
     local auraFrame = record and record.auraFrame
     local redFill = auraFrame and auraFrame.CombatMobDebuffGridRedFill
     if not auraFrame or not redFill then
-        return false
-    end
-    -- AuraButton 在战斗中可能是 forbidden；只有它刚被原生容器创建的回调内
-    -- 才允许初始化视觉。用户在战斗中修改外观时，红色格延后到脱战再应用。
-    if isInitialize ~= true and _G.InCombatLockdown and _G.InCombatLockdown() then
         return false
     end
     auraFrame:SetSize(settings.cellWidth, settings.cellHeight)
@@ -373,7 +454,7 @@ local function EnsureAuraRecord(unit)
         initializeFrame = function(auraFrame)
             record.auraFrame = auraFrame
             local settings = GetGridSettings(GetDB())
-            ApplyAuraRecordStyle(record, settings, true)
+            ApplyAuraRecordStyle(record, settings)
             auraFrame:ClearAllPoints()
             -- AuraButton 只锚其所属的原生 container，绝不引用普通白格 Frame。
             auraFrame:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
@@ -428,7 +509,6 @@ local function ActivateAuraRecord(record, cell, spellIDs, spellIDSignature, sett
         record.container:SetAuraSlotCandidateFilters(AURA_SLOT_KEY, BuildSpellFilter(spellIDs))
     end
     record.cell = cell
-    ApplyAuraRecordStyle(record, settings, false)
     if not PlaceAuraRecord(record, cell, settings) then
         DeactivateAuraRecord(record)
         return
@@ -522,8 +602,8 @@ RefreshRuntime = function(force)
         return
     end
 
-    if db.enabled ~= true then
-        lastRuntimeSignature = "disabled"
+    if db.enabled ~= true or not IsCurrentSpecEnabled(db) then
+        lastRuntimeSignature = db.enabled == true and "spec-disabled" or "disabled"
         HideAllRuntimeVisuals()
         return
     end
@@ -608,6 +688,10 @@ ExwindTools:RegisterEvent("PLAYER_REGEN_DISABLED", MODULE_KEY, function()
     RefreshRuntime(true)
 end)
 ExwindTools:RegisterEvent("PLAYER_REGEN_ENABLED", MODULE_KEY, function()
+    RefreshRuntime(true)
+end)
+ExwindTools:WatchState("SpecID", MODULE_KEY, function()
+    lastRuntimeSignature = nil
     RefreshRuntime(true)
 end)
 

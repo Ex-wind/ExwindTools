@@ -187,7 +187,7 @@ local MODULE_SPEC = {
             },
         },
     },
-    anchor = { dbPath = "$root", xKey = "posX", yKey = "posY", defaultX = 23, defaultY = 272, attachEnabledKey = "attachToCustom", attachTargetKey = "customAttachTarget", initialWidth = 350, initialHeight = 50, clampedToScreen = true },
+    anchor = { dbPath = "$root", bindRoot = true, xKey = "posX", yKey = "posY", defaultX = 23, defaultY = 272, attachEnabledKey = "attachToCustom", attachTargetKey = "customAttachTarget", initialWidth = 350, initialHeight = 50, clampedToScreen = true },
     timerBar = { schema = TIMER_SCHEMA },
     preview = {
         positionGuiKeys = { "font_spell", "font_target", "font_timer" },

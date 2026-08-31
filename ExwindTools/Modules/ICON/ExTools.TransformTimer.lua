@@ -30,6 +30,8 @@ local MODULE_SPEC = {
         initialWidth = 46,
         initialHeight = 46,
         clampedToScreen = true,
+        -- GUI 位于 icon 作用域；直接绑定该表，不能再额外创建 icon.anchor。
+        bindRoot = true,
     },
     preview = {
         positionGuiKeys = { "font_time", "font_stacks" },

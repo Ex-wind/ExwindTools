@@ -150,7 +150,7 @@ local MODULE_SPEC = {
         },
     },
     -- 主 Region 锚点：posX / posY 属于模块根 DB，不属于 timerGroup。
-    anchor = { dbPath = "$root", xKey = "posX", yKey = "posY", defaultX = -16, defaultY = -130, attachEnabledKey = "attachToCustom", attachTargetKey = "customAttachTarget", initialWidth = 220, initialHeight = 30, clampedToScreen = true },
+    anchor = { dbPath = "$root", bindRoot = true, xKey = "posX", yKey = "posY", defaultX = -16, defaultY = -130, attachEnabledKey = "attachToCustom", attachTargetKey = "customAttachTarget", initialWidth = 220, initialHeight = 30, clampedToScreen = true },
     -- 中央 TimerBar owner 使用上方 TIMER_SCHEMA 解析标准控件。
     timerBar = { schema = TIMER_SCHEMA },
     -- 编辑预览：仅主文字可在条体内局部拖动。

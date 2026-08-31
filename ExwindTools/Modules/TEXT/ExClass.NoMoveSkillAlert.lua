@@ -344,12 +344,12 @@ local function EX_RegisterLayout()
 
     return layout
 end
-local GUI_STATIC = EX_RegisterLayout()
+local GUI_STATIC  = EX_RegisterLayout()
 
 -- =============================================================
 -- 默认设置
 -- =============================================================
-local EX_DEFAULTS            = {
+local EX_DEFAULTS = {
     layout                     = { direction = "DOWN", spacing = 0, maxVisible = 1 },
     displayFormat              = "我没有闪 (%t)",
     enabled                    = true,
@@ -406,10 +406,18 @@ local MODULE_SPEC = {
     moduleKey = MODULE_KEY,
     kind = "text",
     anchor = {
-        dbPath = "font_alert", xKey = "x", yKey = "y",
-        defaultX = DEFAULT_ALERT_OFFSET_X, defaultY = DEFAULT_ALERT_OFFSET_Y,
-        attachEnabledKey = "attachToCustom", attachTargetKey = "customAttachTarget",
-        initialWidth = 120, initialHeight = 32, clampedToScreen = true,
+        dbPath = "font_alert",
+        xKey = "x",
+        yKey = "y",
+        defaultX = DEFAULT_ALERT_OFFSET_X,
+        defaultY = DEFAULT_ALERT_OFFSET_Y,
+        attachEnabledKey = "attachToCustom",
+        attachTargetKey = "customAttachTarget",
+        initialWidth = 120,
+        initialHeight = 32,
+        clampedToScreen = true,
+        -- GUI 位于 font_alert 作用域；直接绑定该表，不能再创建 font_alert.anchorGroup。
+        bindRoot = true,
     },
     preview = {
         positionGuiKeys = {},
@@ -422,8 +430,17 @@ local MODULE_SPEC = {
         static = GUI_STATIC,
         fields = {
             { key = "font_alert", type = "fontgroup", x = 1, y = 50, w = 200, h = 50, label = L["提示文字"], labelSize = 20 },
-            { key = "anchorGroup", parentKey = "font_alert", type = "anchorgroup", x = 1, y = 30, w = 200, h = 18,
-                measure = true, label = L["锚点设置"] },
+            {
+                key = "anchorGroup",
+                parentKey = "font_alert",
+                type = "anchorgroup",
+                x = 1,
+                y = 30,
+                w = 200,
+                h = 18,
+                measure = true,
+                label = L["锚点设置"]
+            },
         },
     },
 }
@@ -441,18 +458,18 @@ if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end
 --   260(狂徒)           → 195457(幽灵步) 45秒
 -- 冷却文字由原生 DurationTextBinding 渲染；模块仅在事件状态改变时重绑。
 -- =============================================================
-local rogueSkillConfig       = nil
-local mageClassTag           = nil
-local mageSpellID            = nil
-local paladinSkillConfig     = nil
+local rogueSkillConfig      = nil
+local mageClassTag          = nil
+local mageSpellID           = nil
+local paladinSkillConfig    = nil
 
 -- 显示宿主完全属于中央 Text controller。模块只保留业务 payload，并将同一份
 -- presentation 提交给 Runtime / World / Panel；font_alert.x/y 是整体 Anchor。
-local runtimeText = ""
-local runtimeDuration = nil
+local runtimeText           = ""
+local runtimeDuration       = nil
 local runtimeDurationFormat = nil
-local runtimeVisible = false
-local RUNTIME_ITEM_ID = "nomoveskillalert:runtime"
+local runtimeVisible        = false
+local RUNTIME_ITEM_ID       = "nomoveskillalert:runtime"
 
 local function BodyBounds()
     local size = tonumber((DB.font_alert or {}).size) or 15
@@ -569,7 +586,7 @@ local function IsConfiguredSpell(classTag, spellID)
     return false
 end
 
--- 盗贼没有 Lua 计时循环：只在施法或 Blizzard 冷却状态事件发生时读取一次 source，
+-- 盗贼没有 Lua 计时循环：只在目标技能成功施放或配置变更时读取一次 source，
 -- 并将 start/duration 原样交给原生 DurationObject。
 local function UpdateRogueDirectAlert()
     if not DB.enabled then
@@ -596,19 +613,6 @@ local function UpdateRogueDirectAlert()
     SetAlertDuration(duration, (fmt:gsub("%%t", "{}")))
     SetRuntimeVisible(true)
 end
-
--- 监听施法成功事件：按专精更新被监控法术，并立即重绑原生冷却 source。
-local rogueEventFrame = CreateFrame("Frame")
-rogueEventFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-rogueEventFrame:SetScript("OnEvent", function(_, _, unitTarget, _, spellID)
-    if unitTarget ~= "player" then return end
-    if not IsConfiguredSpell("ROGUE", spellID) then return end
-    if not DB.enabled then return end
-    local specID = GetCurrentSpecID()
-    rogueSkillConfig = ResolveSpecSkillConfig("ROGUE", specID)
-    if not rogueSkillConfig or rogueSkillConfig.spellID ~= spellID then return end
-    UpdateRogueDirectAlert()
-end)
 
 -- =============================================================
 -- [KNOWN_FIRST] 直读 API 引擎
@@ -757,11 +761,7 @@ local function RefreshActiveSkillData()
     SetRuntimeVisible(false)
 end
 
--- [v12.2 Adjust] 法师旧覆盖事件恢复充能逻辑停用（改为直读 API）
---[[
-local function OnCooldownViewerSpellOverrideUpdated(baseSpellID, overrideSpellID)
-end
-]]
+
 
 -- =============================================================
 -- 事件注册
@@ -784,19 +784,25 @@ ExwindTools:RegisterEvent("TRAIT_CONFIG_UPDATED", MODULE_KEY, function()
     C_Timer.After(0.5, RefreshActiveSkillData)
 end)
 
--- 原生 DurationTextBinding 负责倒数逐帧显示；这里只在 Blizzard 通知 CD 状态
--- 发生改变时重新取得一次 source，绝不创建 Lua 计时循环。
-ExwindTools:RegisterEvent("SPELL_UPDATE_COOLDOWN", MODULE_KEY, function()
-    if rogueSkillConfig and DB.enabled then
-        UpdateRogueDirectAlert()
-    elseif mageSpellID and DB.enabled then
-        UpdateMageDirectAlert()
-    elseif paladinSkillConfig and DB.enabled then
-        UpdatePaladinDirectAlert()
-    end
+ExwindTools:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player", MODULE_KEY, function(_, _, _, spellID)
+    -- 冷却 API 在该单位事件之后才写入新状态；短暂延后读取这一次
+    -- 施法的冷却，且不会回到全局 SPELL_UPDATE_COOLDOWN 广播。
+    C_Timer.After(0.1, function()
+        if not DB.enabled then return end
+
+        if rogueSkillConfig then
+            if not IsConfiguredSpell("ROGUE", spellID) then return end
+            rogueSkillConfig = ResolveSpecSkillConfig("ROGUE", GetCurrentSpecID())
+            if rogueSkillConfig and rogueSkillConfig.spellID == spellID then
+                UpdateRogueDirectAlert()
+            end
+        elseif mageSpellID == spellID then
+            UpdateMageDirectAlert()
+        elseif paladinSkillConfig and paladinSkillConfig.spellID == spellID then
+            UpdatePaladinDirectAlert()
+        end
+    end)
 end)
 
--- [v12.2 Adjust] 法师改为直读 API，停用旧覆盖事件逻辑
--- ExwindTools:RegisterEvent("COOLDOWN_VIEWER_SPELL_OVERRIDE_UPDATED", MODULE_KEY, ...)
 
 ExwindTools:ReportReady(MODULE_KEY)

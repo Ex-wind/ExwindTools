@@ -67,6 +67,7 @@ local MODULE_SPEC = {
         initialWidth = 200,
         initialHeight = 48,
         clampedToScreen = false,
+        bindRoot = true,
     },
     preview = {
         positionGuiKeys = {},

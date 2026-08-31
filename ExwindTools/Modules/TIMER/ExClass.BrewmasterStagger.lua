@@ -11,7 +11,7 @@ local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 local EXUI, L = ExwindTools.UI, ExwindTools.L or setmetatable({}, { __index = function(_, key) return key end })
 local MODULE_KEY, BREWMASTER_SPEC_ID, STAGGER_SPELL_ID = "ExClass.BrewmasterStagger", 268, 115069
-local RefreshActiveSurfaces
+local RefreshActiveSurfaces, SyncRuntimeEventWatches
 
 -- =============================================================
 -- 标准 TimerBar 槽位声明
@@ -477,40 +477,130 @@ end
 
 -- =============================================================
 -- 刷新分发
--- 预览始终存在；Runtime 只在酒仙专精、模块启用且未被骑乘隐藏时提交。
+-- 预览只在初始化、设置变更和用户操作时构建；Runtime 只在酒仙专精、模块启用且未被骑乘隐藏时提交。
 -- =============================================================
-local function Refresh()
+local function IsBrewmasterRuntimeActive()
+    local state = ExwindTools.State or {}
+    return DB.enabled and state.ClassID == 10 and state.SpecID == BREWMASTER_SPEC_ID
+        and not (DB.hideOnMounted and state.IsMounted)
+end
+
+local function RefreshPreview()
     central:SetPreview({ BuildEntry("stagger:preview", true) }, LAYOUT)
-    local state = ExwindTools.State or {}; if DB.enabled and state.ClassID == 10 and state.SpecID == BREWMASTER_SPEC_ID and not (DB.hideOnMounted and state.IsMounted) then
+end
+
+local function RefreshRuntime()
+    if IsBrewmasterRuntimeActive() then
         central:SetRuntime({ BuildEntry("stagger:runtime", false) }, LAYOUT)
     else
         central:Clear()
     end
 end
 
+local function Refresh()
+    RefreshPreview()
+    RefreshRuntime()
+end
+
 RefreshActiveSurfaces = function(controller)
     if controller.previewEntries and controller.previewEntries[1] then
         controller.previewEntries[1].presentation = BuildEntry("stagger:preview", true).presentation
     end
-    local state = ExwindTools.State or {}
-    if controller.runtimeEntries and controller.runtimeEntries[1] and DB.enabled and state.ClassID == 10
-        and state.SpecID == BREWMASTER_SPEC_ID and not (DB.hideOnMounted and state.IsMounted) then
+    if controller.runtimeEntries and controller.runtimeEntries[1] and IsBrewmasterRuntimeActive() then
         controller.runtimeEntries[1].presentation = BuildEntry("stagger:runtime", false).presentation
+    end
+    if SyncRuntimeEventWatches then SyncRuntimeEventWatches() end
+end
+
+-- =============================================================
+-- 酒池运行时监听
+-- 非酒仙、模块关闭或按骑乘隐藏时完全取消三类高频事件订阅；激活后最多每 0.2 秒读取并提交一次。
+-- =============================================================
+local STAGGER_RUNTIME_EVENTS = { "UNIT_MAXHEALTH", "UNIT_HEALTH", "UNIT_AURA" }
+local STAGGER_REFRESH_INTERVAL_SECONDS = 0.2
+local staggerRuntimeEventsRegistered = false
+local staggerRefreshQueued = false
+local staggerLastRuntimeRefreshAt = -math.huge
+
+local function GetRefreshTime()
+    return GetTimePreciseSec and GetTimePreciseSec() or GetTime()
+end
+
+local FlushStaggerRuntimeRefresh
+local function QueueStaggerRuntimeRefresh(delay)
+    staggerRefreshQueued = true
+    C_Timer.After(delay, FlushStaggerRuntimeRefresh)
+end
+
+FlushStaggerRuntimeRefresh = function()
+    staggerRefreshQueued = false
+    if not IsBrewmasterRuntimeActive() then return end
+
+    local now = GetRefreshTime()
+    local remaining = STAGGER_REFRESH_INTERVAL_SECONDS - (now - staggerLastRuntimeRefreshAt)
+    if remaining > 0 then
+        QueueStaggerRuntimeRefresh(remaining)
+        return
+    end
+
+    staggerLastRuntimeRefreshAt = now
+    RefreshRuntime()
+end
+
+local function RequestStaggerRuntimeRefresh()
+    if not IsBrewmasterRuntimeActive() then
+        RefreshRuntime()
+        return
+    end
+    if staggerRefreshQueued then return end
+
+    local remaining = STAGGER_REFRESH_INTERVAL_SECONDS - (GetRefreshTime() - staggerLastRuntimeRefreshAt)
+    QueueStaggerRuntimeRefresh(math.max(0, remaining))
+end
+
+local function OnStaggerRuntimeEvent(_, unit)
+    if unit == "player" then RequestStaggerRuntimeRefresh() end
+end
+
+SyncRuntimeEventWatches = function()
+    local shouldObserveRuntime = IsBrewmasterRuntimeActive()
+    if shouldObserveRuntime == staggerRuntimeEventsRegistered then
+        if shouldObserveRuntime then
+            RequestStaggerRuntimeRefresh()
+        else
+            central:Clear()
+        end
+        return
+    end
+
+    staggerRuntimeEventsRegistered = shouldObserveRuntime
+    for _, event in ipairs(STAGGER_RUNTIME_EVENTS) do
+        if shouldObserveRuntime then
+            ExwindTools:RegisterEvent(event, MODULE_KEY, OnStaggerRuntimeEvent)
+        else
+            ExwindTools:UnregisterEvent(event, MODULE_KEY)
+        end
+    end
+
+    if shouldObserveRuntime then
+        RequestStaggerRuntimeRefresh()
+    else
+        central:Clear()
     end
 end
 
 -- =============================================================
 -- 模块初始化
--- 先提交预览，禁用模块则不注册后续业务监听。
+-- 先提交预览，禁用模块则不注册后续业务监听；非酒仙也不会订阅酒池高频事件。
 -- =============================================================
-central:SetPreview({ BuildEntry("stagger:preview", true) }, LAYOUT)
+RefreshPreview()
 if not ExwindTools:IsModuleEnabled(MODULE_KEY) then
     ExwindTools:ReportReady(MODULE_KEY); return
 end
-Refresh()
+SyncRuntimeEventWatches()
 -- =============================================================
 -- 业务事件注册
--- DB 变化、设置页按钮、角色状态与酒池相关游戏事件均统一调用 Refresh。
+-- DB 变化、设置页按钮和角色状态负责同步运行时订阅；酒池高频事件只申请节流刷新。
 -- =============================================================
 -- 设置页专属按钮：重置主 Region 锚点位置。
 ExwindTools:WatchState(MODULE_KEY .. ".ButtonClicked", MODULE_KEY,
@@ -519,18 +609,16 @@ ExwindTools:WatchState(MODULE_KEY .. ".ButtonClicked", MODULE_KEY,
             DB.posX, DB.posY = -16, -130; Refresh()
         end
     end)
--- 职业、专精、骑乘状态改变会影响 Runtime 是否应显示。
-for _, key in ipairs({ "SpecID", "ClassID", "IsMounted" }) do ExwindTools:WatchState(key, MODULE_KEY, Refresh) end
--- 玩家生命、酒池 aura 改变时重新读取酒池数值。
-for _, event in ipairs({ "UNIT_MAXHEALTH", "UNIT_HEALTH", "UNIT_AURA" }) do
-    ExwindTools:RegisterEvent(event, MODULE_KEY,
-        function(_, unit) if unit == "player" then Refresh() end end)
+-- 职业、专精、骑乘状态改变会重新绑定或取消酒池高频监听。
+for _, key in ipairs({ "SpecID", "ClassID", "IsMounted" }) do
+    ExwindTools:WatchState(key, MODULE_KEY, SyncRuntimeEventWatches)
 end
 -- 进世界、切换专精和天赋配置后重新判定酒池显示状态。
-ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", MODULE_KEY, function() C_Timer.After(1, Refresh) end)
+ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", MODULE_KEY,
+    function() C_Timer.After(1, SyncRuntimeEventWatches) end)
 ExwindTools:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", MODULE_KEY,
-    function(_, unit) if unit == "player" then Refresh() end end)
-ExwindTools:RegisterEvent("TRAIT_CONFIG_UPDATED", MODULE_KEY, Refresh)
+    function(_, unit) if unit == "player" then C_Timer.After(0, SyncRuntimeEventWatches) end end)
+ExwindTools:RegisterEvent("TRAIT_CONFIG_UPDATED", MODULE_KEY, SyncRuntimeEventWatches)
 
 -- =============================================================
 -- 模块加载完成通知

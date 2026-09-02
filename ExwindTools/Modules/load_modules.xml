@@ -50,6 +50,7 @@
     <Script file="ICON/ExTools.BattleResurrection.lua"/>
     <Script file="TEXT/ExClass.NoMoveSkillAlert.lua"/>
     <Script file="TEXT/ExClass.RangeCheck.lua"/>
+    <Script file="ICON/ExClass.DKBloodBoil.lua"/>
     <Script file="TIMER/ExClass.FocusCast.lua"/>
     <Script file="TIMER/ExClass.BrewmasterStagger.lua"/>
 

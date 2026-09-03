@@ -1,11 +1,19 @@
 -- ExwindTools 的游戏内更新日志正文。由发布打包器写入；Core 只提供共享查看窗口。
 ExwindTools_ChangelogData = {
     changelog = {
-        version = "v26.9.1.0409",
-        title = "v26.9.1.0409 更新日志",
-        publishedAt = "2026-09-01 04:09",
+        version = "v26.9.3.1123",
+        title = "v26.9.3.1123 更新日志",
+        publishedAt = "2026-09-03 11:23",
         fontSize = 14,
         content = [[
+@H1@ v26.9.3.1123
+
+@CN@ @H2@ 状态管理系统
+@CN@ 修复了 副本状态转移回调时 调用StaticPopup可能导致受保护界面污染报错的问题
+
+@EN@ @H2@ State System
+@EN@ Fixed an issue where invoking StaticPopup during instance state transitions could cause protected UI taint errors.
+
 @H1@ v26.9.1.0409
 
 @CN@ @H2@ 性能优化

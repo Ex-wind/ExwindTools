@@ -562,24 +562,54 @@ end
 -- 6. [ResetDMG] 进本重置伤害统计
 -- ========================================================================
 local function Init_ResetDamageMeter()
-    _G.StaticPopupDialogs["EXWIND_RESET_DMG_METER"] = {
-        text = L["检测到进入副本，是否重置伤害统计数据？"],
-        button1 = _G.YES,
-        button2 = _G.NO,
-        OnAccept = function()
-            local CDM = _G.C_DamageMeter
-            if CDM and CDM.ResetAllCombatSessions then
-                CDM.ResetAllCombatSessions()
-                print("|cff00ff00[ExwindTools] " .. L["伤害统计已重置"] .. "|r")
-            else
-                print("|cffff0000[ExwindTools] " .. L["错误: C_DamageMeter.ResetAllCombatSessions API 不存在"] .. "|r")
-            end
-        end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-        preferredIndex = 3,
-    }
+    -- 不使用 StaticPopup：它是暴雪共享的全局弹窗系统。进本状态回调中向其中
+    -- 插入插件弹窗，可能使同一时段的受保护 UI（例如公会权限页）继承污染上下文。
+    local dialog = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+    dialog:SetSize(360, 150)
+    dialog:SetPoint("CENTER", UIParent, "CENTER", 0, 120)
+    dialog:SetFrameStrata("DIALOG")
+    dialog:EnableMouse(true)
+    dialog:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        tile = true,
+        tileSize = 32,
+        edgeSize = 1,
+        insets = { left = 0, right = 0, top = 0, bottom = 0 },
+    })
+    dialog:SetBackdropColor(0, 0, 0, 0.95)
+    dialog:SetBackdropBorderColor(0, 0, 0, 1)
+    dialog:Hide()
+
+    local message = dialog:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    message:SetPoint("TOPLEFT", 28, -30)
+    message:SetPoint("TOPRIGHT", -28, -30)
+    message:SetJustifyH("CENTER")
+    message:SetWordWrap(true)
+    message:SetText(L["检测到进入副本，是否重置伤害统计数据？"])
+
+    local acceptButton = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
+    acceptButton:SetSize(110, 26)
+    acceptButton:SetPoint("BOTTOM", dialog, "BOTTOM", -62, 24)
+    acceptButton:SetText(_G.YES)
+    acceptButton:SetScript("OnClick", function()
+        local CDM = _G.C_DamageMeter
+        if CDM and CDM.ResetAllCombatSessions then
+            CDM.ResetAllCombatSessions()
+            print("|cff00ff00[ExwindTools] " .. L["伤害统计已重置"] .. "|r")
+        else
+            print("|cffff0000[ExwindTools] " .. L["错误: C_DamageMeter.ResetAllCombatSessions API 不存在"] .. "|r")
+        end
+        dialog:Hide()
+    end)
+
+    local cancelButton = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
+    cancelButton:SetSize(110, 26)
+    cancelButton:SetPoint("BOTTOM", dialog, "BOTTOM", 62, 24)
+    cancelButton:SetText(_G.NO)
+    cancelButton:SetScript("OnClick", function()
+        dialog:Hide()
+    end)
 
     -- [关键修复] 记录初始真实状态
     -- 如果初始化时已经在副本里(lastInInstance=true)，那么 State 初始化同步带来的 false->true 变化将被忽略
@@ -588,7 +618,9 @@ local function Init_ResetDamageMeter()
     ExwindTools:WatchState("InInstance", "ExTools_Mini_ResetDMG", function(inInstance)
         -- 仅当真正从野外(last=false)变为副本(curr=true)时触发
         if inInstance and lastInInstance == false then
-            _G.StaticPopup_Show("EXWIND_RESET_DMG_METER")
+            dialog:Show()
+        elseif not inInstance then
+            dialog:Hide()
         end
         lastInInstance = inInstance
     end)

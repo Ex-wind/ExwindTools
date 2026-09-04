@@ -52,20 +52,7 @@ local PRESET_DEFINITIONS = {
         end,
         ids = { 107065, 107081, 107082, 107083, 107088 },
     },
-    {
-        key = "mythic_cave_cauldron",
-        title = function()
-            return L["[大秘境] 自动对话洞窟(MC)大锅BUFF"]
-        end,
-        ids = { 107387, 107428 },
-    },
-    {
-        key = "mythic_pos_rescue",
-        title = function()
-            return L["[大秘境] 自动对话萨隆矿坑救人(POS)"]
-        end,
-        ids = { 138618, 136301, 136271, 136316, 136280, 136624 },
-    },
+
 }
 
 local PRESET_BY_ID = {}
@@ -394,7 +381,8 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
 
         local y = 70
 
-        layout[#layout + 1] = { key = "sub_preset", type = "subheader", x = 1, y = y, w = 194, h = 7, label = L["预设自动对话"] }
+        layout[#layout + 1] = { key = "sub_preset", type = "subheader", x = 1, y = y, w = 194, h = 7, label = L
+        ["预设自动对话"] }
         y = y + 10
 
         for _, definition in ipairs(PRESET_DEFINITIONS) do
@@ -441,8 +429,16 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
         }
         y = y + 16
 
-        layout[#layout + 1] = { key = "sub_custom", type = "subheader", x = 8, y = y, w = 192, h = 4, label = L
-        ["自定义自动对话"] }
+        layout[#layout + 1] = {
+            key = "sub_custom",
+            type = "subheader",
+            x = 8,
+            y = y,
+            w = 192,
+            h = 4,
+            label = L
+                ["自定义自动对话"]
+        }
         y = y + 8
 
         local ids = GetSortedCustomOptionIDs()

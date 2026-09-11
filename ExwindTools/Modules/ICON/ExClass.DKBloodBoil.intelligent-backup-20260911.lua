@@ -8,14 +8,24 @@ if not ExwindTools or not ExwindTools.UI then return end
 
 local EXUI = ExwindTools.UI
 local L = ExwindTools.L or setmetatable({}, { __index = function(_, key) return key end })
-local C_DurationUtil = _G.C_DurationUtil
 local MODULE_KEY = "ExClass.DKBloodBoil"
 local DEATH_KNIGHT_CLASS_ID = 6
-local TRACKED_COOLDOWN_SPELL_ID = 1265982
+local HIGHLIGHT_SPELL_ID = 1265968
+local USE_SPELL_ID = 1265982
 local ICON_SPELL_ID = 50842
-local DISPLAY_DURATION_SECONDS = 3
-local RUNTIME_ITEM_ID = "dk-blood-boil-normal:runtime"
+local USE_LOCKOUT_SECONDS = 3
+local SHOW_CONFIRM_SECONDS = .1
+local RUNTIME_ITEM_ID = "dk-blood-boil:runtime"
 local RefreshActiveSurfaces
+
+-- 模块加载发生在 Tools 存储注册之后，因此可以使用现有入口登记职业分类。
+-- 这不会改写冻结的 Core 静态 ModuleList。
+ExwindTools:RegisterExternalModule({
+    Key = MODULE_KEY,
+    Name = L["DK血沸监控"],
+    Desc = L["血沸冷却更新时显示 3 秒倒数图标。"],
+    Category = 6,
+})
 
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller) return RefreshActiveSurfaces(controller) end,
@@ -190,7 +200,7 @@ local MODULE_SPEC = {
         },
         groups = { { key = "settings", order = 1 } },
         static = {
-            { h = 8, key = "header", label = L["DK血沸普通版"], labelSize = 25, type = "header", w = 200, x = 1, y = 1 },
+            { h = 8, key = "header", label = L["DK血沸监控"], labelSize = 25, type = "header", w = 200, x = 1, y = 1 },
             {
                 h = 8,
                 key = "description",
@@ -210,7 +220,11 @@ local central = EXUI:RegisterIconModule(MODULE_SPEC)
 local LAYOUT = DB.layout
 if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end
 
-local runtimeDuration, displayActive, displayGeneration = nil, false, 0
+-- 1265968 开启高亮资格；1265982 取消资格并启动 3 秒抑制。
+-- useGeneration 保证连续使用时，只有最后一次使用对应的延迟回调可以解除抑制。
+-- showGeneration 保证短暂满足条件的旧显示确认不会在稍后错误显示图标。
+local highlightActive, useLockoutActive, displayActive = false, false, false
+local useGeneration, showGeneration = 0, 0
 
 local function IsEligible()
     return ExwindTools.State and ExwindTools.State.ClassID == DEATH_KNIGHT_CLASS_ID
@@ -220,8 +234,12 @@ local function GetTimerIcon()
     return _G.C_Spell and _G.C_Spell.GetSpellTexture and _G.C_Spell.GetSpellTexture(ICON_SPELL_ID) or 134400
 end
 
+local function IsRuntimeQualified()
+    return DB.enabled == true and highlightActive and not useLockoutActive and IsEligible()
+end
+
 local function ShouldShowRuntime()
-    return DB.enabled == true and displayActive and IsEligible()
+    return displayActive and IsRuntimeQualified()
 end
 
 local function MakeTextBounds(style)
@@ -267,9 +285,9 @@ end
 
 RefreshPreview()
 
-local function ClearTimer()
-    displayGeneration = displayGeneration + 1
-    runtimeDuration, displayActive = nil, false
+local function ClearRuntimeState()
+    useGeneration, showGeneration = useGeneration + 1, showGeneration + 1
+    highlightActive, useLockoutActive, displayActive = false, false, false
     central:Clear()
 end
 
@@ -280,24 +298,54 @@ local function PublishRuntime()
     end
 
     central:SetRuntime({
-        BuildEntry(RUNTIME_ITEM_ID, { mode = "DURATION", duration = runtimeDuration, clearIfZero = true }, false),
+        BuildEntry(RUNTIME_ITEM_ID, nil, false),
     }, LAYOUT)
 end
 
-local function StartTimer()
-    if not IsEligible() or DB.enabled ~= true then
-        ClearTimer()
+local function ReconcileRuntime()
+    showGeneration = showGeneration + 1
+    if not IsRuntimeQualified() then
+        displayActive = false
+        central:Clear()
         return
     end
 
-    runtimeDuration = C_DurationUtil.CreateDuration()
-    runtimeDuration:SetTimeFromStart(GetTime(), DISPLAY_DURATION_SECONDS, 1)
-    displayActive = true
-    displayGeneration = displayGeneration + 1
-    local generation = displayGeneration
-    PublishRuntime()
-    C_Timer.After(DISPLAY_DURATION_SECONDS, function()
-        if displayGeneration == generation then ClearTimer() end
+    if displayActive then return end
+
+    local generation = showGeneration
+    C_Timer.After(SHOW_CONFIRM_SECONDS, function()
+        if showGeneration ~= generation or not IsRuntimeQualified() then return end
+        displayActive = true
+        PublishRuntime()
+    end)
+end
+
+local function SetHighlightActive()
+    if not IsEligible() or DB.enabled ~= true then
+        ClearRuntimeState()
+        return
+    end
+
+    highlightActive = true
+    ReconcileRuntime()
+end
+
+local function StartUseLockout()
+    if not IsEligible() or DB.enabled ~= true then
+        ClearRuntimeState()
+        return
+    end
+
+    highlightActive = false
+    useLockoutActive = true
+    useGeneration = useGeneration + 1
+    local generation = useGeneration
+    ReconcileRuntime()
+    C_Timer.After(USE_LOCKOUT_SECONDS, function()
+        if useGeneration == generation then
+            useLockoutActive = false
+            ReconcileRuntime()
+        end
     end)
 end
 
@@ -308,19 +356,21 @@ RefreshActiveSurfaces = function(controller)
     if controller.runtimeEntries and controller.runtimeEntries[1] and ShouldShowRuntime() then
         controller.runtimeEntries[1].presentation = BuildEntry(
             RUNTIME_ITEM_ID,
-            { mode = "DURATION", duration = runtimeDuration, clearIfZero = true },
+            nil,
             false
         ).presentation
     end
 end
 
 ExwindTools:RegisterEvent("SPELL_UPDATE_COOLDOWN", MODULE_KEY, function(_, spellID, baseSpellID)
-    if spellID == TRACKED_COOLDOWN_SPELL_ID or baseSpellID == TRACKED_COOLDOWN_SPELL_ID then
-        StartTimer()
+    if spellID == HIGHLIGHT_SPELL_ID or baseSpellID == HIGHLIGHT_SPELL_ID then
+        SetHighlightActive()
+    elseif spellID == USE_SPELL_ID or baseSpellID == USE_SPELL_ID then
+        StartUseLockout()
     end
 end)
-ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", MODULE_KEY, ClearTimer)
+ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", MODULE_KEY, ClearRuntimeState)
 ExwindTools:WatchState("ClassID", MODULE_KEY, function()
-    if not IsEligible() then ClearTimer() end
+    if not IsEligible() then ClearRuntimeState() end
 end)
 ExwindTools:ReportReady(MODULE_KEY)

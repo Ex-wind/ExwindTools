@@ -257,49 +257,48 @@ local COMMON_OPTS = {
     },
 }
 
-ExwindTools:RegisterModuleLayout(MODULE_KEY, {
-    { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["周围怪物DEBUFF监控"], labelSize = 25 },
-    { key = "moduleCommon", type = "modulecommonsettings", x = 1, y = 10, w = 200, h = 18,
-        label = L["模块设置"], opts = COMMON_OPTS },
-    { key = "loadSpecHeader", type = "subheader", x = 3, y = 31, w = 194, h = 5, label = L["加载条件"] },
-    { key = "enabledSpecs", type = "multiselect", x = 3, y = 39, w = 194, h = 8,
-        label = L["启用专精"], items = SPEC_OPTIONS },
-    { key = "anchor", type = "anchorgroup", x = 1, y = 50, w = 200, h = 25,
-        label = L["锚点设置"], opts = ANCHOR_OPTS },
-    { key = "appearance", type = "subheader", x = 3, y = 78, w = 194, h = 5, label = L["格子外观"] },
-    { key = "cellWidth", type = "slider", x = 3, y = 86, w = 46, h = 6,
-        label = L["方块宽度"], min = 8, max = 100, step = 1 },
-    { key = "cellHeight", type = "slider", x = 53, y = 86, w = 46, h = 6,
-        label = L["方块高度"], min = 8, max = 100, step = 1 },
-    { key = "cellGap", type = "slider", x = 103, y = 86, w = 46, h = 6,
-        label = L["方块间距"], min = 0, max = 30, step = 1 },
-    { key = "cellsPerRow", type = "slider", x = 153, y = 86, w = 46, h = 6,
-        label = L["每行方块数"], min = 1, max = 20, step = 1 },
-    { key = "noDebuffColor", type = "color", x = 3, y = 100, w = 46, h = 6,
-        label = L["没有 Debuff 时的颜色"] },
-    { key = "debuffColor", type = "color", x = 53, y = 100, w = 46, h = 6,
-        label = L["有 Debuff 时的颜色"] },
-    { key = "debuffSpellID", type = "input", x = 103, y = 100, w = 46, h = 6,
-        label = L["Debuff ID 1"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID2", type = "input", x = 153, y = 100, w = 46, h = 6,
-        label = L["Debuff ID 2"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID3", type = "input", x = 3, y = 113, w = 46, h = 6,
-        label = L["Debuff ID 3"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID4", type = "input", x = 53, y = 113, w = 46, h = 6,
-        label = L["Debuff ID 4"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID5", type = "input", x = 103, y = 113, w = 46, h = 6,
-        label = L["Debuff ID 5"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID6", type = "input", x = 153, y = 113, w = 46, h = 6,
-        label = L["Debuff ID 6"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID7", type = "input", x = 3, y = 126, w = 46, h = 6,
-        label = L["Debuff ID 7"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID8", type = "input", x = 53, y = 126, w = 46, h = 6,
-        label = L["Debuff ID 8"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID9", type = "input", x = 103, y = 126, w = 46, h = 6,
-        label = L["Debuff ID 9"], labelPos = "top", labelSize = 16 },
-    { key = "debuffSpellID10", type = "input", x = 153, y = 126, w = 46, h = 6,
-        label = L["Debuff ID 10"], labelPos = "top", labelSize = 16 },
-})
+local PAGE_ID = "ExwindTools:" .. MODULE_KEY
+EXUI:RegisterSettingsPage(PAGE_ID, {
+    version = 1,
+    title = L["周围怪物DEBUFF监控"],
+    cards = {
+        { id = "general", title = L["模块设置"], content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = COMMON_OPTS } },
+        {
+            id = "specs", title = L["加载条件"],
+            content = { kind = "grid", items = {
+                { key = "enabledSpecs", type = "multiselect", x = 3, y = 1, w = 194, h = 8, label = L["启用专精"], items = SPEC_OPTIONS },
+            } },
+        },
+        { id = "anchor", title = L["锚点设置"], content = { kind = "composite", component = "anchorgroup", key = "anchor", opts = ANCHOR_OPTS } },
+        {
+            id = "appearance", title = L["格子外观"],
+            content = { kind = "grid", items = {
+                { key = "cellWidth", type = "slider", x = 3, y = 1, w = 46, h = 6, label = L["方块宽度"], min = 8, max = 100, step = 1 },
+                { key = "cellHeight", type = "slider", x = 53, y = 1, w = 46, h = 6, label = L["方块高度"], min = 8, max = 100, step = 1 },
+                { key = "cellGap", type = "slider", x = 103, y = 1, w = 46, h = 6, label = L["方块间距"], min = 0, max = 30, step = 1 },
+                { key = "cellsPerRow", type = "slider", x = 153, y = 1, w = 46, h = 6, label = L["每行方块数"], min = 1, max = 20, step = 1 },
+                { key = "noDebuffColor", type = "color", x = 3, y = 14, w = 46, h = 6, label = L["没有 Debuff 时的颜色"] },
+                { key = "debuffColor", type = "color", x = 53, y = 14, w = 46, h = 6, label = L["有 Debuff 时的颜色"] },
+            } },
+        },
+        {
+            id = "spell-ids", title = L["监控法术 ID"], collapsible = true,
+            content = { kind = "grid", items = {
+                { key = "debuffSpellID", type = "input", x = 3, y = 1, w = 46, h = 6, label = L["Debuff ID 1"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellID2", type = "input", x = 53, y = 1, w = 46, h = 6, label = L["Debuff ID 2"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellID3", type = "input", x = 103, y = 1, w = 46, h = 6, label = L["Debuff ID 3"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellID4", type = "input", x = 153, y = 1, w = 46, h = 6, label = L["Debuff ID 4"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellID5", type = "input", x = 3, y = 14, w = 46, h = 6, label = L["Debuff ID 5"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellID6", type = "input", x = 53, y = 14, w = 46, h = 6, label = L["Debuff ID 6"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellID7", type = "input", x = 103, y = 14, w = 46, h = 6, label = L["Debuff ID 7"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellID8", type = "input", x = 153, y = 14, w = 46, h = 6, label = L["Debuff ID 8"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellID9", type = "input", x = 3, y = 27, w = 46, h = 6, label = L["Debuff ID 9"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellID10", type = "input", x = 53, y = 27, w = 46, h = 6, label = L["Debuff ID 10"], labelPos = "top", labelSize = 16 },
+            } },
+        },
+    },
+}, { addon = "ExwindTools", moduleKey = MODULE_KEY })
+EXUI:RegisterModuleSettingsPage(MODULE_KEY, PAGE_ID)
 
 local DEFAULTS = {
     root = {

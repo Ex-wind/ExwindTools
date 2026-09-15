@@ -10,7 +10,42 @@ local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = functi
 -- 1. 识别 Key
 local EXWIND_MODULE_KEY = "ExM+Info.RunHistory"
 
--- 2. 载入检查
+-- =========================================================
+-- [v4.2] 注册与配置
+-- =========================================================
+local PAGE_ID = "ExwindTools:" .. EXWIND_MODULE_KEY
+EXUI:RegisterSettingsPage(PAGE_ID, {
+    version = 1,
+    title = L["大秘境赛季记录 (Run History)"],
+    description = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"],
+    cards = {
+        {
+            id = "filters",
+            title = L["过滤设置"],
+            content = {
+                kind = "grid",
+                items = {
+                    { key = "filterThisWeek", type = "checkbox", x = 1, y = 1, w = 40, h = 8, label = L["只看本周记录"] },
+                    { key = "filterTimed", type = "checkbox", x = 51, y = 1, w = 40, h = 8, label = L["只看限时记录"] },
+                    { key = "size", type = "slider", x = 1, y = 14, w = 84, h = 12, label = L["显示字号"], min = 10, max = 30 },
+                },
+            },
+        },
+        {
+            id = "open-window",
+            title = L["记录窗口"],
+            content = {
+                kind = "grid",
+                items = {
+                    { key = "open", type = "button", x = 1, y = 1, w = 84, h = 12, label = L["打开记录预览"] },
+                },
+            },
+        },
+    },
+}, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
+EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, PAGE_ID)
+
+-- 2. 载入检查：页面先登记，禁用时不创建记录窗口或注册业务。
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 local EXDB = _G.EXDB
@@ -28,31 +63,6 @@ local EXMYRUN_DEFAULTS = {
     yOfs = 0,
 }
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXMYRUN_DEFAULTS)
-
--- =========================================================
--- [v4.2] 注册与配置
--- =========================================================
-
-
--- 2. Grid 布局
-local function EX_RegisterLayout()
-    local layout = {
-        { key = "header", type = "header", x = 8, y = 4, w = 193, h = 8, label = L["大秘境赛季记录 (Run History)"], labelSize = 25 },
-        { key = "desc", type = "description", x = 8, y = 20, w = 193, h = 4, label = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"] },
-        { key = "open", type = "button", x = 8, y = 84, w = 84, h = 12, label = L["打开记录预览"] },
-        { key = "sub_filter", type = "subheader", x = 8, y = 32, w = 193, h = 4, label = L["过滤设置"], labelSize = 20 },
-        { key = "filterThisWeek", type = "checkbox", x = 8, y = 44, w = 40, h = 8, label = L["只看本周记录"] },
-        { key = "filterTimed", type = "checkbox", x = 52, y = 44, w = 40, h = 8, label = L["只看限时记录"] },
-        { key = "size", type = "slider", x = 8, y = 64, w = 84, h = 12, label = L["显示字号"], min = 10, max = 30 },
-        { key = "divider_1965", type = "divider", x = 8, y = 36, w = 193, h = 4, label = "新组件" },
-    }
-
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
-end
-
--- 3. 立即注册
-EX_RegisterLayout()
 
 -- 按钮监听
 ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY, function(data)

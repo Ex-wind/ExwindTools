@@ -4,28 +4,35 @@
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
+local EXUI = ExwindTools.UI
 local EXState = ExwindTools.State
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 -- 1. 识别 Key
 local EXWIND_MODULE_KEY = "ExM+InfoMythicFrame"
 
--- 2. 载入检查
+local PAGE_ID = "ExwindTools:" .. EXWIND_MODULE_KEY
+EXUI:RegisterSettingsPage(PAGE_ID, {
+    version = 1,
+    title = L["大米统计面板 (Mythic Dashboard)"],
+    description = L["全屏沉浸式的战绩分析面板。显示实时评分、称号线差距、国服排名、低保进度等。"],
+    cards = {
+        {
+            id = "open-dashboard",
+            title = L["统计面板"],
+            content = {
+                kind = "grid",
+                items = {
+                    { key = "open", type = "button", x = 1, y = 1, w = 64, h = 12, label = L["立即打开面板"] },
+                },
+            },
+        },
+    },
+}, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
+EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, PAGE_ID)
+
+-- 2. 载入检查：独立窗口与业务仍只在模块启用后启动。
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
-
-
-
--- 4. Grid 布局
-local function EX_RegisterLayout()
-    local layout = {
-        { key = "header", type = "header", x = 8, y = 4, w = 188, h = 8, label = L["大米统计面板 (Mythic Dashboard)"], labelSize = 25 },
-        { key = "desc", type = "description", x = 8, y = 16, w = 188, h = 4, label = L["全屏沉浸式的战绩分析面板。显示实时评分、称号线差距、国服排名、低保进度等。"] },
-        { key = "open", type = "button", x = 8, y = 24, w = 64, h = 12, label = L["立即打开面板"] },
-    }
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
-end
-EX_RegisterLayout()
 
 -- 按钮监听
 ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY, function(data)

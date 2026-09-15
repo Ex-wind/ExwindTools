@@ -206,145 +206,72 @@ local function IsConfigRefreshKey(key)
     return key and CONFIG_REFRESH_KEYS[key] == true
 end
 
-local function AppendSkillConfigLayout(layout, startY)
-    local y = startY
+local function BuildSkillCards()
+    local cards = {
+        {
+            id = "general",
+            title = L["模块通用设置"],
+            content = {
+                kind = "grid",
+                items = {
+                    { key = "enabled", type = "checkbox", x = 1, y = 1, w = 40, h = 8, label = L["启用"] },
+                },
+            },
+        },
+        {
+            id = "anchor",
+            title = L["锚点设置"],
+            content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", parentKey = "font_alert" },
+        },
+        {
+            id = "text",
+            title = L["提示文字"],
+            content = { kind = "composite", component = "fontgroup", key = "font_alert" },
+        },
+    }
 
     for _, classTag in ipairs(CLASS_CONFIG_ORDER) do
         local classConfig = NO_MOVE_SKILL_CONFIGS[classTag]
-        if classConfig then
-            layout[#layout + 1] = {
-                key = "h_" .. classTag,
-                type = "header",
-                x = 1,
+        local items, y = {}, 1
+        for _, row in ipairs(classConfig.displayRows or {}) do
+            if row.enabledKey then
+                items[#items + 1] = {
+                    key = row.enabledKey, type = "checkbox", x = 1, y = y, w = 24, h = 8, label = L["启用"],
+                }
+            end
+            items[#items + 1] = {
+                key = "desc_" .. row.formatKey,
+                type = "description",
+                x = row.enabledKey and 31 or 1,
                 y = y,
-                w = 216,
+                w = row.enabledKey and 66 or 96,
                 h = 8,
-                label = "|cff" .. classConfig.color .. L[classConfig.header] .. "|r",
-                labelSize = 20,
+                label = GetDisplayRowLabel(row),
+            }
+            items[#items + 1] = {
+                key = row.formatKey,
+                type = "input",
+                x = 101,
+                y = y,
+                w = 96,
+                h = 8,
+                label = L["显示CD时的内容 (用 %t 代表时间)"],
+                labelPos = "top",
             }
             y = y + 16
-
-            if classConfig.displayRows then
-                for _, row in ipairs(classConfig.displayRows) do
-                    layout[#layout + 1] = {
-                        key = row.enabledKey or ("desc_" .. row.formatKey),
-                        type = row.enabledKey and "checkbox" or "description",
-                        x = 1,
-                        y = y,
-                        w = row.enabledKey and 24 or 96,
-                        h = 8,
-                        label = row.enabledKey and L["启用"] or GetDisplayRowLabel(row),
-                    }
-                    layout[#layout + 1] = {
-                        key = "desc_" .. row.formatKey,
-                        type = "description",
-                        x = row.enabledKey and 32 or 4,
-                        y = y,
-                        w = row.enabledKey and 68 or 96,
-                        h = 8,
-                        label = GetDisplayRowLabel(row),
-                    }
-                    layout[#layout + 1] = {
-                        key = row.formatKey,
-                        type = "input",
-                        x = 108,
-                        y = y,
-                        w = 104,
-                        h = 8,
-                        label = L["显示CD时的内容 (用 %t 代表时间)"],
-                        labelPos = "top",
-                    }
-                    y = y + 16
-                end
-            elseif classConfig.order then
-                local usedFormatKeys = {}
-                for _, specID in ipairs(classConfig.order) do
-                    local skill = classConfig.specs and classConfig.specs[specID]
-                    if skill and not usedFormatKeys[skill.formatKey] then
-                        usedFormatKeys[skill.formatKey] = true
-                        local specName, specIcon = GetSpecInfoForConfig(specID)
-                        layout[#layout + 1] = {
-                            key = "desc_" .. skill.formatKey,
-                            type = "description",
-                            x = 1,
-                            y = y,
-                            w = 96,
-                            h = 8,
-                            label = GetIconMarkup(specIcon, 18) .. " " .. L[specName],
-                        }
-                        layout[#layout + 1] = {
-                            key = skill.formatKey,
-                            type = "input",
-                            x = 108,
-                            y = y,
-                            w = 104,
-                            h = 8,
-                            label = L["显示CD时的内容 (用 %t 代表时间)"],
-                            labelPos = "top",
-                        }
-                        y = y + 16
-                    end
-                end
-            end
         end
+        cards[#cards + 1] = {
+            id = "class-" .. string.lower(classTag),
+            title = "|cff" .. classConfig.color .. L[classConfig.header] .. "|r",
+            collapsible = true,
+            content = { kind = "grid", items = items },
+        }
     end
+
+    return cards
 end
 
-local function EX_RegisterLayout()
-    local layout = {
-        { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["位移技能CD提示"], labelSize = 25 },
-        { key = "enabled", type = "checkbox", x = 1, y = 13, w = 40, h = 8, label = L["启用"] },
-        { key = "header_skill_content", type = "header", x = 1, y = 105, w = 200, h = 8, label = L["显示内容"], labelSize = 20 },
-        { key = "h_MAGE", type = "header", x = 1, y = 115, w = 200, h = 8, label = L["|cff3fc7eb法师设置|r"], labelSize = 20 },
-        { key = "mage_enable", type = "checkbox", x = 1, y = 125, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_displayFormat", type = "description", x = 31, y = 126, w = 46, h = 6, label = L["|T135932:18:18:0:0:64:64:5:59:5:59|t 奥术  |T135810:18:18:0:0:64:64:5:59:5:59|t 火焰  |T135846:18:18:0:0:64:64:5:59:5:59|t 冰霜"] },
-        { key = "displayFormat", type = "input", x = 92, y = 126, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "h_DEATHKNIGHT", type = "header", x = 1, y = 133, w = 200, h = 8, label = L["|cffc41e3a死亡骑士设置|r"], labelSize = 20 },
-        { key = "dk_enable_steed", type = "checkbox", x = 1, y = 143, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_dk_fmt_steed", type = "description", x = 31, y = 145, w = 46, h = 6, label = L["|T135770:18:18:0:0:64:64:5:59:5:59|t 鲜血  |T135773:18:18:0:0:64:64:5:59:5:59|t 冰霜  |T135775:18:18:0:0:64:64:5:59:5:59|t 邪恶"] },
-        { key = "dk_fmt_steed", type = "input", x = 92, y = 146, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "h_ROGUE", type = "header", x = 1, y = 153, w = 216, h = 8, label = L["|cfffff468盗贼设置|r"], labelSize = 20 },
-        { key = "rogue_enable_shadow", type = "checkbox", x = 1, y = 163, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_rogue_fmt_shadow", type = "description", x = 31, y = 163, w = 46, h = 6, label = L["|T236270:18:18:0:0:64:64:5:59:5:59|t 奇袭  |T132320:18:18:0:0:64:64:5:59:5:59|t 敏锐"] },
-        { key = "rogue_fmt_shadow", type = "input", x = 92, y = 164, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "rogue_enable_phantom", type = "checkbox", x = 1, y = 173, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_rogue_fmt_phantom", type = "description", x = 31, y = 174, w = 46, h = 6, label = L["|T236286:18:18:0:0:64:64:5:59:5:59|t 狂徒"] },
-        { key = "rogue_fmt_phantom", type = "input", x = 92, y = 176, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "h_PALADIN", type = "header", x = 1, y = 183, w = 216, h = 8, label = L["|cfff48cba圣骑士设置|r"], labelSize = 20 },
-        { key = "paladin_enable_holy", type = "checkbox", x = 1, y = 193, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_paladin_fmt_holy", type = "description", x = 31, y = 213, w = 46, h = 6, label = L["|T135920:18:18:0:0:64:64:5:59:5:59|t 神圣"] },
-        { key = "paladin_fmt_holy", type = "input", x = 92, y = 193, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "paladin_enable_protection", type = "checkbox", x = 1, y = 203, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_paladin_fmt_protection", type = "description", x = 31, y = 193, w = 46, h = 6, label = L["|T236264:18:18:0:0:64:64:5:59:5:59|t 防护"] },
-        { key = "paladin_fmt_protection", type = "input", x = 92, y = 203, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "paladin_enable_retribution", type = "checkbox", x = 1, y = 213, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_paladin_fmt_retribution", type = "description", x = 31, y = 203, w = 46, h = 6, label = L["|T135873:18:18:0:0:64:64:5:59:5:59|t 惩戒"] },
-        { key = "paladin_fmt_retribution", type = "input", x = 92, y = 213, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "h_DEMONHUNTER", type = "header", x = 1, y = 224, w = 216, h = 8, label = L["|cffa330c9恶魔猎手设置|r"], labelSize = 20 },
-        { key = "dh_enable_havoc", type = "checkbox", x = 1, y = 233, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_dh_fmt_havoc", type = "description", x = 31, y = 243, w = 46, h = 6, label = L["|T1247264:18:18:0:0:64:64:5:59:5:59|t 浩劫"] },
-        { key = "dh_fmt_havoc", type = "input", x = 92, y = 243, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "dh_enable_vengeance", type = "checkbox", x = 1, y = 243, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_dh_fmt_vengeance", type = "description", x = 31, y = 253, w = 46, h = 6, label = L["|T1247265:18:18:0:0:64:64:5:59:5:59|t 复仇"] },
-        { key = "dh_fmt_vengeance", type = "input", x = 92, y = 253, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "dh_enable_devourer", type = "checkbox", x = 1, y = 253, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_dh_fmt_devourer", type = "description", x = 31, y = 233, w = 46, h = 6, label = L["|T7455385:18:18:0:0:64:64:5:59:5:59|t 噬灭"] },
-        { key = "dh_fmt_devourer", type = "input", x = 92, y = 233, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "h_EVOKER", type = "header", x = 1, y = 263, w = 216, h = 8, label = L["|cff33937f唤魔师设置|r"], labelSize = 20 },
-        { key = "evoker_enable_devastation", type = "checkbox", x = 1, y = 273, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_evoker_fmt_devastation", type = "description", x = 31, y = 273, w = 46, h = 6, label = L["|T4511811:18:18:0:0:64:64:5:59:5:59|t 湮灭"] },
-        { key = "evoker_fmt_devastation", type = "input", x = 92, y = 273, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "evoker_enable_preservation", type = "checkbox", x = 1, y = 283, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_evoker_fmt_preservation", type = "description", x = 31, y = 283, w = 46, h = 6, label = L["|T4511812:18:18:0:0:64:64:5:59:5:59|t 恩护"] },
-        { key = "evoker_fmt_preservation", type = "input", x = 92, y = 283, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-        { key = "evoker_enable_augmentation", type = "checkbox", x = 1, y = 293, w = 24, h = 6, label = L["启用"] },
-        { key = "desc_evoker_fmt_augmentation", type = "description", x = 31, y = 293, w = 46, h = 6, label = L["|T5198700:18:18:0:0:64:64:5:59:5:59|t 增辉"] },
-        { key = "evoker_fmt_augmentation", type = "input", x = 92, y = 293, w = 46, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
-    }
-
-    return layout
-end
-local GUI_STATIC  = EX_RegisterLayout()
+local GUI_CARDS = BuildSkillCards()
 
 -- =============================================================
 -- 默认设置
@@ -427,21 +354,10 @@ local MODULE_SPEC = {
     },
     defaults = { root = EX_DEFAULTS },
     gui = {
-        static = GUI_STATIC,
-        fields = {
-            { key = "font_alert", type = "fontgroup", x = 1, y = 50, w = 200, h = 50, label = L["提示文字"], labelSize = 20 },
-            {
-                key = "anchorGroup",
-                parentKey = "font_alert",
-                type = "anchorgroup",
-                x = 1,
-                y = 30,
-                w = 200,
-                h = 18,
-                measure = true,
-                label = L["锚点设置"]
-            },
-        },
+        version = 1,
+        title = L["位移技能CD提示"],
+        description = L["按职业与专精配置位移技能冷却提示内容。"],
+        cards = GUI_CARDS,
     },
 }
 

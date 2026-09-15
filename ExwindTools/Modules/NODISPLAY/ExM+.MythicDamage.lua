@@ -11,9 +11,6 @@ local EXState = ExwindTools.State
 -- 1. 识别 Key
 local EXWIND_MODULE_KEY = "ExM+.MythicDamage"
 
--- 2. 载入检查
-if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
-
 -- 3. 数据初始化
 local EXWIND_DEFAULTS = {
     mythicLevel = 10,
@@ -24,6 +21,10 @@ local EXWIND_DEFAULTS = {
     damageColorB = 0.79,
 }
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
+EXUI:RegisterSettingsBinding(EXWIND_MODULE_KEY, {
+    moduleKey = EXWIND_MODULE_KEY,
+    getConfig = function() return EX_DB end,
+})
 
 -- =========================================================
 -- 核心业务逻辑 (需提前定义供 Layout 使用)
@@ -115,7 +116,7 @@ end
 -- =========================================================
 
 -- 1. Grid 布局
-local function EX_RegisterLayout()
+local function EX_RegisterPage()
     local level = EX_DB.mythicLevel or 10
     local multi = EXMD and EXMD.GetCurrentMultiplier and EXMD.GetCurrentMultiplier() or 1
     local seasonID = C_SeasonInfo.GetCurrentDisplaySeasonID()
@@ -124,22 +125,38 @@ local function EX_RegisterLayout()
         level, seasonID, 1.76, multi
     )
 
-    local layout = {
-        { key = "header", type = "header", x = 1, y = 4, w = 200, h = 3, label = L["大秘境伤害计算"], labelSize = 25 },
-        { key = "desc", type = "description", x = 1, y = 12, w = 200, h = 8, label = L["法术描述的数值会随着层数改变"] },
-        { key = "useColoredNumbers", type = "checkbox", x = 1, y = 23, w = 46, h = 6, label = L["数值染色"] },
-        { key = "mythicLevel", type = "slider", x = 2, y = 39, w = 46, h = 6, label = L["模拟层数 (0-30)"], min = 0, max = 30 },
-        { key = "damageColor", type = "color", x = 52, y = 39, w = 46, h = 6, label = L["伤害数值颜色"] },
-        { key = "openSpellInfo", type = "button", x = 116, y = 24, w = 55, h = 10, label = L["大米怪物法术"] },
-        { key = "abbreviateNumbers", type = "checkbox", x = 51, y = 23, w = 46, h = 6, label = L["简写数字 (万/亿)"] },
-    }
-
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    local pageID = "ExwindTools:" .. EXWIND_MODULE_KEY
+    EXUI:RegisterSettingsPage(pageID, {
+        version = 1,
+        title = L["大秘境伤害计算"],
+        description = L["法术描述的数值会随着层数改变"],
+        cards = {
+            {
+                id = "display", title = L["数字显示"],
+                content = { kind = "grid", items = {
+                    { key = "useColoredNumbers", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["数值染色"] },
+                    { key = "abbreviateNumbers", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["简写数字 (万/亿)"] },
+                    { key = "openSpellInfo", type = "button", x = 116, y = 1, w = 55, h = 10, label = L["大米怪物法术"] },
+                } },
+            },
+            {
+                id = "simulation", title = L["层数模拟"],
+                content = { kind = "grid", items = {
+                    { key = "mythicLevel", type = "slider", x = 2, y = 1, w = 46, h = 6, label = L["模拟层数 (0-30)"], min = 0, max = 30 },
+                    { key = "damageColor", type = "color", x = 52, y = 1, w = 46, h = 6, label = L["伤害数值颜色"] },
+                    { key = "simulationInfo", type = "description", x = 1, y = 12, w = 196, h = 20, label = descLabel },
+                } },
+            },
+        },
+    }, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
+    EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, pageID)
 end
 
 -- 3. 立即注册
-EX_RegisterLayout()
+EX_RegisterPage()
+
+-- 页面登记完成后才执行模块启用门；禁用模块不注册业务刷新。
+if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 local function RefreshActiveSurfaces()
     -- 当前 Grid 控件已经持有写入后的值；这里只重套已存在的法术手册面板。

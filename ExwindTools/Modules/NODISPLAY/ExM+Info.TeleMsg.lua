@@ -10,9 +10,6 @@ local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = functi
 -- 1. 识别 Key
 local EXWIND_MODULE_KEY = "ExM+Info.TeleMsg"
 
--- 2. 载入检查
-if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
-
 local EXDB = _G.EXDB
 if not EXDB then return end
 
@@ -29,7 +26,7 @@ local DEFAULT_MSG = EXWIND_DEFAULTS.teleportShoutText
 -- =========================================================
 
 -- Grid 布局
-local function EX_RegisterLayout()
+local function EX_RegisterPage()
     -- 1. 预计算预览字符串（逻辑在外部执行，layout只拿结果）
     local fmt = EX_DB.teleportShoutText or DEFAULT_MSG
     local name = (EXDB.GetLocalizedInstanceNoteName and EXDB:GetLocalizedInstanceNoteName(658)) or L["萨隆矿坑"]
@@ -44,40 +41,37 @@ local function EX_RegisterLayout()
     local previewText = "\n|cffffd100" ..
     L["预览:"] .. "|r\n|cffaaaaff[" .. L["队伍"] .. "] [" .. playerColored .. "]: " .. out .. "|r"
 
-    local layout = {
-        { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["传送喊话"], labelSize = 25 },
-        {
-            key = "descInfo",
-            type = "description",
-            x = 1,
-            y = 11,
-            w = 196,
-            h = 16,
-            label = L["|cffffd100变量说明:|r\
+    local pageID = "ExwindTools:" .. EXWIND_MODULE_KEY
+    EXUI:RegisterSettingsPage(pageID, {
+        version = 1,
+        title = L["传送喊话"],
+        description = L["|cffffd100变量说明:|r\
   |cff00ff00%link|r  = 法术链接\
   |cff00ff00%name|r = 副本名称"],
-            labelSize = 18
+        cards = {
+            {
+                id = "message", title = L["喊话设置"],
+                content = { kind = "grid", items = {
+                    { key = "shoutTiming", type = "dropdown", x = 1, y = 1, w = 46, h = 6, label = L["喊话时机"], items = "施法开始,施法成功" },
+                    { key = "reset", type = "button", x = 51, y = 1, w = 46, h = 6, label = L["恢复默认喊话"] },
+                    { key = "teleportShoutText", type = "input", x = 1, y = 14, w = 196, h = 6, label = L["自定义喊话内容"] },
+                } },
+            },
+            {
+                id = "preview", title = L["实时预览"],
+                content = { kind = "grid", items = {
+                    { key = "previewLabel", type = "description", x = 1, y = 1, w = 196, h = 15, label = previewText, labelSize = 18 },
+                } },
+            },
         },
-        { key = "shoutTiming", type = "dropdown", x = 1, y = 31, w = 46, h = 6, label = L["喊话时机"], items = "施法开始,施法成功" },
-        { key = "teleportShoutText", type = "input", x = 1, y = 44, w = 200, h = 6, label = L["自定义喊话内容"] },
-        {
-            key = "previewLabel",
-            type = "description",
-            x = 1,
-            y = 52,
-            w = 200,
-            h = 15,
-            label = previewText,
-            labelSize = 18
-        },
-        { key = "reset", type = "button", x = 51, y = 31, w = 46, h = 6, label = L["恢复默认喊话"] },
-    }
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    }, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
+    EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, pageID)
 end
 
 -- 3. 立即注册
-EX_RegisterLayout()
+EX_RegisterPage()
+
+if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 -- =========================================================
 -- 业务逻辑

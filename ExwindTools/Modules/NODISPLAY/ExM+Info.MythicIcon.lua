@@ -10,9 +10,6 @@ local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = functi
 -- 1. 识别 Key
 local EXWIND_MODULE_KEY = "ExM+Info.MythicIcon"
 
--- 2. 载入检查
-if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
-
 local EXDB = _G.EXDB
 
 local function EXWIND_GetInstanceMetaByChallengeModeID(mapID)
@@ -268,18 +265,8 @@ end
 
 
 -- 2. Grid 布局
-local function EX_RegisterLayout()
-    local layout = {
-        { key = "header", type = "header", x = 1, y = 3, w = 200, h = 8, label = L["大米分数"], labelSize = 25 },
-        { key = "showBestLevel", type = "checkbox", x = 1, y = 13, w = 46, h = 6, label = L["显示最佳层数 (居中)"], parentKey = "displayOptions" },
-        { key = "showScore", type = "checkbox", x = 51, y = 13, w = 46, h = 6, label = L["显示副本评分 (底部)"], parentKey = "displayOptions" },
-        { key = "nameStyle", type = "fontgroup", x = 1, y = 25, w = 200, h = 50, label = L["副本名称样式"], labelSize = 20 },
-        { key = "levelStyle", type = "fontgroup", x = 1, y = 80, w = 200, h = 50, label = L["最佳层数样式"], labelSize = 20 },
-        { key = "scoreStyle", type = "fontgroup", x = 1, y = 135, w = 200, h = 50, label = L["副本评分样式"], labelSize = 20 },
-        { key = "sub_maps", type = "subheader", x = 2, y = 192, w = 200, h = 8, label = L["副本简称自定义 (留空则使用默认)"], labelSize = 20 },
-    }
-
-
+local function EX_RegisterPage()
+    local mapItems = {}
     local maps = EXWIND_GetChallengeModeInstances()
     for index, meta in ipairs(maps) do
         local challengeModeID = tonumber(meta.challengeModeID) or 0
@@ -287,11 +274,11 @@ local function EX_RegisterLayout()
         local row = math.floor((index - 1) / 2)
         local shortName = EXWIND_GetLocalizedDefaultMapName(challengeModeID)
 
-        layout[#layout + 1] = {
+        mapItems[#mapItems + 1] = {
             key = tostring(challengeModeID),
             type = "input",
             x = column == 0 and 3 or 53,
-            y = 210 + (row * 10),
+            y = 1 + (row * 10),
             w = 46,
             h = 6,
             label = string.format("%s (%d)", shortName, challengeModeID),
@@ -301,13 +288,34 @@ local function EX_RegisterLayout()
         }
     end
 
-
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    local pageID = "ExwindTools:" .. EXWIND_MODULE_KEY
+    EXUI:RegisterSettingsPage(pageID, {
+        version = 1,
+        title = L["大米分数"],
+        cards = {
+            {
+                id = "display", title = L["显示项目"],
+                content = { kind = "grid", items = {
+                    { key = "showBestLevel", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["显示最佳层数 (居中)"], parentKey = "displayOptions" },
+                    { key = "showScore", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["显示副本评分 (底部)"], parentKey = "displayOptions" },
+                } },
+            },
+            { id = "name-style", title = L["副本名称样式"], content = { kind = "composite", component = "fontgroup", key = "nameStyle" } },
+            { id = "level-style", title = L["最佳层数样式"], content = { kind = "composite", component = "fontgroup", key = "levelStyle" } },
+            { id = "score-style", title = L["副本评分样式"], content = { kind = "composite", component = "fontgroup", key = "scoreStyle" } },
+            {
+                id = "map-names", title = L["副本简称自定义 (留空则使用默认)"], collapsible = true,
+                content = { kind = "grid", items = mapItems },
+            },
+        },
+    }, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
+    EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, pageID)
 end
 
 -- 3. 立即注册
-EX_RegisterLayout()
+EX_RegisterPage()
+
+if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 -- =========================================================
 -- 核心业务逻辑实现

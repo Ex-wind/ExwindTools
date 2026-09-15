@@ -251,7 +251,8 @@ local function BuildEntry(itemID, cooldown, isPreview)
             bodySize = { width = width, height = height },
             declaredBounds = { left = -width * .5, right = width * .5, bottom = -height * .5, top = height * .5 },
             semanticBounds = { ["core.time"] = MakeTextBounds(DB.font_time or {}) },
-            interaction = isPreview and EXUI:BuildStandardPreviewInteraction("Icon", DB, MODULE_SPEC.preview.elements) or nil,
+            interaction = isPreview and EXUI:BuildStandardPreviewInteraction("Icon", DB, MODULE_SPEC.preview.elements) or
+            nil,
         },
     }
 end

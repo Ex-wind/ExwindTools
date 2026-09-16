@@ -36,6 +36,8 @@ local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXMYRUN_DEFAULTS)
 
 -- 2. Grid 布局
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；打开按钮仍只负责进入自有窗口。
+    -- key/type、筛选/按钮绑定及历史记录排序禁止修改；header/divider 只是内容项，不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 8, y = 4, w = 193, h = 8, label = L["大秘境赛季记录 (Run History)"], labelSize = 25 },
         { key = "desc", type = "description", x = 8, y = 20, w = 193, h = 4, label = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"] },
@@ -147,6 +149,7 @@ local function EXMYRUN_GetLevelColorHex(level)
 end
 
 -- 界面构建
+-- [卡片迁移边界：自定义渲染] 下列历史窗口、表头、滚动区和行池不是设置页 Grid；迁移设置卡片时禁止改其尺寸、排序、拖动与点击回调。
 function EXMYRUN:CreateMainFrame()
     local f = CreateFrame("Frame", "EXMYRUNMainFrame", UIParent, "BackdropTemplate")
     f:SetSize(self.FrameWidth, self.FrameHeight)

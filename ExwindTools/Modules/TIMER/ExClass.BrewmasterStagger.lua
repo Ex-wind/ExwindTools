@@ -156,6 +156,8 @@ local MODULE_SPEC = {
     -- 编辑预览：仅主文字可在条体内局部拖动。
     preview = { positionGuiKeys = { "font_spell" }, elements = { ["core.spellName"] = { guiKey = "font_spell", movable = true, textRole = "spellName", tooltip = L["酒池文字样式"], position = { x = "font_spell.x", y = "font_spell.y" } } } },
     -- 设置页：所有控件均声明绝对 x/y/w/h，不使用流式布局。
+    -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
+    -- key/type/opts、DB path、anchor/preview/defaults、按钮语义及计时条刷新合同禁止修改；复合控件必须整体引用，header 不等于容器。
     gui = {
         fields = {
             {

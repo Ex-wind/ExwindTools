@@ -158,6 +158,8 @@ local EXDB = _G.EXDB
 
 -- 1. Grid 布局
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；打开按钮仍只负责进入自有手册窗口。
+    -- 跨模块 mythicLevel 绑定、key/type 与按钮回调禁止修改；header/subheader/description 不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 4, w = 188, h = 8, label = L["大米法术手册 (Mythic Spell Guide)"], labelSize = 25 },
         { key = "desc", type = "description", x = 1, y = 16, w = 188, h = 4, label = L["此模块提供了一个极度详细的地下城百科，涵盖所有层数下的怪物技能数值。"] },
@@ -419,6 +421,7 @@ end)
 -- UI 核心
 -------------------------------------------------------------------
 
+-- [卡片迁移边界：自定义渲染] 下列百科窗口、分页、双滚动区及池化内容不属于设置页 Grid；固定视口、数据排序、选择与刷新回调禁止修改。
 function EXSP.CreateMainFrame()
     EXSP.CurrentFont = EXSP_DEFAULT_FONT
 

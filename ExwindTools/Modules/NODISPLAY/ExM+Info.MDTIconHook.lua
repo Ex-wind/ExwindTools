@@ -164,6 +164,8 @@ local function ApplyCustomSettings()
 end
 
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
+    -- key/type/items、apply.func、NPC/法术解析与标记写入顺序均属业务合同，禁止修改；header/subheader 不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["MDT 法术图标替换"], labelSize = 25 },
         { key = "enabled", type = "checkbox", x = 1, y = 9, w = 40, h = 8, label = L["开启功能"] },
@@ -297,6 +299,7 @@ local function InitializeMDTVisuals()
     return true
 end
 
+-- [卡片迁移边界：外部UI] 下列视觉、位置、显隐、hook 与按钮 helper 均服务 MDT 自有窗口，不属于 ExwindTools 设置页；宿主锚点、按钮顺序、点击业务及显隐合同禁止修改。
 local function UpdateMDTButtonsVisual()
     local toggleBtn = _G.ExMDT_Btn_ToggleIcon
     if toggleBtn and toggleBtn.Text then
@@ -396,6 +399,7 @@ local function CreateMDTTextButton(name, parent, width, labelText, onClick)
     return btn
 end
 
+-- [卡片迁移边界：自定义渲染] 下列按钮注入 MDT 自有窗口，不属于 ExwindTools 设置页；按钮顺序、外部锚点、点击业务和显隐 hook 禁止修改。
 local function CreateMDTButtons()
     local MDT = _G.MDT
     if not MDT or not MDT.main_frame then

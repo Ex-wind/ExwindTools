@@ -63,6 +63,8 @@ local PRESET_ITEMS = {
 
 -- 2. Grid 布局 (核心)
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅静态项及动态 itemconfig 项的 x/y/w/h、卡片分组可迁移。
+    -- 预设/自定义物品顺序、itemID/key/parentKey/subKey、增删按钮与购买逻辑禁止修改；header/subheader 不是卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 4, w = 188, h = 12, label = L["自动购买 (Auto Buy)"], labelSize = 25 },
         { key = "desc", type = "description", x = 1, y = 16, w = 188, h = 8, label = L["当打开商人界面时，自动购买背包中缺少的物品 (自动补齐到设置数量)"] },

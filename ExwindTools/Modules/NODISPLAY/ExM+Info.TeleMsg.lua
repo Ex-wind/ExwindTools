@@ -44,6 +44,8 @@ local function EX_RegisterLayout()
     local previewText = "\n|cffffd100" ..
     L["预览:"] .. "|r\n|cffaaaaff[" .. L["队伍"] .. "] [" .. playerColored .. "]: " .. out .. "|r"
 
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
+    -- 上方预览文本生成、key/type/items、重置按钮及施法事件订阅禁止修改；预览 description/header 不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["传送喊话"], labelSize = 25 },
         {

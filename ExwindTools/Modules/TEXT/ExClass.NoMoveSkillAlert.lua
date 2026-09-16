@@ -290,6 +290,7 @@ local function AppendSkillConfigLayout(layout, startY)
     end
 end
 
+-- [卡片迁移边界：设置页静态项] 此函数只生成 MODULE_SPEC.gui.static；仅其 x/y/w/h 与卡片分组可迁移，职业/技能顺序及 key/type/parentKey 禁止修改。
 local function EX_RegisterLayout()
     local layout = {
         { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["位移技能CD提示"], labelSize = 25 },
@@ -426,6 +427,8 @@ local MODULE_SPEC = {
         },
     },
     defaults = { root = EX_DEFAULTS },
+    -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
+    -- 上方 GUI_STATIC 与下列 fields 的职业顺序、key/type/parentKey、DB path、anchor/preview/defaults 与回调均禁止修改；复合控件整体引用，header 不等于容器。
     gui = {
         static = GUI_STATIC,
         fields = {

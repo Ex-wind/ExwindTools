@@ -85,6 +85,8 @@ for _, instance in ipairs(EXDB.InstanceNoteInstanceSource) do
 end
 
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列设置 layout 的 x/y/w/h 与卡片分组可迁移；三个 fontgroup 必须整体引用。
+    -- key/type、PVE 附着字段、数据请求/刷新/显隐回调禁止修改；header 本身不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["大米队友钥石"], labelSize = 25 },
         { key = "enabled", type = "checkbox", x = 1, y = 11, w = 46, h = 6, label = L["启用模块"] },
@@ -549,6 +551,7 @@ local function RequestData()
     end
 end
 
+-- [卡片迁移边界：自定义渲染] 下列 PVE 附着文字区是运行时宿主，不是设置页 Grid；禁止改其锚点、数据顺序、请求与显隐生命周期。
 local function CreateFrameIfNeeded()
     if infoFrame or not _G.PVEFrame then return end
 

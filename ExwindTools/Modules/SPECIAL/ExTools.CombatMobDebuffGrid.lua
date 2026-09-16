@@ -257,6 +257,8 @@ local COMMON_OPTS = {
     },
 }
 
+-- [卡片迁移边界：设置页] 仅下列声明项的 x/y/w/h 与卡片分组可迁移；modulecommonsettings/anchorgroup 必须整体引用。
+-- key/type/opts、专精与 SpellID 顺序、AuraContainer/runtime 刷新和编辑模式回调禁止修改；header/subheader 不等于卡片容器。
 ExwindTools:RegisterModuleLayout(MODULE_KEY, {
     { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["周围怪物DEBUFF监控"], labelSize = 25 },
     { key = "moduleCommon", type = "modulecommonsettings", x = 1, y = 10, w = 200, h = 18,
@@ -542,6 +544,7 @@ local function HideAllRuntimeVisuals()
     end
 end
 
+-- [卡片迁移边界：自定义渲染] 以下白格 + 原生 AuraContainer 是 Runtime/World 内容，不是设置页卡片；单位/SpellID 顺序、容器复用与刷新判定禁止修改。
 local function RenderGrid(units, spellIDs, spellIDSignature, sample, settings)
     local count = sample and settings.cellsPerRow or #units
     if count <= 0 then

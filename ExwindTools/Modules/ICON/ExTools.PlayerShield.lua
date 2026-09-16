@@ -71,6 +71,8 @@ local MODULE_SPEC = {
         panel = { itemID = "player-shield:sample", icon = 135940, text = "125万" },
         world = { itemID = "player-shield:sample", icon = 135940, text = "125万" },
     },
+    -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
+    -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         fields = {
             {

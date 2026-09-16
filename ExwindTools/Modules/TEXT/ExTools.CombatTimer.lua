@@ -77,6 +77,8 @@ local MODULE_SPEC = {
             },
         },
     },
+    -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
+    -- key/type/opts、DB path、anchor/preview/defaults 及原生 Duration/刷新回调均属绑定或业务合同，禁止修改；复合控件整体引用，header 不等于容器。
     gui = {
         fields = {
             {

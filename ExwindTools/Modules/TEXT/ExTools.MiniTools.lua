@@ -19,6 +19,7 @@ local UIParent = _G.UIParent
 -- ========================================================================
 -- 1. [ShowMapInfo] 地图ID + 鼠标坐标 + 玩家坐标
 -- ========================================================================
+-- [卡片迁移边界：自定义/外部 UI] 本文件中的地图、商人、宏等 Frame/hook 都不是设置页 Grid；其运行时锚点、控件顺序与业务回调禁止修改。
 local function Init_ShowMapInfo()
     local db = ExwindTools:GetModuleDB("ExTools.MiniTools")
     local ANCHOR_MAP = {
@@ -1650,6 +1651,8 @@ EXUI:RegisterModuleValueController(EXWIND_MODULE_KEY, { RefreshActiveSurfaces = 
 -- Grid 布局
 -- ========================================================================
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列多功能设置项的 x/y/w/h 与卡片分组可迁移；fontgroup 必须整体引用。
+    -- key/type/items、各功能业务顺序、商人/宏界面 hook、购买确认和战斗记录回调禁止修改；header/description 不等于卡片容器。
     local layout = {
         { key = "head", type = "header", x = 1, y = 1, w = 193, h = 8, label = L["小工具箱 (Mini Tools)"], labelSize = 25 },
         { key = "h_map", type = "header", x = 1, y = 9, w = 200, h = 8, label = L["地图"], labelSize = 20 },

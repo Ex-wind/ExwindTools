@@ -15,6 +15,8 @@ local EXWIND_MODULE_KEY = "ExTools.PveInfoPanel"
 -- 第一部分：Grid 布局定义
 -- =============================================================
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列设置 layout 的 x/y/w/h 与卡片分组可迁移。
+    -- key/type、PVE 附着字段与自有侧栏的内容顺序/按钮/显隐回调禁止修改；header/description 不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 4, w = 188, h = 8, label = L["本周大秘境信息"] },
         { key = "desc", type = "description", x = 1, y = 12, w = 188, h = 4, label = L["自动依附在 PVE 面板侧边的信息架。"] },
@@ -289,6 +291,7 @@ local function ApplyLoadedUIBackdrop(frame)
     return true
 end
 
+-- [卡片迁移边界：自定义渲染] 下列 PVE 侧栏是运行时独立窗口，不是设置页卡片内容；禁止借设置迁移改其固定尺寸、段落顺序、入口按钮或显隐逻辑。
 local function CreateMainFrame()
     if mainFrame then return end
 

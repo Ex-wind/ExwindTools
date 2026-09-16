@@ -200,6 +200,7 @@ local function EXWIND_GetTeleportSpellID(mapID)
     return EXWIND_TeleportSpellMap[mapID]
 end
 
+-- [卡片迁移边界：自定义渲染] 下列 secure 传送点击层属于挑战面板运行时外部宿主，不是设置页卡片；创建、点击属性、战斗闸门及显隐合同禁止修改。
 local function EXWIND_GetTeleportClickLayer(frame)
     if not frame then return nil end
     if frame.__EXWIND_TeleportLayer then
@@ -269,6 +270,8 @@ end
 
 -- 2. Grid 布局
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅静态项及动态副本简称项的 x/y/w/h、卡片分组可迁移。
+    -- challengeModeID key、mapNames 绑定、地图枚举顺序、fontgroup 内容及 secure 传送业务禁止修改；header/subheader 不等于容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 3, w = 200, h = 8, label = L["大米分数"], labelSize = 25 },
         { key = "showBestLevel", type = "checkbox", x = 1, y = 13, w = 46, h = 6, label = L["显示最佳层数 (居中)"], parentKey = "displayOptions" },
@@ -332,6 +335,7 @@ local function EXWIND_BuildRatingLookup()
     return lookup
 end
 
+-- [卡片迁移边界：自定义渲染] 以下挑战面板 Overlay 是运行时外部宿主，不是设置页卡片；池化、图标顺序、相关 hook 和刷新节流禁止修改。
 local ActiveOverlays = {}
 
 

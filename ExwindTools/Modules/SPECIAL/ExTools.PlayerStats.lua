@@ -740,6 +740,8 @@ local function EX_RegisterLayout()
         x = ApplyLivePreview,
         y = ApplyLivePreview,
     }
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；背景组、行字体组和 anchorgroup 必须整体引用。
+    -- rows.N 动态 path、行增删/排序、属性/职责/场景顺序与 TextList 刷新回调禁止修改；header/subheader 不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 4, w = 200, h = 6, label = L["玩家属性面板"], labelSize = 25 },
         { key = "sub_gen", type = "subheader", x = 1, y = 11, w = 200, h = 6, label = L["通用设置"], labelSize = 20 },
@@ -880,6 +882,7 @@ local function FormatValue(conf, internalKey, sample)
     return string.format(format, value), false
 end
 
+-- [卡片迁移边界：自定义渲染] 以下动态双列 TextList 同时服务 Runtime/World/Panel，不是设置页布局；rows 顺序、筛选、订阅和列表释放合同禁止修改。
 local function BuildPresentation(sample)
     local rows, primaryStat = {}, EXDB:GetPlayerPrimaryStat() or "属性"
     for index, conf in ipairs(EX_DB.rows) do

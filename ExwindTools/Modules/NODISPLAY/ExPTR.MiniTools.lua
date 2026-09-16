@@ -21,6 +21,8 @@ local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
 -- [布局注册] Grid 设置界面
 -- ========================================================================
 local function RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
+    -- key/type、Beta 门禁及反馈/专业按钮 hook 禁止修改；header/description 不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 8, y = 8, w = 193, h = 8, label = L["PTR 工具箱"], labelSize = 25 },
         { key = "blockFeedback", type = "checkbox", x = 8, y = 24, w = 8, h = 8, label = L["屏蔽PTR自带反馈框 (Tooltip Issue Reporter)"] },
@@ -124,6 +126,7 @@ local function Init_AutoLearnProf()
         end
     end
 
+    -- [卡片迁移边界：自定义渲染] 下列按钮注入暴雪专业页面，不是设置页卡片；外部锚点、学习顺序、点击与显隐 hook 禁止修改。
     local function CreateLearnButton()
         local pFrame = _G.ProfessionsFrame
         if not pFrame or not pFrame.SpecPage or not pFrame.SpecPage.ApplyButton then return end

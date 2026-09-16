@@ -17,6 +17,8 @@ if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 -- 4. Grid 布局
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列入口说明/打开按钮的 x/y/w/h 与卡片分组可迁移。
+    -- key/type、按钮回调及下方全屏统计面板的业务排序和渲染禁止修改；header/description 不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 8, y = 4, w = 188, h = 8, label = L["大米统计面板 (Mythic Dashboard)"], labelSize = 25 },
         { key = "desc", type = "description", x = 8, y = 16, w = 188, h = 4, label = L["全屏沉浸式的战绩分析面板。显示实时评分、称号线差距、国服排名、低保进度等。"] },
@@ -218,6 +220,7 @@ end
 -- =========================================================
 -- [模块 2] 主框架布局
 -- =========================================================
+-- [卡片迁移边界：自定义渲染] 下列全屏统计窗、固定表格和右栏是独立窗口，不属于设置页 Grid；数据排序、行/列顺序、按钮与显隐生命周期禁止修改。
 function EXMRH.CreateStandaloneFrame()
     if _G["EXMRH_MainFrame"] then return end
 

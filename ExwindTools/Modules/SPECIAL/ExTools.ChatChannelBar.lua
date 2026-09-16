@@ -175,6 +175,8 @@ local CHAT_CHANNEL_BAR_ANCHOR_OPTS = {
 }
 
 local function RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列静态项及 CHANNELS 展开项的 x/y/w/h、卡片分组可迁移；fontgroup/anchorgroup 必须整体引用。
+    -- CHANNELS 业务顺序、key/type/DB path、命令输入与预览/运行回调禁止修改；header/subheader 只是内容项，不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["聊天频道快捷栏"], labelSize = 25 },
         { key = "sub_basic", type = "subheader", x = 1, y = 9, w = 200, h = 6, label = L["通用设置"], labelSize = 20 },
@@ -337,6 +339,7 @@ local function Label(channel)
     local value = Trim(DB()[channel.id .. "_name"]); if value == "" then return channel.name end
     return value:sub(1, 3)
 end
+-- [卡片迁移边界：自定义渲染] 以下 BuildPresentation→IconCollection 同时服务 Runtime/World/Panel，不是设置页布局；频道顺序、动作和 surface 生命周期禁止修改。
 local function BuildPresentation(sample)
     local db, style = DB(), DB().font_style or DEFAULTS.font_style
     local entries = {}

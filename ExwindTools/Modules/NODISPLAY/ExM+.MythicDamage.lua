@@ -124,6 +124,8 @@ local function EX_RegisterLayout()
         level, seasonID, 1.76, multi
     )
 
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
+    -- 上方倍率/说明计算、key/type、按钮与刷新绑定禁止修改；description/header 只是内容项，不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 4, w = 200, h = 3, label = L["大秘境伤害计算"], labelSize = 25 },
         { key = "desc", type = "description", x = 1, y = 12, w = 200, h = 8, label = L["法术描述的数值会随着层数改变"] },

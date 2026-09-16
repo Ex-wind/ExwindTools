@@ -53,6 +53,8 @@ local MODULE_SPEC = {
             justifyH = "CENTER", justifyV = "MIDDLE", x = 0, y = 0,
         },
     },
+    -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
+    -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         static = {
             { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["距离监视"], labelSize = 25 },

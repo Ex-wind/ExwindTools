@@ -113,6 +113,8 @@ end
 -- 第一部分：Grid 布局定义
 -- =============================================================
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
+    -- key/type、Beta 门禁、PVE 侧栏位置配置与 secure 制钥按钮回调禁止修改；header/description 不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 4, w = 188, h = 8, label = L["BETA 大米制作挂架"] },
         { key = "desc", type = "description", x = 1, y = 12, w = 188, h = 4, label = L["自动依附在 PVE 面板左侧的快速设钥架。"] },
@@ -213,6 +215,7 @@ local function UpdateCurrentKeystone()
     end
 end
 
+-- [卡片迁移边界：自定义渲染] 下列 RebuildButtons 操作运行时 secure 制钥侧栏，不是设置页 Grid；按钮顺序、尺寸/位置、宏属性与数据刷新合同禁止修改。
 local function RebuildButtons()
     if not mainFrame then return end
 
@@ -273,6 +276,7 @@ end
 -- 第四部分：框架生成
 -- =============================================================
 
+-- [卡片迁移边界：自定义渲染] 下列 PTR 制钥侧栏及 secure 按钮是运行时独立宿主，不属于设置页 Grid；按钮顺序、属性、外部锚点与显隐回调禁止修改。
 local function CreateMainFrame()
     if mainFrame then return end
 

@@ -50,6 +50,8 @@ end
 
 local function EX_RegisterLayout()
     --GRID引擎数据
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；live_status 是设置页文字，不是运行时锚点。
+    -- AI/固定模式的 key、专精 parentKey 切换、专精业务顺序与 CVar 回调禁止修改；header/divider 只是旧布局项，不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 8, y = 4, w = 193, h = 8, label = L["全职业延迟容限 (SpellQueueWindow)"], labelSize = 25 },
         { key = "desc", type = "description", x = 8, y = 16, w = 120, h = 8, label = L["AI模式：容限 = 延迟 + 偏移。固定模式：容限 = 设定值。"] },

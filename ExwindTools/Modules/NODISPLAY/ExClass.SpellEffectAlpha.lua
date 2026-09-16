@@ -154,6 +154,7 @@ local function RegisterEscCloseFrame(name)
 end
 
 local OverlayPickerFrame
+-- [卡片迁移边界：自定义渲染] 下列筛选弹窗及其滚动单元格是独立工具窗口，不是设置页卡片；尺寸、单元格顺序、选择/关闭回调与复用方式禁止修改。
 local function EnsureOverlayPickerFrame()
     if OverlayPickerFrame then
         return OverlayPickerFrame
@@ -384,6 +385,7 @@ local function TryHideOverlayTestRoot()
     TEST_STATE.root:Hide()
 end
 
+-- [卡片迁移边界：自定义渲染] 下列测试 overlay root/slots 是独立预览表面，不是设置页卡片；层级、槽位顺序、动画、贴图与显隐/回收流程禁止修改。
 local function GetOrCreateOverlayTestRoot()
     if TEST_STATE.root then
         return TEST_STATE.root
@@ -875,6 +877,8 @@ function EX_RegisterLayout()
         return string.format("|T%d:16:16:0:0|t |cff%s%s|r", icon, colorHex, L[specName])
     end
 
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；live_status 仍是设置页文字，不是运行时锚点。
+    -- 专精列表顺序、key/type/parentKey、测试按钮、CVar/overlay 回调及动态刷新禁止修改；现成复合控件整体引用，header/divider 不等于容器。
     local layout = {
         { key = "header", type = "header", x = 8, y = 4, w = 193, h = 12, label = L["法术触发透明度 (SpellActivationOverlay)"], labelSize = 25 },
         { key = "desc", type = "description", x = 8, y = 16, w = 120, h = 8, label = L["根据当前专精自动调整屏幕中心法术触发特效的透明度。"] },

@@ -365,6 +365,8 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
     RemoveCustomIfCoveredByPreset()
 
     if ExwindTools.RegisterModuleLayout then
+        -- [卡片迁移边界：设置页] 仅静态项及动态预设/自定义记录的 x/y/w/h、卡片分组可迁移。
+        -- 预设优先级与枚举顺序、ID/key/parentKey/subKey、增删按钮及自动对话回调禁止修改；标题项不等于卡片容器。
         local layout = {
             { key = "header", type = "header", x = 1, y = 4, w = 200, h = 6, label = L["对话ID显示 / 自动对话"], labelSize = 25 },
             { key = "enabled", type = "checkbox", x = 1, y = 12, w = 80, h = 6, label = L["启用功能"] },
@@ -673,6 +675,7 @@ local function UpdateActionButtonTooltip(self)
     GameTooltip:Show()
 end
 
+-- [卡片迁移边界：自定义渲染] 下列按钮注入暴雪 Gossip 行，不是设置页卡片；行归属、前后位置、点击动作与 hook 生命周期禁止修改。
 local function EnsureOptionActionButton(owner)
     if owner.ExwindAutoButton then
         return owner.ExwindAutoButton

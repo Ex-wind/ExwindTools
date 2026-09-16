@@ -55,6 +55,8 @@ local RAID_MARKER_PANEL_ANCHOR_OPTS = {
     "customAttachTarget",
     onPickFrame = PickRaidMarkerPanelAnchor
 }
+-- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；anchorgroup 必须整体引用。
+-- key/type/items、绑定冲突规则、secure slot 顺序和 Panel/World/Runtime 回调禁止修改；header 本身不等于卡片容器。
 local layout = {
     { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["团队标记面板"], labelSize = 24 },
     { key = "showPanel", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["显示面板"] },
@@ -192,6 +194,7 @@ local function SyncSurfaceGeometry(surface, list, valuesAreNormalized)
     end
     return true
 end
+-- [卡片迁移边界：自定义渲染] 以下 SecureActionPanelWidget surface 同时服务 Runtime/World/Panel，不是设置页布局；slot 顺序、secure 属性与释放合同禁止修改。
 local function Mount(parent, mode)
     local host = CreateFrame("Frame", nil, parent); host:EnableMouse(mode == "runtime"); local panel = EXUI
         :CreateSecureActionPanelWidget(host, mode)

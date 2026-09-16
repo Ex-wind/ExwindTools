@@ -469,6 +469,8 @@ local function BuildLayout(selectedSide, selectedIndex)
     local currentSide = EX_DB and EX_DB.selectedSlotSide or selectedSide or "left"
     local currentIndex = EX_DB and EX_DB.selectedSlotIndex or selectedIndex or 1
     local selectedTitle = BuildSelectedSlotTitle(currentSide, currentIndex)
+    -- [卡片迁移边界：设置页] 仅下列动态布局记录的 x/y/w/h 与卡片分组可迁移；复合控件必须整体引用。
+    -- 左/右槽位选择与动作顺序、selectedSlot 绑定、图标选择器、预览/运行回调禁止修改；旧 header/subheader 不等于卡片容器。
     local layout = {
         { key = "header", type = "header", x = 1, y = 4, w = 197, h = 8, label = "微型选单" },
         {
@@ -952,6 +954,7 @@ end
 -- =============================================================
 -- 图标选择器
 -- =============================================================
+-- [卡片迁移边界：外部UI] 下列 IconPicker 是独立工具窗口，不是设置页卡片；窗口尺寸、滚动单元格顺序、选择/关闭回调与复用方式禁止修改。
 local IconPicker = {
     frame = nil,
     targetSide = nil,
@@ -1404,6 +1407,7 @@ local function BuildClockPresentation(sample)
     }
 end
 
+-- [卡片迁移边界：自定义渲染] 以下三段 IconCollection/时钟 presentation 同时服务 Runtime/World/Panel，不是设置页布局；槽位顺序、动作与回收合同禁止修改。
 local function BuildPresentation(sample)
     return {
         sample = sample == true,

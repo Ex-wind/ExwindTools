@@ -180,6 +180,8 @@ end
 -- 01. 页面：通用设置 → 整体锚点 → 图标本体 → 既有业务筛选
 -- =============================================================
 local function EX_RegisterLayout()
+    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；modulecommonsettings/icongroup/anchorgroup 必须整体引用。
+    -- key/type/opts、筛选字段、世界/运行/面板 Collection 与回调禁止修改；header/subheader 不等于卡片容器。
     local layout = {
         { key = "head", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["玩家角色定位标记"], labelSize = 25 },
         { key = "moduleCommon", type = "modulecommonsettings", x = 1, y = 10, w = 200, h = 42, measure = true,
@@ -323,6 +325,7 @@ end
 
 -- Runtime、world-edit、panel 的 Item 都从这个唯一函数取得 presentation。
 -- sample 只决定是否采用静态颜色和强制显示，不会创建另一套预览外观。
+-- [卡片迁移边界：自定义渲染] 以下 presentation/Collection 同时服务 Runtime/World/Panel，不是设置页布局；专精/场景判定、交互和释放合同禁止修改。
 local function BuildPresentation(sample, interactive)
     local db = DB()
     local icon = db.icon or EX_DEFAULTS.icon

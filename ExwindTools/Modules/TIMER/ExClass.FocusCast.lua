@@ -197,6 +197,8 @@ local MODULE_SPEC = {
             ["core.time"] = { guiKey = "font_timer", movable = true, textRole = "time", tooltip = L["时间"], position = { x = "font_timer.x", y = "font_timer.y" } },
         }
     },
+    -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
+    -- key/type/opts、DB path、anchor/preview/defaults、打断判定及计时条刷新合同禁止修改；复合控件必须整体引用，header 不等于容器。
     gui = {
         fields = {
             {

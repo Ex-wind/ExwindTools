@@ -133,6 +133,8 @@ local MODULE_SPEC = {
             { spellId = 31661, icon = 135812, spellName = "龙息术", previewRemaining = 5, previewDuration = 5 },
         },
     },
+    -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
+    -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         fields = {
             {
@@ -352,6 +354,7 @@ local function GetSpellInfo(spellID)
     return info and info.name or nil, info and info.iconID or nil
 end
 
+-- [卡片迁移边界：运行时布局] 此 BuildLayout 只决定 IconCollection 的方向、间距与可见数量，不是设置页 Grid；这些运行时排列字段禁止修改。
 local function BuildLayout()
     local layout = LAYOUT or {}
     local amount = math.max(3, math.floor(Number(DB.squareAmount, 8)))

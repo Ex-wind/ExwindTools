@@ -5,6 +5,7 @@ local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
+local COLOR = assert(ExwindTools.UIColor, "ExwindGUIColor not loaded")
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 local EXState = ExwindTools.State
 
@@ -23,7 +24,8 @@ local EXWIND_DEFAULTS = {
     damageColorG = 1,
     damageColorB = 0.79,
 }
-local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
+ExwindTools:DeclareModuleSpecDefaults(EXWIND_MODULE_KEY, { root = EXWIND_DEFAULTS })
+local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY)
 
 -- =========================================================
 -- 核心业务逻辑 (需提前定义供 Layout 使用)
@@ -119,25 +121,46 @@ local function EX_RegisterLayout()
     local level = EX_DB.mythicLevel or 10
     local multi = EXMD and EXMD.GetCurrentMultiplier and EXMD.GetCurrentMultiplier() or 1
     local seasonID = C_SeasonInfo.GetCurrentDisplaySeasonID()
-    local descLabel = string.format(
+    local descLabel = COLOR.StripTextColor(string.format(
         L["当前层数: |cffffd100%d|r\n当前赛季(ID:%d)系数: |cffffd100%.2f|r\n最终计算倍率: |cff00ff00%.2f|r\n\n开启功能后，法术说明中的数字将根据倍率实时调整。"],
         level, seasonID, 1.76, multi
-    )
+    ))
 
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
+    -- [卡片迁移边界：设置页] 下列纯声明由共享 SettingsCard/Grid 挂载；仅设置页卡片归属和局部 x/y/w/h 可调整。
     -- 上方倍率/说明计算、key/type、按钮与刷新绑定禁止修改；description/header 只是内容项，不等于卡片容器。
-    local layout = {
-        { key = "header", type = "header", x = 1, y = 4, w = 200, h = 3, label = L["大秘境伤害计算"], labelSize = 25 },
-        { key = "desc", type = "description", x = 1, y = 12, w = 200, h = 8, label = L["法术描述的数值会随着层数改变"] },
-        { key = "useColoredNumbers", type = "checkbox", x = 1, y = 23, w = 46, h = 6, label = L["数值染色"] },
-        { key = "mythicLevel", type = "slider", x = 2, y = 39, w = 46, h = 6, label = L["模拟层数 (0-30)"], min = 0, max = 30 },
-        { key = "damageColor", type = "color", x = 52, y = 39, w = 46, h = 6, label = L["伤害数值颜色"] },
-        { key = "openSpellInfo", type = "button", x = 116, y = 24, w = 55, h = 10, label = L["大米怪物法术"] },
-        { key = "abbreviateNumbers", type = "checkbox", x = 51, y = 23, w = 46, h = 6, label = L["简写数字 (万/亿)"] },
+    local declaration = {
+        version = 1,
+        cards = {
+            {
+                id = "damage-simulation",
+                title = L["模拟与显示"],
+                collapsible = true,
+                content = {
+                    kind = "grid",
+                    items = {
+                        { key = "desc", type = "description", x = 1, y = 1, w = 198, h = 8, label = L["法术描述的数值会随着层数改变"] },
+                        { key = "useColoredNumbers", type = "checkbox", x = 1, y = 12, w = 46, h = 6, label = L["数值染色"] },
+                        { key = "abbreviateNumbers", type = "checkbox", x = 51, y = 12, w = 46, h = 6, label = L["简写数字 (万/亿)"] },
+                        { key = "mythicLevel", type = "slider", x = 1, y = 22, w = 46, h = 8, label = L["模拟层数 (0-30)"], min = 0, max = 30 },
+                        { key = "damageColor", type = "color", x = 52, y = 22, w = 46, h = 8, label = L["伤害数值颜色"] },
+                    },
+                },
+            },
+            {
+                id = "damage-handbook",
+                title = L["手册入口"],
+                collapsible = true,
+                content = {
+                    kind = "grid",
+                    items = {
+                        { key = "openSpellInfo", type = "button", x = 1, y = 1, w = 55, h = 10, label = L["大米怪物法术"] },
+                    },
+                },
+            },
+        },
     }
 
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, declaration)
 end
 
 -- 3. 立即注册

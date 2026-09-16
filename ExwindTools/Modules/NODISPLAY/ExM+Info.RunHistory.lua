@@ -27,7 +27,8 @@ local EXMYRUN_DEFAULTS = {
     xOfs = 0,
     yOfs = 0,
 }
-local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXMYRUN_DEFAULTS)
+ExwindTools:DeclareModuleSpecDefaults(EXWIND_MODULE_KEY, { root = EXMYRUN_DEFAULTS })
+local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY)
 
 -- =========================================================
 -- [v4.2] 注册与配置
@@ -36,21 +37,40 @@ local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXMYRUN_DEFAULTS)
 
 -- 2. Grid 布局
 local function EX_RegisterLayout()
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；打开按钮仍只负责进入自有窗口。
+    -- [卡片迁移边界：设置页] 下列纯声明由共享 SettingsCard/Grid 挂载；打开按钮仍只负责进入自有窗口。
     -- key/type、筛选/按钮绑定及历史记录排序禁止修改；header/divider 只是内容项，不等于卡片容器。
-    local layout = {
-        { key = "header", type = "header", x = 8, y = 4, w = 193, h = 8, label = L["大秘境赛季记录 (Run History)"], labelSize = 25 },
-        { key = "desc", type = "description", x = 8, y = 20, w = 193, h = 4, label = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"] },
-        { key = "open", type = "button", x = 8, y = 84, w = 84, h = 12, label = L["打开记录预览"] },
-        { key = "sub_filter", type = "subheader", x = 8, y = 32, w = 193, h = 4, label = L["过滤设置"], labelSize = 20 },
-        { key = "filterThisWeek", type = "checkbox", x = 8, y = 44, w = 40, h = 8, label = L["只看本周记录"] },
-        { key = "filterTimed", type = "checkbox", x = 52, y = 44, w = 40, h = 8, label = L["只看限时记录"] },
-        { key = "size", type = "slider", x = 8, y = 64, w = 84, h = 12, label = L["显示字号"], min = 10, max = 30 },
-        { key = "divider_1965", type = "divider", x = 8, y = 36, w = 193, h = 4, label = "新组件" },
+    local declaration = {
+        version = 1,
+        cards = {
+            {
+                id = "history-entry",
+                title = L["记录入口"],
+                collapsible = true,
+                content = {
+                    kind = "grid",
+                    items = {
+                        { key = "desc", type = "description", x = 1, y = 1, w = 198, h = 8, label = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"] },
+                        { key = "open", type = "button", x = 1, y = 11, w = 84, h = 10, label = L["打开记录预览"] },
+                    },
+                },
+            },
+            {
+                id = "history-filters",
+                title = L["过滤设置"],
+                collapsible = true,
+                content = {
+                    kind = "grid",
+                    items = {
+                        { key = "filterThisWeek", type = "checkbox", x = 1, y = 1, w = 40, h = 8, label = L["只看本周记录"] },
+                        { key = "filterTimed", type = "checkbox", x = 45, y = 1, w = 40, h = 8, label = L["只看限时记录"] },
+                        { key = "size", type = "slider", x = 1, y = 13, w = 84, h = 12, label = L["显示字号"], min = 10, max = 30 },
+                    },
+                },
+            },
+        },
     }
 
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, declaration)
 end
 
 -- 3. 立即注册
@@ -242,8 +262,7 @@ function EXMYRUN:CreateMainFrame()
         currentX = currentX + col.width
     end
 
-    f.Scroll = CreateFrame("ScrollFrame", "EXMYRUNHistoryScroll", f, "ScrollFrameTemplate")
-    f.Scroll:EnableMouseWheel(true)
+    f.Scroll = EXUI:CreateScrollFrame(f, "EXMYRUNHistoryScroll")
     f.Scroll:SetPoint("TOPLEFT", 10, headerY - 25)
     f.Scroll:SetPoint("BOTTOMRIGHT", -30, 10)
 
@@ -421,7 +440,7 @@ SlashCmdList["EXMYRUN"] = function()
 end
 
 local function RefreshActiveSurfaces()
-    EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXMYRUN_DEFAULTS)
+    EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY)
     if EXMYRUN.MainFrame and EXMYRUN.MainFrame:IsShown() then EXMYRUN:UpdateList(true) end
 end
 

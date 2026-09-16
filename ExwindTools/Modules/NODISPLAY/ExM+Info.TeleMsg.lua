@@ -4,6 +4,7 @@
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
+local COLOR = assert(ExwindTools.UIColor, "ExwindGUIColor not loaded")
 local EXState = ExwindTools.State
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
@@ -21,7 +22,8 @@ local EXWIND_DEFAULTS = {
     teleportShoutText = "[无广告]正在施放%link , 准备传送到\"%name\"",
     shoutTiming = "施法成功", -- 喊话时机: 施法开始 / 施法成功
 }
-local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
+ExwindTools:DeclareModuleSpecDefaults(EXWIND_MODULE_KEY, { root = EXWIND_DEFAULTS })
+local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY)
 local DEFAULT_MSG = EXWIND_DEFAULTS.teleportShoutText
 
 -- =========================================================
@@ -44,38 +46,60 @@ local function EX_RegisterLayout()
     local previewText = "\n|cffffd100" ..
     L["预览:"] .. "|r\n|cffaaaaff[" .. L["队伍"] .. "] [" .. playerColored .. "]: " .. out .. "|r"
 
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
+    -- [卡片迁移边界：设置页] 下列纯声明由共享 SettingsCard/Grid 挂载；动态预览在登记前仍按原逻辑生成字符串。
     -- 上方预览文本生成、key/type/items、重置按钮及施法事件订阅禁止修改；预览 description/header 不等于卡片容器。
-    local layout = {
-        { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["传送喊话"], labelSize = 25 },
-        {
-            key = "descInfo",
-            type = "description",
-            x = 1,
-            y = 11,
-            w = 196,
-            h = 16,
-            label = L["|cffffd100变量说明:|r\
+    local declaration = {
+        version = 1,
+        cards = {
+            {
+                id = "teleport-message",
+                title = L["发送规则与文案"],
+                collapsible = true,
+                content = {
+                    kind = "grid",
+                    items = {
+                        {
+                            key = "descInfo",
+                            type = "description",
+                            x = 1,
+                            y = 1,
+                            w = 198,
+                            h = 16,
+                            label = COLOR.StripTextColor(L["|cffffd100变量说明:|r\
   |cff00ff00%link|r  = 法术链接\
-  |cff00ff00%name|r = 副本名称"],
-            labelSize = 18
+  |cff00ff00%name|r = 副本名称"]),
+                            labelSize = 18,
+                        },
+                        { key = "shoutTiming", type = "dropdown", x = 1, y = 19, w = 46, h = 8, label = L["喊话时机"], items = "施法开始,施法成功" },
+                        { key = "teleportShoutText", type = "input", x = 1, y = 31, w = 198, h = 8, label = L["自定义喊话内容"] },
+                    },
+                },
+            },
+            {
+                id = "teleport-preview",
+                title = L["预览与重置"],
+                collapsible = true,
+                content = {
+                    kind = "grid",
+                    items = {
+                        {
+                            key = "previewLabel",
+                            type = "description",
+                            x = 1,
+                            y = 1,
+                            w = 198,
+                            h = 15,
+                            label = previewText,
+                            labelSize = 18,
+                        },
+                        { key = "reset", type = "button", x = 1, y = 18, w = 46, h = 8, label = L["恢复默认喊话"] },
+                    },
+                },
+            },
         },
-        { key = "shoutTiming", type = "dropdown", x = 1, y = 31, w = 46, h = 6, label = L["喊话时机"], items = "施法开始,施法成功" },
-        { key = "teleportShoutText", type = "input", x = 1, y = 44, w = 200, h = 6, label = L["自定义喊话内容"] },
-        {
-            key = "previewLabel",
-            type = "description",
-            x = 1,
-            y = 52,
-            w = 200,
-            h = 15,
-            label = previewText,
-            labelSize = 18
-        },
-        { key = "reset", type = "button", x = 51, y = 31, w = 46, h = 6, label = L["恢复默认喊话"] },
     }
 
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, declaration)
 end
 
 -- 3. 立即注册

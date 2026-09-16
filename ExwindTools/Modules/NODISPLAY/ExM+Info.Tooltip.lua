@@ -3,6 +3,7 @@
 
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
+local EXUI = ExwindTools.UI
 local EXState = ExwindTools.State
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
@@ -16,7 +17,8 @@ if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 local EXWIND_DEFAULTS = {
     enabled = true,
 }
-local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
+ExwindTools:DeclareModuleSpecDefaults(EXWIND_MODULE_KEY, { root = EXWIND_DEFAULTS })
+local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY)
 
 -- =========================================================
 -- [v4.2] 注册与配置
@@ -26,17 +28,27 @@ local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
 
 -- 2. Grid 布局
 local function EX_RegisterLayout()
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
+    -- [卡片迁移边界：设置页] 下列纯声明由共享 SettingsCard/Grid 挂载；仅设置页卡片归属和局部 x/y/w/h 可调整。
     -- key/type 与 PVE Tooltip/传送冷却 hook 禁止修改；description/header/divider 只是内容项，不等于卡片容器。
-    local layout = {
-        { key = "header", type = "header", x = 8, y = 4, w = 193, h = 8, label = L["大米信息增强 (Mythic Plus Tooltips)"], labelSize = 25 },
-        { key = "desc", type = "description", x = 8, y = 16, w = 193, h = 12, label = L["开启后，鼠标悬停在 PVE 挑战面板的副本图标上时，会显示该副本的详细通关记录、队友专精以及该副本的快捷传送冷却状态。"] },
-        { key = "enabled", type = "checkbox", x = 8, y = 28, w = 52, h = 4, label = L["启用法术提示增强"] },
-        { key = "divider_8437", type = "divider", x = 8, y = 44, w = 193, h = 4, label = "新组件" },
+    local declaration = {
+        version = 1,
+        cards = {
+            {
+                id = "tooltip-enhancement",
+                title = L["大米信息增强"],
+                collapsible = true,
+                content = {
+                    kind = "grid",
+                    items = {
+                        { key = "desc", type = "description", x = 1, y = 1, w = 198, h = 12, label = L["开启后，鼠标悬停在 PVE 挑战面板的副本图标上时，会显示该副本的详细通关记录、队友专精以及该副本的快捷传送冷却状态。"] },
+                        { key = "enabled", type = "checkbox", x = 1, y = 15, w = 52, h = 6, label = L["启用法术提示增强"] },
+                    },
+                },
+            },
+        },
     }
 
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, declaration)
 end
 
 -- 3. 立即注册

@@ -84,27 +84,22 @@ for _, instance in ipairs(EXDB.InstanceNoteInstanceSource) do
     end
 end
 
-local PAGE_ID = "ExwindTools:" .. EXWIND_MODULE_KEY
-EXUI:RegisterSettingsPage(PAGE_ID, {
-    version = 1,
-    title = L["大米队友钥石"],
-    cards = {
-        {
-            id = "placement", title = L["启用与停靠"],
-            content = { kind = "grid", items = {
-                { key = "enabled", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用模块"] },
-                { key = "previewMode", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["预览模式"] },
-                { key = "side", type = "select", x = 101, y = 1, w = 48, h = 8, label = L["依附侧"] },
-                { key = "offsetX", type = "slider", x = 1, y = 14, w = 46, h = 6, label = L["水平偏移 (X)"], min = -300, max = 300 },
-                { key = "offsetY", type = "slider", x = 51, y = 14, w = 46, h = 6, label = L["垂直偏移 (Y)"], min = -500, max = 500 },
-            } },
-        },
-        { id = "player-font", title = L["玩家文字设置"], content = { kind = "composite", component = "fontgroup", key = "playerFont" } },
-        { id = "party-name-font", title = L["队友名称设置"], content = { kind = "composite", component = "fontgroup", key = "partyNameFont" } },
-        { id = "party-key-font", title = L["队友钥石设置"], content = { kind = "composite", component = "fontgroup", key = "partyKeyFont" } },
-    },
-}, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
-EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, PAGE_ID)
+local function EX_RegisterLayout()
+    local layout = {
+        { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["大米队友钥石"], labelSize = 25 },
+        { key = "enabled", type = "checkbox", x = 1, y = 11, w = 46, h = 6, label = L["启用模块"] },
+        { key = "side", type = "select", x = 60, y = 20, w = 48, h = 8, label = L["依附侧"] },
+        { key = "offsetX", type = "slider", x = 1, y = 27, w = 46, h = 6, label = L["水平偏移 (X)"], min = -300, max = 300 },
+        { key = "offsetY", type = "slider", x = 51, y = 27, w = 46, h = 6, label = L["垂直偏移 (Y)"], min = -500, max = 500 },
+        { key = "previewMode", type = "checkbox", x = 53, y = 11, w = 46, h = 6, label = L["预览模式"] },
+        { key = "playerFont", type = "fontgroup", x = 1, y = 39, w = 200, h = 50, label = L["玩家文字设置"], labelSize = 20 },
+        { key = "partyNameFont", type = "fontgroup", x = 1, y = 92, w = 200, h = 50, label = L["队友名称设置"], labelSize = 20 },
+        { key = "partyKeyFont", type = "fontgroup", x = 1, y = 147, w = 200, h = 50, label = L["队友钥石设置"], labelSize = 20 },
+    }
+
+    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+end
+EX_RegisterLayout()
 
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 

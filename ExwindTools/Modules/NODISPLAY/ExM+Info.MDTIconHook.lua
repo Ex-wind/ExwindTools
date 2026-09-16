@@ -8,6 +8,7 @@ local EXUI = ExwindTools.UI
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 local EXWIND_MODULE_KEY = "ExM+Info.MDTIconHook"
+if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 local EXWIND_DEFAULTS = {
     enabled = true,
@@ -162,44 +163,32 @@ local function ApplyCustomSettings()
     RefreshMDTMap(false)
 end
 
-local PAGE_ID = "ExwindTools:" .. EXWIND_MODULE_KEY
-EXUI:RegisterSettingsPage(PAGE_ID, {
-    version = 1,
-    title = L["MDT 法术图标替换"],
-    cards = {
-        {
-            id = "general", title = L["总开关"],
-            content = { kind = "grid", items = {
-                { key = "enabled", type = "checkbox", x = 1, y = 1, w = 40, h = 8, label = L["开启功能"] },
-            } },
-        },
-        {
-            id = "custom-icons", title = L["自定义图标 (NPCID = SpellID) 用回车换行分隔"],
-            content = { kind = "grid", items = {
-                { key = "customIconsText", type = "input", x = 1, y = 1, w = 96, h = 65, label = "" },
-                { key = "apply", type = "button", x = 1, y = 70, w = 46, h = 6, label = L["保存并刷新"], func = ApplyCustomSettings },
-            } },
-        },
-        {
-            id = "blacklist", title = L["黑名单 NPC (ID 用逗号分隔)"],
-            content = { kind = "grid", items = {
-                { key = "blacklistText", type = "input", x = 1, y = 1, w = 96, h = 62, label = "" },
-            } },
-        },
-        {
-            id = "markers", title = L["团队标记"],
-            content = { kind = "grid", items = {
-                { key = "interruptMarkerIcon", type = "dropdown", x = 1, y = 1, w = 46, h = 6, label = L["打断标记"], items = RAID_MARKER_DROPDOWN_ITEMS },
-                { key = "btn_apply_interrupt_markers", type = "button", x = 51, y = 1, w = 46, h = 6, label = L["给所有打断怪标记"] },
-                { key = "eliteMarkerIcon", type = "dropdown", x = 1, y = 13, w = 46, h = 6, label = L["精英标记"], items = RAID_MARKER_DROPDOWN_ITEMS },
-                { key = "btn_apply_elite_markers", type = "button", x = 51, y = 13, w = 46, h = 6, label = L["给所有精英怪标记"] },
-            } },
-        },
-    },
-}, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
-EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, PAGE_ID)
+local function EX_RegisterLayout()
+    local layout = {
+        { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["MDT 法术图标替换"], labelSize = 25 },
+        { key = "enabled", type = "checkbox", x = 1, y = 9, w = 40, h = 8, label = L["开启功能"] },
+        { key = "sub_c", type = "subheader", x = 1, y = 21, w = 84, h = 8, label = L["自定义图标 (NPCID = SpellID) 用回车换行分隔"] },
+        { key = "customIconsText", type = "input", x = 1, y = 33, w = 84, h = 65, label = "" },
+        { key = "sub_b", type = "subheader", x = 95, y = 20, w = 89, h = 8, label = L["黑名单 NPC (ID 用逗号分隔)"] },
+        { key = "blacklistText", type = "input", x = 97, y = 36, w = 87, h = 62, label = "" },
+        { key = "apply", type = "button", x = 1, y = 104, w = 46, h = 6, label = L["保存并刷新"] },
+        { key = "interruptMarkerIcon", type = "dropdown", x = 1, y = 117, w = 46, h = 6, label = L["打断标记"], items = { { "无", "0" }, { "星星 (1)", "1" }, { "圆圈 (2)", "2" }, { "菱形 (3)", "3" }, { "三角 (4)", "4" }, { "月亮 (5)", "5" }, { "方块 (6)", "6" }, { "叉叉 (7)", "7" }, { "骷髅 (8)", "8" } } },
+        { key = "btn_apply_interrupt_markers", type = "button", x = 50, y = 117, w = 46, h = 6, label = L["给所有打断怪标记"] },
+        { key = "eliteMarkerIcon", type = "dropdown", x = 1, y = 129, w = 46, h = 6, label = L["精英标记"], items = { { "无", "0" }, { "星星 (1)", "1" }, { "圆圈 (2)", "2" }, { "菱形 (3)", "3" }, { "三角 (4)", "4" }, { "月亮 (5)", "5" }, { "方块 (6)", "6" }, { "叉叉 (7)", "7" }, { "骷髅 (8)", "8" } } },
+        { key = "btn_apply_elite_markers", type = "button", x = 51, y = 129, w = 46, h = 6, label = L["给所有精英怪标记"] },
+    }
 
-if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
+
+    for _, item in ipairs(layout) do
+        if item.key == "apply" then
+            item.func = ApplyCustomSettings
+            break
+        end
+    end
+
+    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+end
+EX_RegisterLayout()
 
 local function ApplyTrueMarkersByRule(ruleType)
     local MDT = _G.MDT

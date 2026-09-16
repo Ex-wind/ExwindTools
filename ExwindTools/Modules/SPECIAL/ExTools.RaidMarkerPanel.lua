@@ -55,44 +55,24 @@ local RAID_MARKER_PANEL_ANCHOR_OPTS = {
     "customAttachTarget",
     onPickFrame = PickRaidMarkerPanelAnchor
 }
-local PAGE_ID = "ExwindTools:" .. MODULE_KEY
-local BINDING_ITEMS = "left:左键,right:右键,shift-left:SHIFT+左键,shift-right:SHIFT+右键,ctrl-left:CTRL+左键,ctrl-right:CTRL+右键"
-EXUI:RegisterSettingsPage(PAGE_ID, {
-    version = 1,
-    title = L["团队标记面板"],
-    cards = {
-        {
-            id = "display", title = L["显示与排列"],
-            content = { kind = "grid", items = {
-                { key = "showPanel", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["显示面板"] },
-                { key = "scale", type = "slider", x = 51, y = 1, w = 46, h = 6, label = L["面板缩放"], min = .1, max = 3, step = .1 },
-                { key = "buttonSpacing", type = "slider", x = 101, y = 1, w = 46, h = 6, label = L["按钮间距"], min = 0, max = 20, step = 1 },
-                { key = "btn_reset_pos", type = "button", x = 151, y = 1, w = 46, h = 6, label = L["重置位置"] },
-                { key = "bundleLayout", type = "checkbox", x = 1, y = 13, w = 46, h = 6, label = L["束状排列"] },
-                { key = "hoverShow", type = "checkbox", x = 51, y = 13, w = 46, h = 6, label = L["悬停显示"] },
-                { key = "idleAlpha", type = "slider", x = 101, y = 13, w = 46, h = 6, label = L["离开透明度"], min = 0, max = 1, step = .05 },
-            } },
-        },
-        {
-            id = "actions", title = L["倒数与就位确认"],
-            content = { kind = "grid", items = {
-                { key = "enableCountdownButton", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用倒数"] },
-                { key = "countdownSeconds", type = "input", x = 51, y = 1, w = 46, h = 6, label = L["倒数秒数"] },
-                { key = "enableReadyCheckButton", type = "checkbox", x = 101, y = 1, w = 46, h = 6, label = L["启用就位确认"] },
-                { key = "swapCountdownAndReadyCheck", type = "checkbox", x = 151, y = 1, w = 46, h = 6, label = L["交换确认与倒数"] },
-            } },
-        },
-        {
-            id = "bindings", title = L["标记绑定"],
-            content = { kind = "grid", items = {
-                { key = "raidMarkerBinding", type = "dropdown", x = 1, y = 1, w = 46, h = 6, label = L["标记按键"], items = BINDING_ITEMS },
-                { key = "worldMarkerBinding", type = "dropdown", x = 51, y = 1, w = 46, h = 6, label = L["光柱按键"], items = BINDING_ITEMS },
-            } },
-        },
-        { id = "anchor", title = L["锚点设置"], content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", opts = RAID_MARKER_PANEL_ANCHOR_OPTS } },
-    },
-}, { addon = "ExwindTools", moduleKey = MODULE_KEY })
-EXUI:RegisterModuleSettingsPage(MODULE_KEY, PAGE_ID)
+local layout = {
+    { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["团队标记面板"], labelSize = 24 },
+    { key = "showPanel", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["显示面板"] },
+    { key = "scale", type = "slider", x = 51, y = 15, w = 46, h = 6, label = L["面板缩放"], min = .1, max = 3, step = .1 },
+    { key = "buttonSpacing", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["按钮间距"], min = 0, max = 20, step = 1 },
+    { key = "btn_reset_pos", type = "button", x = 151, y = 15, w = 46, h = 6, label = L["重置位置"] },
+    { key = "enableCountdownButton", type = "checkbox", x = 1, y = 30, w = 46, h = 6, label = L["启用倒数"] },
+    { key = "countdownSeconds", type = "input", x = 51, y = 30, w = 46, h = 6, label = L["倒数秒数"] },
+    { key = "enableReadyCheckButton", type = "checkbox", x = 101, y = 30, w = 46, h = 6, label = L["启用就位确认"] },
+    { key = "swapCountdownAndReadyCheck", type = "checkbox", x = 151, y = 30, w = 46, h = 6, label = L["交换确认与倒数"] },
+    { key = "raidMarkerBinding", type = "dropdown", x = 1, y = 45, w = 46, h = 6, label = L["标记按键"], items = "left:左键,right:右键,shift-left:SHIFT+左键,shift-right:SHIFT+右键,ctrl-left:CTRL+左键,ctrl-right:CTRL+右键" },
+    { key = "worldMarkerBinding", type = "dropdown", x = 51, y = 45, w = 46, h = 6, label = L["光柱按键"], items = "left:左键,right:右键,shift-left:SHIFT+左键,shift-right:SHIFT+右键,ctrl-left:CTRL+左键,ctrl-right:CTRL+右键" },
+    { key = "bundleLayout", type = "checkbox", x = 1, y = 60, w = 46, h = 6, label = L["束状排列"] },
+    { key = "hoverShow", type = "checkbox", x = 51, y = 60, w = 46, h = 6, label = L["悬停显示"] },
+    { key = "idleAlpha", type = "slider", x = 101, y = 60, w = 46, h = 6, label = L["离开透明度"], min = 0, max = 1, step = .05 },
+    { key = "anchorGroup", type = "anchorgroup", x = 1, y = 71, w = 200, h = 18, measure = true, label = L["锚点设置"], opts = RAID_MARKER_PANEL_ANCHOR_OPTS },
+}
+ExwindTools:RegisterModuleLayout(MODULE_KEY, layout)
 if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end
 local runtimeRoot, anchor, runtimePanel, worldPanel, dockPanel, worldActive
 local refreshPending = false

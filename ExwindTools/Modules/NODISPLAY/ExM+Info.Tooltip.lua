@@ -3,42 +3,42 @@
 
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
-local EXUI = ExwindTools.UI
 local EXState = ExwindTools.State
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 -- 1. 识别 Key
 local EXWIND_MODULE_KEY = "ExM+Info.Tooltip"
 
--- =========================================================
--- [v4.2] 注册与配置
--- =========================================================
-local PAGE_ID = "ExwindTools:" .. EXWIND_MODULE_KEY
-EXUI:RegisterSettingsPage(PAGE_ID, {
-    version = 1,
-    title = L["大米信息增强 (Mythic Plus Tooltips)"],
-    description = L["开启后，鼠标悬停在 PVE 挑战面板的副本图标上时，会显示该副本的详细通关记录、队友专精以及该副本的快捷传送冷却状态。"],
-    cards = {
-        {
-            id = "general",
-            title = L["Tooltip 增强"],
-            content = {
-                kind = "grid",
-                items = {
-                    { key = "enabled", type = "checkbox", x = 1, y = 1, w = 52, h = 6, label = L["启用法术提示增强"] },
-                },
-            },
-        },
-    },
-}, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
-EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, PAGE_ID)
-
--- 2. 载入检查：GUI 必须先登记；禁用模块仍不启动业务。
+-- 2. 载入检查
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 -- 3. 数据初始化
-local EXWIND_DEFAULTS = { enabled = true }
+local EXWIND_DEFAULTS = {
+    enabled = true,
+}
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
+
+-- =========================================================
+-- [v4.2] 注册与配置
+-- =========================================================
+
+
+
+-- 2. Grid 布局
+local function EX_RegisterLayout()
+    local layout = {
+        { key = "header", type = "header", x = 8, y = 4, w = 193, h = 8, label = L["大米信息增强 (Mythic Plus Tooltips)"], labelSize = 25 },
+        { key = "desc", type = "description", x = 8, y = 16, w = 193, h = 12, label = L["开启后，鼠标悬停在 PVE 挑战面板的副本图标上时，会显示该副本的详细通关记录、队友专精以及该副本的快捷传送冷却状态。"] },
+        { key = "enabled", type = "checkbox", x = 8, y = 28, w = 52, h = 4, label = L["启用法术提示增强"] },
+        { key = "divider_8437", type = "divider", x = 8, y = 44, w = 193, h = 4, label = "新组件" },
+    }
+
+
+    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+end
+
+-- 3. 立即注册
+EX_RegisterLayout()
 
 -- 5. 业务逻辑实现 (变量前缀: EXMYTOOLTIP)
 local EXMYTOOLTIP = {}

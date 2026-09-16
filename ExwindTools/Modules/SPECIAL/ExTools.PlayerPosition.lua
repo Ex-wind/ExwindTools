@@ -179,24 +179,23 @@ end
 -- =============================================================
 -- 01. 页面：通用设置 → 整体锚点 → 图标本体 → 既有业务筛选
 -- =============================================================
-local PAGE_ID = "ExwindTools:" .. EXWIND_MODULE_KEY
-EXUI:RegisterSettingsPage(PAGE_ID, {
-    version = 1,
-    title = L["玩家角色定位标记"],
-    cards = {
-        { id = "general", title = L["模块通用设置"], content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = COMMON_OPTS } },
-        { id = "anchor", title = L["锚点设置"], content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", opts = PLAYER_POSITION_ANCHOR_OPTS } },
-        { id = "icon", title = L["图标外观"], content = { kind = "composite", component = "icongroup", key = "icon" } },
-        {
-            id = "visibility", title = L["显示场景"],
-            content = { kind = "grid", items = {
-                { key = "visibility", type = "multiselect", x = 1, y = 1, w = 96, h = 8, label = L["触发场景"], items = VISIBILITY_OPTIONS },
-                { key = "enabledSpecs", type = "multiselect", x = 101, y = 1, w = 96, h = 8, label = L["启用专精"], items = SPEC_OPTIONS },
-            } },
-        },
-    },
-}, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
-EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, PAGE_ID)
+local function EX_RegisterLayout()
+    local layout = {
+        { key = "head", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["玩家角色定位标记"], labelSize = 25 },
+        { key = "moduleCommon", type = "modulecommonsettings", x = 1, y = 10, w = 200, h = 42, measure = true,
+            label = L["模块通用设置"], opts = COMMON_OPTS },
+        { key = "anchorGroup", type = "anchorgroup", x = 1, y = 55, w = 200, h = 25, measure = true,
+            label = L["锚点设置"], opts = PLAYER_POSITION_ANCHOR_OPTS },
+        { key = "icon", type = "icongroup", x = 1, y = 83, w = 200, h = 50, label = L["图标外观"], labelSize = 20,
+            opts = {} },
+        { key = "h_visibility", type = "subheader", x = 1, y = 136, w = 200, h = 6, label = L["显示场景"], labelSize = 20 },
+        { key = "visibility", type = "multiselect", x = 1, y = 146, w = 96, h = 8, label = L["触发场景"], items = VISIBILITY_OPTIONS },
+        { key = "enabledSpecs", type = "multiselect", x = 101, y = 146, w = 96, h = 8, label = L["启用专精"], items = SPEC_OPTIONS },
+    }
+
+    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+end
+EX_RegisterLayout()
 
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 

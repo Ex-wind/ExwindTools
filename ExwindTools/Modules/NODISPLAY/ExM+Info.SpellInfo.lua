@@ -147,6 +147,9 @@ local EXSP_CREATURE_TYPE_NAMES = {
 -- 1. 识别 Key
 local EXWIND_MODULE_KEY = "ExM+Info.SpellInfo"
 
+-- 2. 载入检查
+if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
+
 local EXDB = _G.EXDB
 
 -- =========================================================
@@ -154,30 +157,21 @@ local EXDB = _G.EXDB
 -- =========================================================
 
 -- 1. Grid 布局
-local PAGE_ID = "ExwindTools:" .. EXWIND_MODULE_KEY
-EXUI:RegisterSettingsPage(PAGE_ID, {
-    version = 1,
-    title = L["大米法术手册 (Mythic Spell Guide)"],
-    description = L["此模块提供了一个极度详细的地下城百科，涵盖所有层数下的怪物技能数值。"],
-    cards = {
-        {
-            id = "open-guide", title = L["法术手册"],
-            content = { kind = "grid", items = {
-                { key = "open", type = "button", x = 1, y = 1, w = 60, h = 8, label = L["立即打开手册"] },
-            } },
-        },
-        {
-            id = "simulation", title = L["数值模拟 (全局同步)"], binding = "mythicDamage",
-            content = { kind = "grid", items = {
-                { key = "mythicLevel", type = "slider", x = 1, y = 1, w = 96, h = 8, label = L["模拟层数"], min = 0, max = 30 },
-                { key = "info", type = "description", x = 1, y = 13, w = 188, h = 8, label = "|cff888888" .. L["注：模拟层数与“大秘境伤害计算”模块共享数据。"] .. "|r" },
-            } },
-        },
-    },
-}, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY, bindings = { mythicDamage = "ExM+.MythicDamage" } })
-EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, PAGE_ID)
+local function EX_RegisterLayout()
+    local layout = {
+        { key = "header", type = "header", x = 1, y = 4, w = 188, h = 8, label = L["大米法术手册 (Mythic Spell Guide)"], labelSize = 25 },
+        { key = "desc", type = "description", x = 1, y = 16, w = 188, h = 4, label = L["此模块提供了一个极度详细的地下城百科，涵盖所有层数下的怪物技能数值。"] },
+        { key = "open", type = "button", x = 1, y = 24, w = 60, h = 8, label = L["立即打开手册"] },
+        { key = "sub_sim", type = "subheader", x = 1, y = 36, w = 188, h = 4, label = L["数值模拟 (全局同步)"] },
+        { key = "mythicLevel", type = "slider", x = 1, y = 48, w = 96, h = 8, label = L["模拟层数"], min = 0, max = 30, parentKey = "ExM+.MythicDamage" },
+        { key = "info", type = "description", x = 1, y = 60, w = 188, h = 8, label = "|cff888888" .. L["注：模拟层数与“大秘境伤害计算”模块共享数据。"] .. "|r" },
+    }
 
-if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
+    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+end
+
+-- 3. 立即注册
+EX_RegisterLayout()
 
 
 ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY, function(data)

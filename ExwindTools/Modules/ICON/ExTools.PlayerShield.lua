@@ -72,49 +72,51 @@ local MODULE_SPEC = {
         world = { itemID = "player-shield:sample", icon = 135940, text = "125万" },
     },
     gui = {
-        version = 1,
-        title = L["玩家护盾量"],
-        cards = {
+        fields = {
             {
-                id = "general",
-                title = L["模块通用设置"],
-                content = {
-                    kind = "composite",
-                    component = "modulecommonsettings",
-                    key = "moduleCommon",
-                    opts = {
-                        bindRoot = true,
-                        fields = {
-                            { label = L["启用"], path = "enabled", type = "checkbox" },
-                            { label = L["数值为零时隐藏"], path = "hideWhenZero", type = "checkbox" },
-                            { label = L["数字缩写"], path = "abbreviateNumber", type = "checkbox" },
-                        },
-                        fixedLayout = {
-                            controlH = 6,
-                            controlW = 46,
-                            firstY = 0,
-                            logicalWidth = 200,
-                            rowStep = 14,
-                            slotX = { 3, 53, 103, 153 },
-                        },
+                group = "settings",
+                h = 32,
+                key = "moduleCommon",
+                label = L["模块通用设置"],
+                measure = true,
+                options = {
+                    bindRoot = true,
+                    fields = {
+                        { label = L["启用"], path = "enabled", type = "checkbox", },
+                        { label = L["数值为零时隐藏"], path = "hideWhenZero", type = "checkbox", },
+                        { label = L["数字缩写"], path = "abbreviateNumber", type = "checkbox", },
+                    },
+                    fixedLayout = {
+                        controlH = 6,
+                        controlW = 46,
+                        firstY = 0,
+                        logicalWidth = 200,
+                        rowStep = 14,
+                        slotX = { 3, 53, 103, 153, },
                     },
                 },
+                order = 1,
+                type = "modulecommonsettings",
+                w = 200,
+                x = 1,
+                y = 16,
             },
             {
-                id = "anchor",
-                title = L["锚点设置"],
-                content = { kind = "composite", component = "anchorgroup", key = "anchor" },
+                group = "settings", h = 20, key = "anchor", label = L["锚点设置"], measure = true,
+                order = 2, type = "anchorgroup", w = 200, x = 1, y = 51,
             },
             {
-                id = "icon",
-                title = L["护盾图标样式"],
-                content = { kind = "composite", component = "icongroup", key = "icon" },
+                group = "settings", h = 50, key = "icon", label = L["护盾图标样式"], labelSize = 20,
+                order = 3, type = "icongroup", w = 200, x = 1, y = 74,
             },
             {
-                id = "text",
-                title = L["护盾文字样式"],
-                content = { kind = "composite", component = "fontgroup", key = "font_text" },
+                group = "settings", h = 50, key = "font_text", label = L["护盾文字样式"], labelSize = 20,
+                order = 4, type = "fontgroup", w = 200, x = 1, y = 127,
             },
+        },
+        groups = { { key = "settings", order = 1, }, },
+        static = {
+            { h = 8, key = "header", label = L["玩家护盾量"], labelSize = 25, type = "header", w = 197, x = 1, y = 4, },
         },
     },
 }

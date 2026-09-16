@@ -1,43 +1,36 @@
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
-local EXUI = ExwindTools.UI
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 -- 仅在测试环境生效（统一走 Core 的 IsBeta 判定）
 if not ExwindTools.IsBeta then return end
 
 local EXWIND_MODULE_KEY = "ExPTR.MiniTools"
--- ========================================================================
--- [页面登记] gui.version=1 卡片设置界面
--- ========================================================================
-local PAGE_ID = "ExwindTools:" .. EXWIND_MODULE_KEY
-EXUI:RegisterSettingsPage(PAGE_ID, {
-    version = 1,
-    title = L["PTR 工具箱"],
-    description = L["|cff808080* 以上功能仅在 Beta/PTR 环境生效。一键全学按钮会在专业专精页面显示。|r"],
-    cards = {
-        {
-            id = "features",
-            title = L["PTR 功能"],
-            content = {
-                kind = "grid",
-                items = {
-                    { key = "blockFeedback", type = "checkbox", x = 1, y = 1, w = 96, h = 8, label = L["屏蔽PTR自带反馈框 (Tooltip Issue Reporter)"] },
-                    { key = "autoLearnProf", type = "checkbox", x = 1, y = 13, w = 96, h = 8, label = L["开启专业专精一键全学按钮"] },
-                },
-            },
-        },
-    },
-}, { addon = "ExwindTools", moduleKey = EXWIND_MODULE_KEY })
-EXUI:RegisterModuleSettingsPage(EXWIND_MODULE_KEY, PAGE_ID)
-
 -- 检查模块是否在引擎中注册且处于开启状态
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 -- 默认配置
-local EXWIND_DEFAULTS = { blockFeedback = true, autoLearnProf = true }
+local EXWIND_DEFAULTS = {
+    blockFeedback = true,
+    autoLearnProf = true,
+}
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
+
+-- ========================================================================
+-- [布局注册] Grid 设置界面
+-- ========================================================================
+local function RegisterLayout()
+    local layout = {
+        { key = "header", type = "header", x = 8, y = 8, w = 193, h = 8, label = L["PTR 工具箱"], labelSize = 25 },
+        { key = "blockFeedback", type = "checkbox", x = 8, y = 24, w = 8, h = 8, label = L["屏蔽PTR自带反馈框 (Tooltip Issue Reporter)"] },
+        { key = "autoLearnProf", type = "checkbox", x = 8, y = 40, w = 8, h = 8, label = L["开启专业专精一键全学按钮"] },
+        { key = "desc", type = "description", x = 8, y = 56, w = 193, h = 16, label = L["|cff808080* 以上功能仅在 Beta/PTR 环境生效。一键全学按钮会在专业专精页面显示。|r"] },
+    }
+    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+end
+
+RegisterLayout()
 
 -- ========================================================================
 -- 1. [BlockFeedback] 屏蔽PTR反馈

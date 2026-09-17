@@ -10,6 +10,7 @@ if not ExwindTools or not ExwindTools.UI then return end
 local EXUI = ExwindTools.UI
 local L = ExwindTools.L or setmetatable({}, { __index = function(_, key) return key end })
 local MODULE_KEY = "ExTools.CombatMobDebuffGrid"
+local SPELL_LIST_RENDERER = MODULE_KEY .. ".SpellList"
 
 local MAX_NAMEPLATES = 40
 local DEFAULT_CELL_WIDTH = 20
@@ -76,6 +77,14 @@ local worldPreviewActive = false
 local lastRuntimeSignature
 local gridCells = {}
 local auraRecordsByUnit = {}
+local spellDisplayCache = {}
+local spellRendererHost, spellRendererContext
+
+local SPELL_LIST_COLUMNS = {
+    { title = L["法术 ID"], width = 180 },
+    { title = L["法术名称"], weight = 1 },
+    { title = L["操作"], width = 96 },
+}
 
 local function ParseSpellID(value)
     local spellID = tonumber(value)
@@ -208,9 +217,8 @@ end
 local function CollectSpellIDs(db)
     local spellIDs = {}
     local signatureParts = {}
-    for index = 1, MAX_DEBUFF_SPELL_IDS do
-        local key = index == 1 and "debuffSpellID" or "debuffSpellID" .. index
-        local spellID = ParseSpellID(db[key])
+    for _, entry in ipairs(type(db.debuffSpellEntries) == "table" and db.debuffSpellEntries or {}) do
+        local spellID = type(entry) == "table" and entry.present == true and ParseSpellID(entry.value) or nil
         if spellID and spellIDs[spellID] ~= true then
             spellIDs[spellID] = true
             signatureParts[#signatureParts + 1] = tostring(spellID)
@@ -224,6 +232,243 @@ end
 
 local function GetDB()
     return ExwindTools:GetModuleDB(MODULE_KEY)
+end
+
+local function GetStoredSpellEntries(createForExplicitEdit)
+    local storage = ExwindTools:GetModuleDBStorage(MODULE_KEY)
+    local existing = storage and storage.ModuleDB and storage.ModuleDB[MODULE_KEY]
+    if type(existing) == "table" then
+        local entries = rawget(existing, "debuffSpellEntries")
+        if type(entries) == "table" then return entries end
+        if entries ~= nil or not createForExplicitEdit then return nil end
+        entries = {}
+        existing.debuffSpellEntries = entries
+        return entries
+    end
+    if existing ~= nil or not createForExplicitEdit then return nil end
+
+    -- An absent module table is initialized only in direct response to Add.
+    local db = GetDB()
+    if type(db) ~= "table" then return nil end
+    db.debuffSpellEntries = {}
+    return db.debuffSpellEntries
+end
+
+local function ReleaseSpellRendererControl(control)
+    if not control then return end
+    local factory = _G.ExwindFactory
+    if factory and control._isCompositeHost then
+        factory:ReleaseCompositeHost(control)
+    elseif factory then
+        factory:ReleaseGridWidget(control)
+    else
+        control:Hide()
+        control:SetParent(nil)
+    end
+end
+
+local RebuildSpellRenderer
+
+local spellDataEventFrame = CreateFrame("Frame")
+spellDataEventFrame:RegisterEvent("SPELL_DATA_LOAD_RESULT")
+spellDataEventFrame:SetScript("OnEvent", function(_, _, spellID, success)
+    spellID = tonumber(spellID)
+    local cached = spellID and spellDisplayCache[spellID]
+    if not cached then return end
+    cached.requested = nil
+    cached.completed = true
+    cached.failed = success ~= true
+    if success == true and _G.C_Spell and _G.C_Spell.GetSpellInfo then
+        local info = _G.C_Spell.GetSpellInfo(spellID)
+        if info then
+            cached.name = info.name
+            cached.iconID = info.iconID
+            cached.failed = nil
+        end
+    end
+    local controls = spellRendererHost and spellRendererHost._exSpellListControls
+    if controls then
+        local name = cached.name or L["未知法术"]
+        local display = cached.iconID
+            and string.format("|T%s:20:20:0:0|t %s", tostring(cached.iconID), name) or name
+        for _, row in ipairs(controls.rows) do
+            if row.spellID == spellID and row.nameText and row.nameText.text then
+                row.nameText.text:SetText(display)
+            end
+        end
+    end
+end)
+
+local function GetSpellDisplay(value)
+    local spellID = ParseSpellID(value)
+    if not spellID then return L["无效法术 ID"] end
+    local cached = spellDisplayCache[spellID]
+    if not cached then
+        cached = {}
+        spellDisplayCache[spellID] = cached
+    end
+
+    local spellAPI = _G.C_Spell
+    local info = spellAPI and spellAPI.GetSpellInfo and spellAPI.GetSpellInfo(spellID)
+    if info then
+        cached.name = info.name
+        cached.iconID = info.iconID
+        cached.failed = nil
+        cached.requested = nil
+        cached.completed = true
+    elseif spellAPI and spellAPI.RequestLoadSpellData and not cached.requested and not cached.completed then
+        local exists = not spellAPI.DoesSpellExist or spellAPI.DoesSpellExist(spellID) == true
+        local isCached = spellAPI.IsSpellDataCached and spellAPI.IsSpellDataCached(spellID) == true
+        if exists and not isCached then
+            cached.requested = true
+            spellAPI.RequestLoadSpellData(spellID)
+        elseif not exists or isCached then
+            cached.completed = true
+            cached.failed = true
+        end
+    end
+
+    local name = cached.name or L["未知法术"]
+    if cached.iconID then
+        return string.format("|T%s:20:20:0:0|t %s", tostring(cached.iconID), name)
+    end
+    return name
+end
+
+local function LayoutSpellRenderer(host, ctx, width)
+    local controls = host._exSpellListControls
+    if not controls then return end
+    width = math.max(1, tonumber(width) or ctx:GetContentWidth())
+    local headerHeight, columnRects = EXUI:UpdateSettingsTableHeaderLayout(controls.header, width)
+    controls.header:ClearAllPoints()
+    controls.header:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
+
+    local top = headerHeight
+    for _, record in ipairs(controls.rows) do
+        local metrics = {
+            { height = record.idControl:GetHeight(), visible = true },
+            { height = record.nameText:GetHeight(), visible = true },
+            { height = record.action:GetHeight(), visible = true },
+        }
+        local rowHeight, rects = EXUI:UpdateSettingsTableRowLayout(record.host, width, columnRects, metrics)
+        record.host:ClearAllPoints()
+        record.host:SetPoint("TOPLEFT", host, "TOPLEFT", 0, -top)
+        for index, control in ipairs({ record.idControl, record.nameText, record.action }) do
+            control:ClearAllPoints()
+            control:SetPoint("TOPLEFT", record.host, "TOPLEFT", rects[index].x, -rects[index].y)
+            control:SetSize(rects[index].width, math.max(24, rowHeight - 16))
+        end
+        top = top + rowHeight
+    end
+    host:SetHeight(math.max(1, top))
+    if ctx.SetContentHeight then ctx:SetContentHeight(top) end
+end
+
+local function ClearSpellRendererRows(controls)
+    for index = #controls.rows, 1, -1 do
+        local record = controls.rows[index]
+        if record.idControlIsEditBox then
+            record.idControl:SetScript("OnEditFocusLost", nil)
+            record.idControl:SetScript("OnEnterPressed", nil)
+        end
+        ReleaseSpellRendererControl(record.action)
+        ReleaseSpellRendererControl(record.nameText)
+        ReleaseSpellRendererControl(record.idControl)
+        ReleaseSpellRendererControl(record.host)
+        controls.rows[index] = nil
+    end
+end
+
+local function CommitSpellEntry(entry, originalText, text, record)
+    if text == originalText then return originalText end
+    entry.present = true
+    entry.value = text
+    if RefreshRuntime then RefreshRuntime(true) end
+    record.spellID = ParseSpellID(text)
+    record.nameText.text:SetText(GetSpellDisplay(text))
+    return text
+end
+
+RebuildSpellRenderer = function(host, ctx)
+    local controls = host and host._exSpellListControls
+    if not controls then return end
+    ClearSpellRendererRows(controls)
+
+    local entries = GetStoredSpellEntries(false)
+    if entries == nil then
+        local storage = ExwindTools:GetModuleDBStorage(MODULE_KEY)
+        local existing = storage and storage.ModuleDB and storage.ModuleDB[MODULE_KEY]
+        local invalid = type(existing) == "table" and rawget(existing, "debuffSpellEntries") ~= nil
+        if invalid then
+            controls.rows[1] = {
+                host = EXUI:CreateSettingsTableRow(host, { isLast = true }),
+                idControl = EXUI:CreateDescription(host, L["现有法术列表不是表，已保持原值"], 1),
+                nameText = EXUI:CreateDescription(host, "—", 1),
+                action = EXUI:CreateDescription(host, "—", 1),
+            }
+            LayoutSpellRenderer(host, ctx)
+            return
+        end
+        entries = {}
+    end
+
+    local addRecord = {
+        host = EXUI:CreateSettingsTableRow(host, { isLast = #entries == 0 }),
+        idControl = EXUI:CreateEditBox(host, "", 1, 28, nil, { placeholder = L["输入法术 ID"] }),
+        idControlIsEditBox = true,
+        nameText = EXUI:CreateDescription(host, L["添加新的监控法术"], 1),
+    }
+    addRecord.action = EXUI:CreateButton(host, 1, 28, L["添加"], function()
+        local target = GetStoredSpellEntries(true)
+        if type(target) ~= "table" then return end
+        target[#target + 1] = { present = true, value = addRecord.idControl:GetText() }
+        if RefreshRuntime then RefreshRuntime(true) end
+        RebuildSpellRenderer(host, ctx)
+        ctx:RequestReflow()
+    end, { variant = "primary", compact = true })
+    controls.rows[#controls.rows + 1] = addRecord
+
+    for index, entry in ipairs(entries) do
+        local rowIndex = index
+        local isRecord = type(entry) == "table"
+        local valueText = isRecord and (entry.value == nil and "" or tostring(entry.value)) or tostring(entry)
+        local record = {
+            host = EXUI:CreateSettingsTableRow(host, { isLast = index == #entries }),
+        }
+        if isRecord then
+            record.idControl = EXUI:CreateEditBox(host, valueText, 1, 28, nil, {})
+            record.idControlIsEditBox = true
+            record.spellID = ParseSpellID(entry.value)
+            local committedText = valueText
+            local function Commit(self)
+                committedText = CommitSpellEntry(entry, committedText, self:GetText(), record)
+            end
+            record.idControl:SetScript("OnEditFocusLost", function(self)
+                if self._exSkipLostCommit then self._exSkipLostCommit = nil return end
+                Commit(self)
+            end)
+            record.idControl:SetScript("OnEnterPressed", function(self)
+                Commit(self)
+                self._exSkipLostCommit = true
+                self:ClearFocus()
+            end)
+            record.nameText = EXUI:CreateDescription(host, GetSpellDisplay(entry.value), 1)
+            record.action = EXUI:CreateButton(host, 1, 28, L["删除"], function()
+                local current = GetStoredSpellEntries(false)
+                if type(current) ~= "table" then return end
+                table.remove(current, rowIndex)
+                if RefreshRuntime then RefreshRuntime(true) end
+                RebuildSpellRenderer(host, ctx)
+                ctx:RequestReflow()
+            end, { variant = "danger", compact = true })
+        else
+            record.idControl = EXUI:CreateDescription(host, valueText, 1)
+            record.nameText = EXUI:CreateDescription(host, L["无效记录，已保持原值"], 1)
+            record.action = EXUI:CreateDescription(host, "—", 1)
+        end
+        controls.rows[#controls.rows + 1] = record
+    end
+    LayoutSpellRenderer(host, ctx)
 end
 
 local function PickAnchor()
@@ -244,6 +489,7 @@ local ANCHOR_OPTS = {
 
 local COMMON_OPTS = {
     bindRoot = true,
+    presentation = "settings-list",
     fixedLayout = {
         logicalWidth = 200,
         controlW = 46,
@@ -253,7 +499,7 @@ local COMMON_OPTS = {
         rowStep = 14,
     },
     fields = {
-        { path = "enabled", type = "checkbox", label = L["启用周围怪物DEBUFF监控"], row = 1 },
+        { path = "enabled", type = "checkbox", label = L["启用周围怪物DEBUFF监控"], row = 1, presentation = "switch" },
     },
 }
 
@@ -261,10 +507,24 @@ local COMMON_OPTS = {
 -- key/type/opts、专精与 SpellID 顺序、AuraContainer/runtime 刷新和编辑模式回调禁止修改；header/subheader 不等于卡片容器。
 ExwindTools:RegisterModuleLayout(MODULE_KEY, {
     version = 1,
+    settingsGroups = {
+        {
+            id = "general",
+            title = L["通用设置"],
+            collapsible = false,
+            cards = { "common", "load_conditions", "appearance" },
+        },
+    },
     cards = {
         {
             id = "common", title = L["模块设置"], collapsible = true,
             content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = COMMON_OPTS },
+            settingsList = {
+                preserveHeader = true,
+                rows = {
+                    { key = "moduleCommon", fullWidth = true },
+                },
+            },
         },
         {
             id = "load_conditions", title = L["加载条件"], collapsible = true,
@@ -273,15 +533,27 @@ ExwindTools:RegisterModuleLayout(MODULE_KEY, {
                 { key = "enabledSpecs", type = "multiselect", x = 1, y = 1, w = 200, h = 8,
                     label = L["启用专精"], items = SPEC_OPTIONS },
             } },
+            settingsList = {
+                preserveHeader = true,
+                rows = {
+                    { key = "enabledSpecs", label = L["启用专精"] },
+                },
+            },
         },
         {
             id = "anchor", title = L["锚点设置"], collapsible = true,
-            placement = { target = "load_conditions", side = "below" },
+            placement = { target = "appearance", side = "below" },
             content = { kind = "composite", component = "anchorgroup", key = "anchor", opts = ANCHOR_OPTS },
+            settingsList = {
+                preserveHeader = true,
+                rows = {
+                    { key = "anchor", fullWidth = true },
+                },
+            },
         },
         {
             id = "appearance", title = L["格子外观"], collapsible = true,
-            placement = { target = "anchor", side = "below" },
+            placement = { target = "load_conditions", side = "below" },
             content = { kind = "grid", items = {
                 { key = "cellWidth", type = "slider", x = 1, y = 1, w = 46, h = 6,
                     label = L["方块宽度"], min = 8, max = 100, step = 1 },
@@ -295,27 +567,21 @@ ExwindTools:RegisterModuleLayout(MODULE_KEY, {
                     label = L["没有 Debuff 时的颜色"] },
                 { key = "debuffColor", type = "color", x = 51, y = 15, w = 46, h = 6,
                     label = L["有 Debuff 时的颜色"] },
-                { key = "debuffSpellID", type = "input", x = 101, y = 15, w = 46, h = 6,
-                    label = L["Debuff ID 1"], labelPos = "top", labelSize = 16 },
-                { key = "debuffSpellID2", type = "input", x = 151, y = 15, w = 46, h = 6,
-                    label = L["Debuff ID 2"], labelPos = "top", labelSize = 16 },
-                { key = "debuffSpellID3", type = "input", x = 1, y = 29, w = 46, h = 6,
-                    label = L["Debuff ID 3"], labelPos = "top", labelSize = 16 },
-                { key = "debuffSpellID4", type = "input", x = 51, y = 29, w = 46, h = 6,
-                    label = L["Debuff ID 4"], labelPos = "top", labelSize = 16 },
-                { key = "debuffSpellID5", type = "input", x = 101, y = 29, w = 46, h = 6,
-                    label = L["Debuff ID 5"], labelPos = "top", labelSize = 16 },
-                { key = "debuffSpellID6", type = "input", x = 151, y = 29, w = 46, h = 6,
-                    label = L["Debuff ID 6"], labelPos = "top", labelSize = 16 },
-                { key = "debuffSpellID7", type = "input", x = 1, y = 43, w = 46, h = 6,
-                    label = L["Debuff ID 7"], labelPos = "top", labelSize = 16 },
-                { key = "debuffSpellID8", type = "input", x = 51, y = 43, w = 46, h = 6,
-                    label = L["Debuff ID 8"], labelPos = "top", labelSize = 16 },
-                { key = "debuffSpellID9", type = "input", x = 101, y = 43, w = 46, h = 6,
-                    label = L["Debuff ID 9"], labelPos = "top", labelSize = 16 },
-                { key = "debuffSpellID10", type = "input", x = 151, y = 43, w = 46, h = 6,
-                    label = L["Debuff ID 10"], labelPos = "top", labelSize = 16 },
+                { key = "debuffSpellRecords", type = "custom", renderer = SPELL_LIST_RENDERER,
+                    measure = true, x = 1, y = 29, w = 196, h = 12 },
             } },
+            settingsList = {
+                preserveHeader = true,
+                rows = {
+                    { key = "cellWidth", label = L["方块宽度"] },
+                    { key = "cellHeight", label = L["方块高度"] },
+                    { key = "cellGap", label = L["方块间距"] },
+                    { key = "cellsPerRow", label = L["每行方块数"] },
+                    { key = "noDebuffColor", label = L["没有 Debuff 时的颜色"] },
+                    { key = "debuffColor", label = L["有 Debuff 时的颜色"] },
+                    { key = "debuffSpellRecords", fullWidth = true },
+                },
+            },
         },
     },
 })
@@ -357,11 +623,63 @@ ExwindTools:DeclareModuleDefaults(MODULE_KEY, DEFAULTS, {
     { group = "root", root = true, fields = {
         "enabled", "enabledSpecs", "debuffSpellID", "debuffSpellID2", "debuffSpellID3", "debuffSpellID4", "debuffSpellID5",
         "debuffSpellID6", "debuffSpellID7", "debuffSpellID8", "debuffSpellID9", "debuffSpellID10",
+        "debuffSpellEntries",
         "cellWidth", "cellHeight", "cellGap", "cellsPerRow",
         "noDebuffColorR", "noDebuffColorG", "noDebuffColorB", "noDebuffColorA",
         "debuffColorR", "debuffColorG", "debuffColorB", "debuffColorA",
         "offsetX", "offsetY", "attachToCustom", "customAttachTarget",
     } },
+})
+
+do
+    local storage = ExwindTools:GetModuleDBStorage(MODULE_KEY)
+    local existing = storage.ModuleDB[MODULE_KEY]
+    if type(existing) == "table" and rawget(existing, "debuffSpellEntries") == nil then
+        local entries = {}
+        for index = 1, MAX_DEBUFF_SPELL_IDS do
+            local key = index == 1 and "debuffSpellID" or "debuffSpellID" .. index
+            local value = rawget(existing, key)
+            local entry = { present = value ~= nil }
+            if value ~= nil then entry.value = value end
+            entries[index] = entry
+        end
+        existing.debuffSpellEntries = entries
+    end
+end
+
+local Grid = ExwindTools.Grid
+if not Grid then error("CombatMobDebuffGrid requires ExwindGrid", 2) end
+Grid:RegisterCustomRenderer(SPELL_LIST_RENDERER, {
+    measure = function()
+        local entries = GetStoredSpellEntries(false)
+        return 38 + math.max(1, 1 + (type(entries) == "table" and #entries or 0)) * 56
+    end,
+    mount = function(host, ctx)
+        spellRendererHost, spellRendererContext = host, ctx
+        host._exSpellListControls = {
+            header = EXUI:CreateSettingsTableHeader(host, { columns = SPELL_LIST_COLUMNS }),
+            rows = {},
+        }
+        RebuildSpellRenderer(host, ctx)
+    end,
+    update = function(host, ctx)
+        spellRendererHost, spellRendererContext = host, ctx
+        RebuildSpellRenderer(host, ctx)
+    end,
+    layout = function(host, ctx, width)
+        LayoutSpellRenderer(host, ctx, width)
+    end,
+    release = function(host)
+        local controls = host._exSpellListControls
+        if controls then
+            ClearSpellRendererRows(controls)
+            ReleaseSpellRendererControl(controls.header)
+        end
+        host._exSpellListControls = nil
+        if spellRendererHost == host then
+            spellRendererHost, spellRendererContext = nil, nil
+        end
+    end,
 })
 
 if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end

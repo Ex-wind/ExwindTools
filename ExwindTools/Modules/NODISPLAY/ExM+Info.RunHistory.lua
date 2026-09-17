@@ -40,6 +40,9 @@ local function EX_RegisterLayout()
     -- key/type、筛选/按钮绑定及历史记录排序禁止修改；header/divider 只是内容项，不等于卡片容器。
     local layout = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "filters", key = "desc" },
+        },
         cards = {
             {
                 id = "filters", title = L["过滤设置"], collapsible = true,
@@ -50,6 +53,15 @@ local function EX_RegisterLayout()
                     { key = "size", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["显示字号"], min = 10, max = 30 },
                     { key = "divider_1965", type = "divider", x = 1, y = 29, w = 200, h = 4, label = "新组件" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "filterThisWeek", label = L["只看本周记录"], presentation = "switch" },
+                        { key = "filterTimed", label = L["只看限时记录"], presentation = "switch" },
+                        { key = "size", label = L["显示字号"] },
+                        { key = "divider_1965", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "preview", title = L["记录预览"], collapsible = true,
@@ -57,6 +69,12 @@ local function EX_RegisterLayout()
                 content = { kind = "grid", items = {
                     { key = "open", type = "button", x = 1, y = 1, w = 46, h = 6, label = L["打开记录预览"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "open", label = L["打开记录预览"] },
+                    },
+                },
             },
         },
     }

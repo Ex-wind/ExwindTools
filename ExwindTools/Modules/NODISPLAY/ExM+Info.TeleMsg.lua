@@ -56,6 +56,14 @@ local function EX_RegisterLayout()
                     { key = "reset", type = "button", x = 51, y = 1, w = 46, h = 6, label = L["恢复默认喊话"] },
                     { key = "teleportShoutText", type = "input", x = 1, y = 15, w = 200, h = 6, label = L["自定义喊话内容"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "shoutTiming", label = L["喊话时机"] },
+                        { key = "reset", label = L["恢复默认喊话"] },
+                        { key = "teleportShoutText", label = L["自定义喊话内容"] },
+                    },
+                },
             },
             {
                 id = "preview", title = L["变量与预览"], collapsible = true,
@@ -69,6 +77,13 @@ local function EX_RegisterLayout()
                     },
                     { key = "previewLabel", type = "description", x = 1, y = 19, w = 200, h = 15, label = previewText, labelSize = 18 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "descInfo", informational = true },
+                        { key = "previewLabel", informational = true },
+                    },
+                },
             },
         },
     }

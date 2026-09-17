@@ -128,6 +128,9 @@ local function EX_RegisterLayout()
     -- 上方倍率/说明计算、key/type、按钮与刷新绑定禁止修改；description/header 只是内容项，不等于卡片容器。
     local layout = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "common", key = "desc" },
+        },
         cards = {
             {
                 id = "common", title = L["通用设置"], collapsible = true,
@@ -138,6 +141,15 @@ local function EX_RegisterLayout()
                     { key = "mythicLevel", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["模拟层数 (0-30)"], min = 0, max = 30 },
                     { key = "damageColor", type = "color", x = 151, y = 15, w = 46, h = 6, label = L["伤害数值颜色"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "useColoredNumbers", label = L["数值染色"], presentation = "switch" },
+                        { key = "abbreviateNumbers", label = L["简写数字 (万/亿)"], presentation = "switch" },
+                        { key = "mythicLevel", label = L["模拟层数 (0-30)"] },
+                        { key = "damageColor", label = L["伤害数值颜色"] },
+                    },
+                },
             },
             {
                 id = "tools", title = L["工具"], collapsible = true,
@@ -145,6 +157,12 @@ local function EX_RegisterLayout()
                 content = { kind = "grid", items = {
                     { key = "openSpellInfo", type = "button", x = 1, y = 1, w = 46, h = 6, label = L["大米怪物法术"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "openSpellInfo", label = L["大米怪物法术"] },
+                    },
+                },
             },
         },
     }

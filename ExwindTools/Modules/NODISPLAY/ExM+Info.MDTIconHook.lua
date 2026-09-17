@@ -8,6 +8,8 @@ local EXUI = ExwindTools.UI
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 local EXWIND_MODULE_KEY = "ExM+Info.MDTIconHook"
+local CUSTOM_ICONS_RENDERER = EXWIND_MODULE_KEY .. ".CustomIcons"
+local BLACKLIST_RENDERER = EXWIND_MODULE_KEY .. ".Blacklist"
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 local EXWIND_DEFAULTS = {
@@ -163,6 +165,329 @@ local function ApplyCustomSettings()
     RefreshMDTMap(false)
 end
 
+local RAW_TABLE_COLUMNS = {
+    { title = L["原始记录"], weight = 1 },
+    { title = L["解析结果"], width = 180 },
+    { title = L["操作"], width = 96 },
+}
+
+local function ReleaseRawTableControl(control)
+    if not control then return end
+    local factory = _G.ExwindFactory
+    if factory and control._isCompositeHost then
+        factory:ReleaseCompositeHost(control)
+    elseif factory then
+        factory:ReleaseGridWidget(control)
+    else
+        control:Hide()
+        control:SetParent(nil)
+    end
+end
+
+local function TokenizeLines(raw)
+    raw = type(raw) == "string" and raw or tostring(raw or "")
+    if raw == "" then return {} end
+    local lines, position = {}, 1
+    while position <= #raw do
+        local startPos = raw:find("[\r\n]", position)
+        if not startPos then
+            lines[#lines + 1] = { text = raw:sub(position), separator = "" }
+            position = #raw + 1
+        else
+            local endPos = startPos
+            if raw:sub(startPos, startPos) == "\r" and raw:sub(startPos + 1, startPos + 1) == "\n" then
+                endPos = startPos + 1
+            end
+            lines[#lines + 1] = {
+                text = raw:sub(position, startPos - 1),
+                separator = raw:sub(startPos, endPos),
+            }
+            position = endPos + 1
+            if position > #raw then
+                lines[#lines + 1] = { text = "", separator = "" }
+            end
+        end
+    end
+    return lines
+end
+
+local function JoinLines(lines)
+    local parts = {}
+    for _, line in ipairs(lines) do
+        parts[#parts + 1] = line.text
+        parts[#parts + 1] = line.separator
+    end
+    return table.concat(parts)
+end
+
+local function TokenizeBlacklist(raw)
+    raw = type(raw) == "string" and raw or tostring(raw or "")
+    local tokens, position = {}, 1
+    while position <= #raw do
+        local digit = raw:sub(position, position):match("%d") ~= nil
+        local endPos = position + 1
+        while endPos <= #raw and (raw:sub(endPos, endPos):match("%d") ~= nil) == digit do
+            endPos = endPos + 1
+        end
+        tokens[#tokens + 1] = { text = raw:sub(position, endPos - 1), digit = digit }
+        position = endPos
+    end
+    return tokens
+end
+
+local function JoinTokens(tokens)
+    local parts = {}
+    for _, token in ipairs(tokens) do parts[#parts + 1] = token.text end
+    return table.concat(parts)
+end
+
+local function GetRawTableRecords(kind)
+    if kind == "custom" then
+        local lines = TokenizeLines(EX_DB.customIconsText)
+        local records = {}
+        for index, line in ipairs(lines) do
+            local npcID, spellID = line.text:match("(%d+)%s*=%s*(%d+)")
+            records[#records + 1] = {
+                index = index,
+                text = line.text,
+                result = npcID and (npcID .. " → " .. spellID) or L["未解析"],
+                editable = true,
+            }
+        end
+        return records
+    end
+
+    local tokens = TokenizeBlacklist(EX_DB.blacklistText)
+    local records = {}
+    for tokenIndex, token in ipairs(tokens) do
+        local visibleText = token.text:gsub("\r", "\\r"):gsub("\n", "\\n"):gsub("\t", "\\t")
+        records[#records + 1] = {
+            tokenIndex = tokenIndex,
+            text = token.text,
+            displayText = visibleText,
+            result = token.digit and (L["NPC ID"] .. ": " .. token.text) or L["保留的原始分隔文本"],
+            editable = token.digit,
+        }
+    end
+    return records
+end
+
+local function ReplaceRawRecord(kind, record, text)
+    if kind == "custom" then
+        local lines = TokenizeLines(EX_DB.customIconsText)
+        if not lines[record.index] then return false end
+        lines[record.index].text = text
+        EX_DB.customIconsText = JoinLines(lines)
+    else
+        if type(text) ~= "string" or not text:match("^%d+$") then return false end
+        local tokens = TokenizeBlacklist(EX_DB.blacklistText)
+        local token = tokens[record.tokenIndex]
+        if not token or not token.digit then return false end
+        token.text = text
+        EX_DB.blacklistText = JoinTokens(tokens)
+    end
+    return true
+end
+
+local function DeleteRawRecord(kind, record)
+    if kind == "custom" then
+        local lines = TokenizeLines(EX_DB.customIconsText)
+        local line = lines[record.index]
+        if not line then return false end
+        if line.separator ~= "" then
+            table.remove(lines, record.index)
+        elseif record.index > 1 then
+            lines[record.index - 1].separator = ""
+            table.remove(lines, record.index)
+        else
+            table.remove(lines, record.index)
+        end
+        EX_DB.customIconsText = JoinLines(lines)
+    else
+        local tokens = TokenizeBlacklist(EX_DB.blacklistText)
+        local token = tokens[record.tokenIndex]
+        if not token or not token.digit then return false end
+        table.remove(tokens, record.tokenIndex)
+        EX_DB.blacklistText = JoinTokens(tokens)
+    end
+    return true
+end
+
+local function AppendRawRecord(kind, text)
+    if kind == "custom" then
+        local raw = type(EX_DB.customIconsText) == "string" and EX_DB.customIconsText
+            or tostring(EX_DB.customIconsText or "")
+        local separator = "\n"
+        if raw == "" or raw:match("[\r\n]$") then separator = "" end
+        EX_DB.customIconsText = raw .. separator .. text
+    else
+        if type(text) ~= "string" or not text:match("^%d+$") then return false end
+        local raw = type(EX_DB.blacklistText) == "string" and EX_DB.blacklistText
+            or tostring(EX_DB.blacklistText or "")
+        EX_DB.blacklistText = raw .. (raw == "" and "" or ",") .. text
+    end
+    return true
+end
+
+local function LayoutRawTable(host, ctx, width)
+    local controls = host._exRawTableControls
+    if not controls then return end
+    width = math.max(1, tonumber(width) or ctx:GetContentWidth())
+    local headerHeight, columnRects = EXUI:UpdateSettingsTableHeaderLayout(controls.header, width)
+    controls.header:ClearAllPoints()
+    controls.header:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
+    local top = headerHeight
+    for _, row in ipairs(controls.rows) do
+        local metrics = {
+            { height = row.input:GetHeight(), visible = true },
+            { height = row.result:GetHeight(), visible = true },
+            { height = row.action:GetHeight(), visible = true },
+        }
+        local rowHeight, rects = EXUI:UpdateSettingsTableRowLayout(row.host, width, columnRects, metrics)
+        row.host:ClearAllPoints()
+        row.host:SetPoint("TOPLEFT", host, "TOPLEFT", 0, -top)
+        for index, control in ipairs({ row.input, row.result, row.action }) do
+            control:ClearAllPoints()
+            control:SetPoint("TOPLEFT", row.host, "TOPLEFT", rects[index].x, -rects[index].y)
+            control:SetSize(rects[index].width, math.max(24, rowHeight - 16))
+        end
+        top = top + rowHeight
+    end
+    host:SetHeight(math.max(1, top))
+    if ctx.SetContentHeight then ctx:SetContentHeight(top) end
+end
+
+local function ClearRawTableRows(controls)
+    for index = #controls.rows, 1, -1 do
+        local row = controls.rows[index]
+        if row.inputIsEditBox then
+            row.input:SetScript("OnEditFocusLost", nil)
+            row.input:SetScript("OnEnterPressed", nil)
+        end
+        ReleaseRawTableControl(row.action)
+        ReleaseRawTableControl(row.result)
+        ReleaseRawTableControl(row.input)
+        ReleaseRawTableControl(row.host)
+        controls.rows[index] = nil
+    end
+end
+
+local RebuildRawTable
+
+local function QueueRawTableRebuild(host, ctx, kind)
+    if host._exRawTableRefreshQueued then return end
+    local lease = host._exRawTableLease
+    host._exRawTableRefreshQueued = true
+    C_Timer.After(0, function()
+        if host._exRawTableLease ~= lease or not host._exRawTableControls then return end
+        host._exRawTableRefreshQueued = nil
+        RebuildRawTable(host, ctx, kind)
+        ctx:RequestReflow()
+    end)
+end
+
+RebuildRawTable = function(host, ctx, kind)
+    local controls = host._exRawTableControls
+    if not controls then return end
+    ClearRawTableRows(controls)
+    local records = GetRawTableRecords(kind)
+
+    local addRow = {
+        host = EXUI:CreateSettingsTableRow(host, { isLast = #records == 0 }),
+        input = EXUI:CreateEditBox(host, "", 1, 28, nil, {
+            placeholder = kind == "custom" and L["NPCID = SpellID"] or L["NPC ID"],
+        }),
+        inputIsEditBox = true,
+        result = EXUI:CreateDescription(host, L["新增记录"], 1),
+    }
+    addRow.action = EXUI:CreateButton(host, 1, 28, L["添加"], function()
+        if AppendRawRecord(kind, addRow.input:GetText()) then
+            RebuildRawTable(host, ctx, kind)
+            ctx:RequestReflow()
+        end
+    end, { variant = "primary", compact = true })
+    controls.rows[#controls.rows + 1] = addRow
+
+    for index, record in ipairs(records) do
+        local target = record
+        local row = { host = EXUI:CreateSettingsTableRow(host, { isLast = index == #records }) }
+        row.result = EXUI:CreateDescription(host, record.result, 1)
+        if record.editable then
+            row.input = EXUI:CreateEditBox(host, record.text, 1, 28, nil, {})
+            row.inputIsEditBox = true
+            local committedText = record.text
+            local function Commit(self)
+                local text = self:GetText()
+                if text == committedText then return end
+                if ReplaceRawRecord(kind, target, text) then
+                    committedText = text
+                    QueueRawTableRebuild(host, ctx, kind)
+                else
+                    self:SetText(committedText)
+                end
+            end
+            row.input:SetScript("OnEditFocusLost", function(self)
+                if self._exSkipLostCommit then self._exSkipLostCommit = nil return end
+                Commit(self)
+            end)
+            row.input:SetScript("OnEnterPressed", function(self)
+                Commit(self)
+                self._exSkipLostCommit = true
+                self:ClearFocus()
+            end)
+            row.action = EXUI:CreateButton(host, 1, 28, L["删除"], function()
+                if DeleteRawRecord(kind, target) then
+                    RebuildRawTable(host, ctx, kind)
+                    ctx:RequestReflow()
+                end
+            end, { variant = "danger", compact = true })
+        else
+            row.input = EXUI:CreateDescription(host, record.displayText, 1)
+            row.action = EXUI:CreateDescription(host, "—", 1)
+        end
+        controls.rows[#controls.rows + 1] = row
+    end
+    LayoutRawTable(host, ctx)
+end
+
+local Grid = ExwindTools.Grid
+if not Grid then error("MDTIconHook requires ExwindGrid", 2) end
+
+local function RegisterRawTableRenderer(rendererKey, kind)
+    Grid:RegisterCustomRenderer(rendererKey, {
+        measure = function()
+            return 38 + (1 + #GetRawTableRecords(kind)) * 56
+        end,
+        mount = function(host, ctx)
+            host._exRawTableLease = {}
+            host._exRawTableControls = {
+                header = EXUI:CreateSettingsTableHeader(host, { columns = RAW_TABLE_COLUMNS }),
+                rows = {},
+            }
+            RebuildRawTable(host, ctx, kind)
+        end,
+        update = function(host, ctx)
+            RebuildRawTable(host, ctx, kind)
+        end,
+        layout = function(host, ctx, width)
+            LayoutRawTable(host, ctx, width)
+        end,
+        release = function(host)
+            local controls = host._exRawTableControls
+            if controls then
+                ClearRawTableRows(controls)
+                ReleaseRawTableControl(controls.header)
+            end
+            host._exRawTableControls = nil
+            host._exRawTableRefreshQueued = nil
+            host._exRawTableLease = nil
+        end,
+    })
+end
+
+RegisterRawTableRenderer(CUSTOM_ICONS_RENDERER, "custom")
+RegisterRawTableRenderer(BLACKLIST_RENDERER, "blacklist")
+
 local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
     -- key/type/items、apply.func、NPC/法术解析与标记写入顺序均属业务合同，禁止修改；header/subheader 不等于卡片容器。
@@ -174,21 +499,42 @@ local function EX_RegisterLayout()
                 content = { kind = "grid", items = {
                     { key = "enabled", type = "checkbox", x = 1, y = 1, w = 46, h = 8, label = L["开启功能"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["开启功能"], presentation = "switch" },
+                    },
+                },
             },
             {
                 id = "custom_icons", title = L["自定义图标 (NPCID = SpellID) 用回车换行分隔"], collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "grid", items = {
-                    { key = "customIconsText", type = "input", x = 1, y = 1, w = 200, h = 65, label = "" },
+                    { key = "customIconsRecords", type = "custom", renderer = CUSTOM_ICONS_RENDERER,
+                        measure = true, x = 1, y = 1, w = 200, h = 12 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "customIconsRecords", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "blacklist", title = L["黑名单 NPC (ID 用逗号分隔)"], collapsible = true,
                 placement = { target = "custom_icons", side = "below" },
                 content = { kind = "grid", items = {
-                    { key = "blacklistText", type = "input", x = 1, y = 1, w = 200, h = 62, label = "" },
+                    { key = "blacklistRecords", type = "custom", renderer = BLACKLIST_RENDERER,
+                        measure = true, x = 1, y = 1, w = 200, h = 12 },
                     { key = "apply", type = "button", x = 1, y = 66, w = 46, h = 6, label = L["保存并刷新"], func = ApplyCustomSettings },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "blacklistRecords", fullWidth = true },
+                        { key = "apply", label = L["保存并刷新"] },
+                    },
+                },
             },
             {
                 id = "markers", title = L["标记设置"], collapsible = true,
@@ -199,6 +545,15 @@ local function EX_RegisterLayout()
                     { key = "eliteMarkerIcon", type = "dropdown", x = 101, y = 1, w = 46, h = 6, label = L["精英标记"], items = { { "无", "0" }, { "星星 (1)", "1" }, { "圆圈 (2)", "2" }, { "菱形 (3)", "3" }, { "三角 (4)", "4" }, { "月亮 (5)", "5" }, { "方块 (6)", "6" }, { "叉叉 (7)", "7" }, { "骷髅 (8)", "8" } } },
                     { key = "btn_apply_elite_markers", type = "button", x = 151, y = 1, w = 46, h = 6, label = L["给所有精英怪标记"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "interruptMarkerIcon", label = L["打断标记"] },
+                        { key = "btn_apply_interrupt_markers", label = L["给所有打断怪标记"] },
+                        { key = "eliteMarkerIcon", label = L["精英标记"] },
+                        { key = "btn_apply_elite_markers", label = L["给所有精英怪标记"] },
+                    },
+                },
             },
         },
     }

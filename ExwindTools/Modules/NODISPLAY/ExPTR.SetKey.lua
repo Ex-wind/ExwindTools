@@ -117,12 +117,19 @@ local function EX_RegisterLayout()
     -- key/type、Beta 门禁、PVE 侧栏位置配置与 secure 制钥按钮回调禁止修改；header/description 不等于卡片容器。
     local layout = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "overview", key = "desc" },
+        },
         cards = {
             {
                 id = "overview", title = L["BETA 大米制作挂架"], collapsible = true,
                 content = { kind = "grid", items = {
                     { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 4, label = L["自动依附在 PVE 面板左侧的快速设钥架。"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {},
+                },
             },
             {
                 id = "common", title = L["通用设置"], collapsible = true,
@@ -135,6 +142,17 @@ local function EX_RegisterLayout()
                     { key = "iconsX", type = "slider", x = 1, y = 15, w = 46, h = 8, label = L["图标组 X"], min = -100, max = 100, step = 1 },
                     { key = "iconsY", type = "slider", x = 51, y = 15, w = 46, h = 8, label = L["图标组 Y"], min = -100, max = 100, step = 1 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用模块"], presentation = "switch" },
+                        { key = "side", label = L["依附侧"] },
+                        { key = "offsetX", label = L["整体 X 偏移"] },
+                        { key = "offsetY", label = L["整体 Y 偏移"] },
+                        { key = "iconsX", label = L["图标组 X"] },
+                        { key = "iconsY", label = L["图标组 Y"] },
+                    },
+                },
             },
             {
                 id = "current_position", title = L["当前显示"], collapsible = true,
@@ -143,11 +161,24 @@ local function EX_RegisterLayout()
                     { key = "groupX", type = "slider", x = 1, y = 1, w = 46, h = 8, label = L["模块 X"], min = -100, max = 100, parentKey = "current" },
                     { key = "groupY", type = "slider", x = 51, y = 1, w = 46, h = 8, label = L["模块 Y"], min = -100, max = 100, parentKey = "current" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "groupX", label = L["模块 X"] },
+                        { key = "groupY", label = L["模块 Y"] },
+                    },
+                },
             },
             {
                 id = "current_font", title = L["当前文字设置"], collapsible = true,
                 placement = { target = "current_position", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "current" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "current", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "level_position", title = L["等级按钮"], collapsible = true,
@@ -157,11 +188,25 @@ local function EX_RegisterLayout()
                     { key = "groupY", type = "slider", x = 51, y = 1, w = 46, h = 8, label = L["模块 Y"], min = -100, max = 100, parentKey = "level" },
                     { key = "spacingX", type = "slider", x = 101, y = 1, w = 46, h = 8, label = L["横向间距"], min = 20, max = 100, parentKey = "level" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "groupX", label = L["模块 X"] },
+                        { key = "groupY", label = L["模块 Y"] },
+                        { key = "spacingX", label = L["横向间距"] },
+                    },
+                },
             },
             {
                 id = "level_font", title = L["数字字体设置"], collapsible = true,
                 placement = { target = "level_position", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "level" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "level", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "map_position", title = L["地图按钮"], collapsible = true,
@@ -172,26 +217,59 @@ local function EX_RegisterLayout()
                     { key = "spacingX", type = "slider", x = 101, y = 1, w = 46, h = 8, label = L["横向间距"], min = 20, max = 120, parentKey = "map" },
                     { key = "spacingY", type = "slider", x = 151, y = 1, w = 46, h = 8, label = L["纵向间距"], min = 20, max = 120, parentKey = "map" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "groupX", label = L["模块 X"] },
+                        { key = "groupY", label = L["模块 Y"] },
+                        { key = "spacingX", label = L["横向间距"] },
+                        { key = "spacingY", label = L["纵向间距"] },
+                    },
+                },
             },
             {
                 id = "map_font", title = L["副本字体设置"], collapsible = true,
                 placement = { target = "map_position", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "map" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "map", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "current_icon", title = L["当前图标"], collapsible = true,
                 placement = { target = "map_font", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "currentIconStyle", labelSize = 20, opts = { enableOffset = false } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "currentIconStyle", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "level_icon", title = L["等级图标"], collapsible = true,
                 placement = { target = "current_icon", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "levelIconStyle", labelSize = 20, opts = { enableOffset = false } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "levelIconStyle", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "map_icon", title = L["地图图标"], collapsible = true,
                 placement = { target = "level_icon", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "mapIconStyle", labelSize = 20, opts = { enableOffset = false } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "mapIconStyle", fullWidth = true },
+                    },
+                },
             },
         },
     }

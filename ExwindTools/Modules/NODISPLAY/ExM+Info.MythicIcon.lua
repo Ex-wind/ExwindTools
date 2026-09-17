@@ -286,16 +286,19 @@ local function EX_RegisterLayout()
                 id = "name_style", title = L["副本名称样式"], collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "nameStyle" },
+                settingsList = { preserveHeader = true, rows = { { key = "nameStyle", fullWidth = true } } },
             },
             {
                 id = "level_style", title = L["最佳层数样式"], collapsible = true,
                 placement = { target = "name_style", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "levelStyle" },
+                settingsList = { preserveHeader = true, rows = { { key = "levelStyle", fullWidth = true } } },
             },
             {
                 id = "score_style", title = L["副本评分样式"], collapsible = true,
                 placement = { target = "level_style", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "scoreStyle" },
+                settingsList = { preserveHeader = true, rows = { { key = "scoreStyle", fullWidth = true } } },
             },
             {
                 id = "map_names", title = L["副本简称自定义 (留空则使用默认)"], collapsible = true,
@@ -325,6 +328,19 @@ local function EX_RegisterLayout()
             subKey = tostring(challengeModeID),
             labelPos = "top",
         }
+    end
+
+    for _, cardIndex in ipairs({ 1, 5 }) do
+        local card = layout.cards[cardIndex]
+        local rows = {}
+        for _, item in ipairs(card.content.items) do
+            rows[#rows + 1] = {
+                key = item.key,
+                label = item.label,
+                presentation = item.type == "checkbox" and "switch" or nil,
+            }
+        end
+        card.settingsList = { preserveHeader = true, rows = rows }
     end
 
 

@@ -57,6 +57,9 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "general", key = "desc" },
+        },
         cards = {
             {
                 id = "general", title = L["基础设置"], collapsible = true,
@@ -67,16 +70,37 @@ local MODULE_SPEC = {
                     { key = "frameScale", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["缩放"], min = 0.5, max = 3, labelPos = "top" },
                     { key = "hideThreshold", type = "slider", x = 151, y = 15, w = 46, h = 6, label = L["隐藏距离阈值"], min = 5, max = 100, labelPos = "top" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用"], presentation = "switch" },
+                        { key = "showText", label = L["显示距离范围"], presentation = "switch" },
+                        { key = "frameScale", label = L["缩放"] },
+                        { key = "hideThreshold", label = L["隐藏距离阈值"] },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
                 placement = { target = "general", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchorGroup" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchorGroup", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_text", title = L["距离文本"], collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_text" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_text", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "format", title = L["显示格式"], collapsible = true,
@@ -86,6 +110,14 @@ local MODULE_SPEC = {
                     { key = "minOnlyFormat", type = "input", x = 51, y = 1, w = 46, h = 6, label = L["仅最小值格式"], labelPos = "top" },
                     { key = "desc_format", type = "description", x = 1, y = 15, w = 200, h = 6, label = L["范围格式需要两个 %d (最小/最大，如%d - %d)，仅最小值格式需要一个 %d+。留空使用默认格式。"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    descriptionKeys = { "desc_format" },
+                    rows = {
+                        { key = "rangeFormat", label = L["范围格式"] },
+                        { key = "minOnlyFormat", label = L["仅最小值格式"] },
+                    },
+                },
             },
             {
                 id = "colors", title = L["距离颜色设置"], collapsible = true,
@@ -99,6 +131,18 @@ local MODULE_SPEC = {
                     { key = "lrColor", type = "color", x = 51, y = 15, w = 46, h = 6, label = L[">= 30 码"] },
                     { key = "oorColor", type = "color", x = 101, y = 15, w = 46, h = 6, label = L[">= 40 码"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "crColor", label = L["< 5 码"] },
+                        { key = "srColor", label = L[">= 5 码"] },
+                        { key = "s10Color", label = L[">= 10 码"] },
+                        { key = "s15Color", label = L[">= 15 码"] },
+                        { key = "mrColor", label = L[">= 20 码"] },
+                        { key = "lrColor", label = L[">= 30 码"] },
+                        { key = "oorColor", label = L[">= 40 码"] },
+                    },
+                },
             },
         },
     },

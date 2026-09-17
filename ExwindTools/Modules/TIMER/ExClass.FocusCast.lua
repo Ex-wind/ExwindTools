@@ -216,6 +216,21 @@ local MODULE_SPEC = {
                     { h = 6, key = "interruptMarkerColor", label = L["标线颜色"], type = "color", w = 46, x = 1, y = 29 },
                     { h = 6, key = "interruptMarkerWidth", label = L["标线粗细"], max = 16, min = 1, step = 1, type = "slider", w = 46, x = 51, y = 29 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用"], presentation = "switch" },
+                        { key = "hideWhenNotInterruptible", label = L["|cffff080a隐藏不能打断的条 (隐藏钢条)|r"], presentation = "switch" },
+                        { key = "nonInterruptColor", label = L["无法打断颜色"] },
+                        { key = "hideOnInterruptCD", label = L["打断CD时隐藏可断条"], presentation = "switch" },
+                        { key = "showInterruptCDThreshold", label = L["打断CD剩余几秒时显示(左边颜色)"] },
+                        { key = "interruptCDColor", label = L["打断CD时颜色"] },
+                        { key = "muteSoundOnInterruptCD", label = L["打断CD时不播放音效"], presentation = "switch" },
+                        { key = "showInterruptMarkerLine", label = L["显示打断冷却标线"], presentation = "switch" },
+                        { key = "interruptMarkerColor", label = L["标线颜色"] },
+                        { key = "interruptMarkerWidth", label = L["标线粗细"] },
+                    },
+                },
             },
             {
                 id = "sound", title = L["提示音设置"], collapsible = true,
@@ -232,31 +247,67 @@ local MODULE_SPEC = {
                     },
                     testButtonKey = "btn_testSound",
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "alert", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
                 placement = { target = "sound", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "timer", title = L["计时条外观"], collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "timerbargroup", key = "timerGroup" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "timerGroup", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_spell", title = L["法术名称"], collapsible = true,
                 placement = { target = "timer", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_spell" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_spell", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_target", title = L["目标名称"], collapsible = true,
                 placement = { target = "font_spell", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_target" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_target", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_timer", title = L["时间"], collapsible = true,
                 placement = { target = "font_target", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_timer" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_timer", fullWidth = true },
+                    },
+                },
             },
         },
     },

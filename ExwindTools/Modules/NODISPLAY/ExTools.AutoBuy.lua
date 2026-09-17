@@ -67,12 +67,27 @@ local function EX_RegisterLayout()
     -- 预设/自定义物品顺序、itemID/key/parentKey/subKey、增删按钮与购买逻辑禁止修改；header/subheader 不是卡片容器。
     local layout = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "overview", key = "desc" },
+        },
+        settingsGroups = {
+            {
+                id = "custom_items_form",
+                title = L["自定义购买列表"],
+                collapsible = false,
+                cards = { "manual_add", "custom_items" },
+            },
+        },
         cards = {
             {
                 id = "overview", title = L["自动购买 (Auto Buy)"], collapsible = true,
                 content = { kind = "grid", items = {
                     { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 8, label = L["当打开商人界面时，自动购买背包中缺少的物品 (自动补齐到设置数量)"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {},
+                },
             },
             {
                 id = "manual_add", title = L["手动添加 (输入物品ID)"], collapsible = true,
@@ -81,9 +96,28 @@ local function EX_RegisterLayout()
                     { key = "addID", type = "input", x = 1, y = 1, w = 46, h = 8, label = L["输入 ID"] },
                     { key = "addItem", type = "button", x = 51, y = 1, w = 46, h = 8, label = L["添加"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["物品"], weight = 1.6 },
+                        { title = L["数量"], width = 100 },
+                        { title = L["操作"], width = 96 },
+                    },
+                    rows = {
+                        {
+                            cells = {
+                                { text = "" },
+                                { key = "addID" },
+                                { text = "" },
+                                { key = "addItem", presentation = "primary" },
+                            },
+                        },
+                    },
+                },
             },
             {
-                id = "custom_items", title = L["自定义购买列表 (支持拖拽添加)"], collapsible = true,
+                id = "custom_items", title = L["自定义购买列表"], collapsible = true,
                 placement = { target = "manual_add", side = "below" },
                 content = { kind = "grid", items = {} },
             },
@@ -95,19 +129,8 @@ local function EX_RegisterLayout()
         },
     }
 
-
-    -- 问号框（添加位）始终固定在自定义列表开头
-    table.insert(layout.cards[3].content.items, {
-        key = "new_item_drop",
-        type = "itemconfig",
-        itemID = 0,
-        x = 1,
-        y = 1,
-        w = 200,
-        h = 8
-    })
-
-    local y = 15
+    local y = 1
+    local customRows = {}
 
     -- 渲染自定义列表
     local customList = {}
@@ -116,23 +139,43 @@ local function EX_RegisterLayout()
 
     for _, id in ipairs(customList) do
         table.insert(layout.cards[3].content.items, {
-            key = id,
+            key = "custom_enabled_" .. id,
             parentKey = "CustomItems",
             subKey = id,
-            type = "itemconfig",
+            type = "itemenabled",
             itemID = id,
             x = 1,
             y = y,
-            w = 200,
+            w = 46,
             h = 8,
-            canDelete = true, -- 显式启用删除按钮（上报事件模式）
-            labelSize = 18
         })
+        table.insert(layout.cards[3].content.items, {
+            key = "custom_identity_" .. id,
+            parentKey = "CustomItems", subKey = id, type = "itemidentity", itemID = id,
+            x = 51, y = y, w = 96, h = 8,
+        })
+        table.insert(layout.cards[3].content.items, {
+            key = "custom_quantity_" .. id,
+            parentKey = "CustomItems", subKey = id, type = "itemquantity", itemID = id,
+            x = 151, y = y, w = 24, h = 8,
+        })
+        table.insert(layout.cards[3].content.items, {
+            key = "custom_delete_" .. id,
+            parentKey = "CustomItems", subKey = id, type = "itemdelete", itemID = id,
+            x = 179, y = y, w = 18, h = 8, canDelete = true,
+        })
+        customRows[#customRows + 1] = { cells = {
+            { key = "custom_enabled_" .. id },
+            { key = "custom_identity_" .. id },
+            { key = "custom_quantity_" .. id },
+            { key = "custom_delete_" .. id },
+        } }
         y = y + 10
     end
 
     y = 1
 
+    local presetRows = {}
     local cats = { { k = "food", n = L["消耗品"] }, { k = "key", n = L["钥石设置"] }, { k = "map", n = L["副本地图"] } }
     for _, cat in ipairs(cats) do
         -- [Core] 如果是 Key 或 Map 分类且当前不是 Beta 环境，则隐藏
@@ -151,29 +194,66 @@ local function EX_RegisterLayout()
                     label = "|cffffd100" .. cat.n ..
                         "|r"
                 })
+            presetRows[#presetRows + 1] = { key = "t_" .. cat.k, informational = true }
             y = y + 6
             for _, it in ipairs(PRESET_ITEMS) do
                 if it.cat == cat.k then
                     if not EX_DB.Items[it.id] then EX_DB.Items[it.id] = { enabled = true, quantity = it.buy } end
                     table.insert(layout.cards[4].content.items, {
-                        key = it.id,
+                        key = "preset_enabled_" .. it.id,
                         parentKey = "Items",
                         subKey = it.id,
-                        type = "itemconfig",
+                        type = "itemenabled",
                         itemID = it.id,
                         x = 1,
                         y = y,
-                        w = 200,
+                        w = 46,
                         h = 8,
-                        canDelete = false, -- 预设项目不可删除
-                        labelSize = 18
                     })
+                    table.insert(layout.cards[4].content.items, {
+                        key = "preset_identity_" .. it.id,
+                        parentKey = "Items", subKey = it.id, type = "itemidentity", itemID = it.id,
+                        x = 51, y = y, w = 96, h = 8,
+                    })
+                    table.insert(layout.cards[4].content.items, {
+                        key = "preset_quantity_" .. it.id,
+                        parentKey = "Items", subKey = it.id, type = "itemquantity", itemID = it.id,
+                        x = 151, y = y, w = 24, h = 8,
+                    })
+                    presetRows[#presetRows + 1] = { cells = {
+                        { key = "preset_enabled_" .. it.id },
+                        { key = "preset_identity_" .. it.id },
+                        { key = "preset_quantity_" .. it.id },
+                        { text = "" },
+                    } }
                     y = y + 10
                 end
             end
             y = y + 4
         end
     end
+
+    layout.cards[3].settingsList = {
+        preserveHeader = true,
+        tableHeader = false,
+        columns = {
+            { title = L["启用"], width = 64 },
+            { title = L["物品"], weight = 1.6 },
+            { title = L["数量"], width = 100 },
+            { title = L["操作"], width = 96 },
+        },
+        rows = customRows,
+    }
+    layout.cards[4].settingsList = {
+        preserveHeader = true,
+        columns = {
+            { title = L["启用"], width = 64 },
+            { title = L["物品"], weight = 1.6 },
+            { title = L["数量"], width = 100 },
+            { title = L["操作"], width = 96 },
+        },
+        rows = presetRows,
+    }
 
     ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
 end
@@ -206,18 +286,6 @@ ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ItemConfigDelete", EXWIND_MODULE_K
         EX_DB.CustomItems[id] = nil
         EX_RegisterLayout()
         ExwindTools.UI:RefreshContent()
-    end
-end)
-
--- 3. 处理 ItemConfig 组件上报的拖拽更新事件（用于新项目添加）
-ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ItemConfigUpdate", EXWIND_MODULE_KEY, function(data)
-    if data.key == "new_item_drop" then
-        local newItemID = tonumber(data.itemID)
-        if newItemID and newItemID > 0 then
-            EX_DB.CustomItems[newItemID] = { enabled = true, quantity = 5 }
-            EX_RegisterLayout()
-            ExwindTools.UI:RefreshContent()
-        end
     end
 end)
 

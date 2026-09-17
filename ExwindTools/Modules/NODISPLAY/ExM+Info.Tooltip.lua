@@ -30,6 +30,9 @@ local function EX_RegisterLayout()
     -- key/type 与 PVE Tooltip/传送冷却 hook 禁止修改；description/header/divider 只是内容项，不等于卡片容器。
     local layout = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "common", key = "desc" },
+        },
         cards = {
             {
                 id = "common", title = L["通用设置"], collapsible = true,
@@ -38,6 +41,13 @@ local function EX_RegisterLayout()
                     { key = "enabled", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用法术提示增强"] },
                     { key = "divider_8437", type = "divider", x = 1, y = 29, w = 200, h = 4, label = "新组件" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用法术提示增强"], presentation = "switch" },
+                        { key = "divider_8437", fullWidth = true },
+                    },
+                },
             },
         },
     }

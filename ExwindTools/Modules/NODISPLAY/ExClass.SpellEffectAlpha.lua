@@ -960,6 +960,9 @@ function EX_RegisterLayout()
 
     local layout = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "overview", key = "desc" },
+        },
         cards = {
             { id = "overview", title = L["法术触发透明度 (SpellActivationOverlay)"], collapsible = true,
                 content = { kind = "grid", items = {} } },
@@ -1021,6 +1024,30 @@ function EX_RegisterLayout()
             end
             target[index] = item
         end
+    end
+
+    for _, card in ipairs(layout.cards) do
+        local rows = {}
+        for _, item in ipairs(card.content.items) do
+            if item.key == "desc" or item.key == "desc_layout" then
+                -- Descriptions are claimed by page/section metadata below.
+            elseif item.type == "description" then
+                rows[#rows + 1] = { key = item.key, informational = true }
+            elseif item.type == "button" then
+                rows[#rows + 1] = { key = item.key, fullWidth = true }
+            else
+                rows[#rows + 1] = {
+                    key = item.key,
+                    label = item.label,
+                    presentation = item.type == "checkbox" and "switch" or nil,
+                }
+            end
+        end
+        card.settingsList = {
+            preserveHeader = true,
+            descriptionKeys = card.id == "advanced" and { "desc_layout" } or nil,
+            rows = rows,
+        }
     end
 
     ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)

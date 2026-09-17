@@ -190,11 +190,28 @@ local function RegisterLayout()
                     { key = "x", type = "slider", x = 1, y = 15, w = 46, h = 6, label = "X", min = -1200, max = 1200, step = 1 },
                     { key = "y", type = "slider", x = 51, y = 15, w = 46, h = 6, label = "Y", min = -1000, max = 1000, step = 1 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用"], presentation = "switch" },
+                        { key = "btn_reset_pos", label = L["重置位置"] },
+                        { key = "buttonPadding", label = L["按钮间距"] },
+                        { key = "buttonSize", label = L["按钮大小"] },
+                        { key = "x", label = "X" },
+                        { key = "y", label = "Y" },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor", opts = CHAT_CHANNEL_BAR_ANCHOR_OPTS },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "channels", title = L["频道设置"], collapsible = true,
@@ -253,11 +270,42 @@ local function RegisterLayout()
                     { key = "channel_custom3_command", type = "input", x = 101, y = 169, w = 46, h = 6, label = L["频道/命令"], setKey = "custom3_channel", labelPos = "top" },
                     { key = "custom3", type = "color", x = 151, y = 169, w = 46, h = 6, label = L["颜色"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["名称"], width = 64 },
+                        { title = L["文字"], weight = 1 },
+                        { title = L["频道/命令"], weight = 1.4 },
+                        { title = L["颜色"], width = 80 },
+                    },
+                    rows = {
+                        { cells = { { key = "channel_world_enabled" }, { text = L["世"] }, { key = "channel_world_name" }, { key = "channel_world_command" }, { key = "world" } } },
+                        { cells = { { key = "channel_say_enabled" }, { text = L["说"] }, { key = "channel_say_name" }, { key = "channel_say_command" }, { key = "say" } } },
+                        { cells = { { key = "channel_yell_enabled" }, { text = L["喊"] }, { key = "channel_yell_name" }, { key = "channel_yell_command" }, { key = "yell" } } },
+                        { cells = { { key = "channel_party_enabled" }, { text = L["队"] }, { key = "channel_party_name" }, { key = "channel_party_command" }, { key = "party" } } },
+                        { cells = { { key = "channel_guild_enabled" }, { text = L["会"] }, { key = "channel_guild_name" }, { key = "channel_guild_command" }, { key = "guild" } } },
+                        { cells = { { key = "channel_instance_enabled" }, { text = L["副"] }, { key = "channel_instance_name" }, { key = "channel_instance_command" }, { key = "instance" } } },
+                        { cells = { { key = "channel_raid_enabled" }, { text = L["团"] }, { key = "channel_raid_name" }, { key = "channel_raid_command" }, { key = "raid" } } },
+                        { cells = { { key = "channel_roll_enabled" }, { text = L["骰"] }, { key = "channel_roll_name" }, { key = "channel_roll_command" }, { key = "roll" } } },
+                        { cells = { { key = "channel_rc_enabled" }, { text = L["确"] }, { key = "channel_rc_name" }, { key = "channel_rc_command" }, { key = "rc" } } },
+                        { cells = { { key = "channel_pull_enabled" }, { text = L["倒"] }, { key = "channel_pull_name" }, { key = "channel_pull_command" }, { key = "pull" } } },
+                        { cells = { { key = "channel_custom1_enabled" }, { text = L["自1"] }, { key = "channel_custom1_name" }, { key = "channel_custom1_command" }, { key = "custom1" } } },
+                        { cells = { { key = "channel_custom2_enabled" }, { text = L["自2"] }, { key = "channel_custom2_name" }, { key = "channel_custom2_command" }, { key = "custom2" } } },
+                        { cells = { { key = "channel_custom3_enabled" }, { text = L["自3"] }, { key = "channel_custom3_name" }, { key = "channel_custom3_command" }, { key = "custom3" } } },
+                    },
+                },
             },
             {
                 id = "font", title = L["频道文字"], collapsible = true,
                 placement = { target = "channels", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_style", opts = {} },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_style", fullWidth = true },
+                    },
+                },
             },
         },
     }

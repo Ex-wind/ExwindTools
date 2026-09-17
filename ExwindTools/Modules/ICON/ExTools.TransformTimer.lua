@@ -187,26 +187,50 @@ local MODULE_SPEC = {
         cards = {
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
+                placement = { target = "sound_alerts", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor", parentKey = "icon" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "icon", title = L["变身图标"], collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "icon" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "icon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_time", title = L["倒数文本"], collapsible = true,
                 placement = { target = "icon", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_time" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_time", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_stacks", title = L["层数文本（次数）"], collapsible = true,
                 placement = { target = "font_time", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_stacks" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_stacks", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "sound_alerts", title = L["声音提示"], collapsible = true,
-                placement = { target = "font_stacks", side = "below" },
                 content = { kind = "grid", items = {
                     { h = 6, key = "soundAlert1Enabled", label = L["启用1"], type = "checkbox", w = 46, x = 1, y = 1 },
                     { h = 6, key = "soundAlert1Second", label = L["秒数"], labelPos = "top", type = "input", w = 46, x = 51, y = 1 },
@@ -224,6 +248,41 @@ local MODULE_SPEC = {
                     { h = 6, key = "soundAlert5Second", label = L["秒数"], labelPos = "top", type = "input", w = 46, x = 51, y = 57 },
                     { h = 6, key = "soundAlert5Sound", label = L["音效"], labelPos = "top", type = "lsm_sound", w = 46, x = 101, y = 57 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["秒数"], width = 120 },
+                        { title = L["音效"], weight = 1.6 },
+                    },
+                    rows = {
+                        { cells = {
+                            { key = "soundAlert1Enabled", presentation = "switch" },
+                            { key = "soundAlert1Second" },
+                            { key = "soundAlert1Sound" },
+                        } },
+                        { cells = {
+                            { key = "soundAlert2Enabled", presentation = "switch" },
+                            { key = "soundAlert2Second" },
+                            { key = "soundAlert2Sound" },
+                        } },
+                        { cells = {
+                            { key = "soundAlert3Enabled", presentation = "switch" },
+                            { key = "soundAlert3Second" },
+                            { key = "soundAlert3Sound" },
+                        } },
+                        { cells = {
+                            { key = "soundAlert4Enabled", presentation = "switch" },
+                            { key = "soundAlert4Second" },
+                            { key = "soundAlert4Sound" },
+                        } },
+                        { cells = {
+                            { key = "soundAlert5Enabled", presentation = "switch" },
+                            { key = "soundAlert5Second" },
+                            { key = "soundAlert5Sound" },
+                        } },
+                    },
+                },
             },
         },
     },

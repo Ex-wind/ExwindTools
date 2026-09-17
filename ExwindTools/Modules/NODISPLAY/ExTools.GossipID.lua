@@ -369,6 +369,14 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
         -- 预设优先级与枚举顺序、ID/key/parentKey/subKey、增删按钮及自动对话回调禁止修改；标题项不等于卡片容器。
         local layout = {
             version = 1,
+            settingsGroups = {
+                {
+                    id = "custom_auto_options",
+                    title = L["自定义自动对话"],
+                    collapsible = false,
+                    cards = { "manual", "custom" },
+                },
+            },
             cards = {
                 {
                     id = "common", title = L["通用设置"], collapsible = true,
@@ -380,30 +388,61 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
                         { key = "showActionButton", type = "checkbox", x = 1, y = 15, w = 46, h = 8, label = L["显示加入按钮"] },
                         { key = "buttonPosition", type = "dropdown", x = 51, y = 15, w = 46, h = 8, label = L["按钮位置"], items = { { L["前面"], "LEFT" }, { L["后面"], "RIGHT" } } },
                     } },
+                    settingsList = {
+                        preserveHeader = true,
+                        rows = {
+                            { key = "enabled", label = L["启用功能"], presentation = "switch" },
+                            { key = "showQuestID", label = L["显示任务 ID"], presentation = "switch" },
+                            { key = "showOptionID", label = L["显示对话选项 ID"], presentation = "switch" },
+                            { key = "autoSelectEnabled", label = L["启用自动对话"], presentation = "switch" },
+                            { key = "showActionButton", label = L["显示加入按钮"], presentation = "switch" },
+                            { key = "buttonPosition", label = L["按钮位置"] },
+                        },
+                    },
                 },
                 {
                     id = "manual", title = L["手动添加"], collapsible = true,
-                    placement = { target = "common", side = "below" },
+                    placement = { target = "presets", side = "below" },
                     content = { kind = "grid", items = {
                         { key = "manualAddID", type = "input", x = 1, y = 1, w = 46, h = 6, label = L["对话 ID"], labelPos = "left", labelSize = 16 },
                         { key = "manualAddName", type = "input", x = 51, y = 1, w = 46, h = 6, label = L["名称"], labelPos = "left", labelSize = 16 },
                         { key = "btn_add_auto_option", type = "button", x = 101, y = 1, w = 46, h = 6, label = L["添加"] },
                     } },
+                    settingsList = {
+                        preserveHeader = true,
+                        columns = {
+                            { title = L["启用"], width = 64 },
+                            { title = L["名称"], weight = 1.4 },
+                            { title = "ID", weight = 1 },
+                            { title = L["操作"], width = 96 },
+                        },
+                        rows = {
+                            {
+                                cells = {
+                                    { text = "" },
+                                    { key = "manualAddName" },
+                                    { key = "manualAddID" },
+                                    { key = "btn_add_auto_option", presentation = "primary" },
+                                },
+                            },
+                        },
+                    },
                 },
                 {
                     id = "presets", title = L["预设自动对话"], collapsible = true,
-                    placement = { target = "manual", side = "below" },
+                    placement = { target = "common", side = "below" },
                     content = { kind = "grid", items = {} },
                 },
                 {
                     id = "custom", title = L["自定义自动对话"], collapsible = true,
-                    placement = { target = "presets", side = "below" },
+                    placement = { target = "manual", side = "below" },
                     content = { kind = "grid", items = {} },
                 },
             },
         }
 
         local y = 1
+        local presetRows = {}
 
         for _, definition in ipairs(PRESET_DEFINITIONS) do
             layout.cards[3].content.items[#layout.cards[3].content.items + 1] = {
@@ -435,6 +474,13 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
                 h = 6,
                 label = GetPresetIDsText(definition),
             }
+            presetRows[#presetRows + 1] = {
+                cells = {
+                    { key = "preset_enabled_" .. definition.key },
+                    { key = "preset_name_" .. definition.key },
+                    { key = "preset_ids_" .. definition.key },
+                },
+            }
             y = y + 14
         end
 
@@ -447,9 +493,20 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
             h = 8,
             label = L["若某个自定义 ID 后续进入预设，将自动移除自定义项并以预设为准。"],
         }
+        layout.cards[3].settingsList = {
+            preserveHeader = true,
+            descriptionKeys = { "desc_preset_note" },
+            columns = {
+                { title = L["启用"], width = 64 },
+                { title = L["名称"], weight = 1.4 },
+                { title = "ID", weight = 1.6 },
+            },
+            rows = presetRows,
+        }
         y = 1
 
         local ids = GetSortedCustomOptionIDs()
+        local customRows = {}
         if #ids == 0 then
             layout.cards[4].content.items[#layout.cards[4].content.items + 1] = {
                 key = "empty_custom",
@@ -460,6 +517,7 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
                 h = 8,
                 label = L["当前没有自定义自动对话项。点击对话行图标，或在上方手动添加。"],
             }
+            customRows[#customRows + 1] = { key = "empty_custom", informational = true }
         else
             for _, optionID in ipairs(ids) do
                 local entryPath = "customAutoOptions." .. optionID
@@ -510,9 +568,29 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
                     h = 8,
                     label = L["删除"],
                 }
+                customRows[#customRows + 1] = {
+                    cells = {
+                        { key = "custom_enabled_" .. optionID },
+                        { key = "custom_name_" .. optionID },
+                        { key = "custom_id_" .. optionID },
+                        { key = "btn_delete_custom_" .. optionID },
+                    },
+                }
                 y = y + 14
             end
         end
+
+        layout.cards[4].settingsList = {
+            preserveHeader = true,
+            tableHeader = false,
+            columns = {
+                { title = L["启用"], width = 64 },
+                { title = L["名称"], weight = 1.4 },
+                { title = "ID", weight = 1 },
+                { title = L["操作"], width = 96 },
+            },
+            rows = customRows,
+        }
 
         ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
     end

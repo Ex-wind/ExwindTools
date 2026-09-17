@@ -156,6 +156,9 @@ local function EX_RegisterLayout()
 
     local layout = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "overview", key = "desc" },
+        },
         cards = {
             { id = "overview", title = L["全职业延迟容限 (SpellQueueWindow)"], collapsible = true,
                 content = { kind = "grid", items = {} } },
@@ -197,6 +200,24 @@ local function EX_RegisterLayout()
             end
             target[index] = item
         end
+    end
+
+    for _, card in ipairs(layout.cards) do
+        local rows = {}
+        for _, item in ipairs(card.content.items) do
+            if item.key == "desc" then
+                -- Module-level description is rendered below the page title.
+            elseif item.type == "description" then
+                rows[#rows + 1] = { key = item.key, informational = true }
+            else
+                rows[#rows + 1] = {
+                    key = item.key,
+                    label = item.label,
+                    presentation = item.type == "checkbox" and "switch" or nil,
+                }
+            end
+        end
+        card.settingsList = { preserveHeader = true, rows = rows }
     end
 
     ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)

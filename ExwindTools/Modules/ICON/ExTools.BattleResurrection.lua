@@ -189,39 +189,73 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "description", key = "description" },
+        },
         cards = {
             {
                 id = "common", title = L["模块通用设置"], collapsible = true,
                 content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = {
                     bindRoot = true,
+                    presentation = "settings-list",
                     fields = {
-                        { label = L["启用战复监控"], path = "enabled", type = "checkbox" },
+                        { label = L["启用战复监控"], path = "enabled", presentation = "switch", type = "checkbox" },
                     },
                     fixedLayout = {
                         controlH = 6, controlW = 46, firstY = 0, logicalWidth = 200,
                         rowStep = 14, slotX = { 3, 53, 103, 153 },
                     },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "moduleCommon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "icon", title = L["战复整体图标与位置"], collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "icon" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "icon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_time", title = L["战复计时文字（中心）"], collapsible = true,
                 placement = { target = "icon", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_time" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_time", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_stacks", title = L["战复次数文字（右下）"], collapsible = true,
                 placement = { target = "font_time", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_stacks" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_stacks", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "description", title = L["说明"], collapsible = true,
@@ -229,6 +263,10 @@ local MODULE_SPEC = {
                 content = { kind = "grid", items = {
                     { h = 8, key = "description", label = L["战复次数与充能倒数由中央显示层渲染"], type = "description", w = 200, x = 1, y = 1 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {},
+                },
             },
         },
     },

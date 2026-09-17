@@ -19,6 +19,9 @@ local function EX_RegisterLayout()
     -- key/type、PVE 附着字段与自有侧栏的内容顺序/按钮/显隐回调禁止修改；header/description 不等于卡片容器。
     local layout = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "common", key = "desc" },
+        },
         cards = {
             {
                 id = "common", title = L["通用设置"], collapsible = true,
@@ -29,6 +32,15 @@ local function EX_RegisterLayout()
                     { key = "offsetX", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["水平偏移 (X)"], min = -100, max = 100, step = 1 },
                     { key = "offsetY", type = "slider", x = 151, y = 15, w = 46, h = 6, label = L["垂直偏移 (Y)"], min = -500, max = 500, step = 5 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用模块"], presentation = "switch" },
+                        { key = "side", label = L["依附侧"] },
+                        { key = "offsetX", label = L["水平偏移 (X)"] },
+                        { key = "offsetY", label = L["垂直偏移 (Y)"] },
+                    },
+                },
             },
         },
     }

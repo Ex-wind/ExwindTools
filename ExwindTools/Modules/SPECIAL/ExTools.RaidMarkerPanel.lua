@@ -77,11 +77,35 @@ local layout = {
                 { key = "hoverShow", type = "checkbox", x = 151, y = 29, w = 46, h = 6, label = L["悬停显示"] },
                 { key = "idleAlpha", type = "slider", x = 1, y = 43, w = 46, h = 6, label = L["离开透明度"], min = 0, max = 1, step = .05 },
             } },
+            settingsList = {
+                preserveHeader = true,
+                rows = {
+                    { key = "showPanel", label = L["显示面板"], presentation = "switch" },
+                    { key = "scale", label = L["面板缩放"] },
+                    { key = "buttonSpacing", label = L["按钮间距"] },
+                    { key = "btn_reset_pos", label = L["重置位置"] },
+                    { key = "enableCountdownButton", label = L["启用倒数"], presentation = "switch" },
+                    { key = "countdownSeconds", label = L["倒数秒数"] },
+                    { key = "enableReadyCheckButton", label = L["启用就位确认"], presentation = "switch" },
+                    { key = "swapCountdownAndReadyCheck", label = L["交换确认与倒数"], presentation = "switch" },
+                    { key = "raidMarkerBinding", label = L["标记按键"] },
+                    { key = "worldMarkerBinding", label = L["光柱按键"] },
+                    { key = "bundleLayout", label = L["束状排列"], presentation = "switch" },
+                    { key = "hoverShow", label = L["悬停显示"], presentation = "switch" },
+                    { key = "idleAlpha", label = L["离开透明度"] },
+                },
+            },
         },
         {
             id = "anchor", title = L["锚点设置"], collapsible = true,
             placement = { target = "common", side = "below" },
             content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", opts = RAID_MARKER_PANEL_ANCHOR_OPTS },
+            settingsList = {
+                preserveHeader = true,
+                rows = {
+                    { key = "anchorGroup", fullWidth = true },
+                },
+            },
         },
     },
 }

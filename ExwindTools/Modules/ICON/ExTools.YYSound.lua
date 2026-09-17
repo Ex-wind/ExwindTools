@@ -104,7 +104,10 @@ local MODULE_SPEC = {
         elements = {
             ["core.icon"] = { guiKey = "icon", movable = false, tooltip = L["嗜血音效图标"] },
             ["core.time"] = {
-                guiKey = "font_time", movable = true, textRole = "time", tooltip = L["倒数文本"],
+                guiKey = "font_time",
+                movable = true,
+                textRole = "time",
+                tooltip = L["倒数文本"],
                 position = { x = "font_time.x", y = "font_time.y" },
             },
         },
@@ -115,61 +118,87 @@ local MODULE_SPEC = {
         version = 1,
         cards = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { h = 6, key = "enabled", label = L["启用"], type = "checkbox", w = 46, x = 1, y = 1 },
-                    { h = 6, key = "spellID", label = L["法术 ID（优先）"], labelPos = "top", type = "input", w = 46, x = 51, y = 1 },
-                    { h = 6, key = "iconTexture", label = L["图标路径/ID"], labelPos = "top", type = "input", w = 46, x = 101, y = 1 },
-                } },
+                id = "common",
+                title = L["通用设置"],
+                collapsible = true,
+                content = {
+                    kind = "grid",
+                    items = {
+                        { h = 6, key = "enabled", label = L["启用"], type = "checkbox", w = 46, x = 1, y = 1 },
+                        { h = 6, key = "spellID", label = L["法术 ID（优先）"], labelPos = "top", type = "input", w = 46, x = 51, y = 1 },
+                        { h = 6, key = "iconTexture", label = L["图标路径/ID"], labelPos = "top", type = "input", w = 46, x = 101, y = 1 },
+                    }
+                },
             },
             {
-                id = "anchor", title = L["锚点设置"], collapsible = true,
+                id = "anchor",
+                title = L["锚点设置"],
+                collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor" },
             },
             {
-                id = "icon", title = L["图标本体"], collapsible = true,
+                id = "icon",
+                title = L["图标本体"],
+                collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "icon" },
             },
             {
-                id = "font_time", title = L["倒数文本"], collapsible = true,
+                id = "font_time",
+                title = L["倒数文本"],
+                collapsible = true,
                 placement = { target = "icon", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_time" },
             },
             {
-                id = "sound", title = L["音效设置"], collapsible = true,
+                id = "sound",
+                title = L["音效设置"],
+                collapsible = true,
                 placement = { target = "font_time", side = "below" },
-                content = { kind = "grid", items = {
-                    { h = 6, key = "sound", label = L["内置音效"], labelPos = "top", labelSize = 20, type = "lsm_sound", w = 46, x = 1, y = 1 },
-                    { h = 6, items = { { L["主音量"], "Master" }, { L["效果"], "SFX" }, { L["环境"], "Ambience" }, { L["音乐"], "Music" }, { L["对话"], "Dialog" } }, key = "soundChannel", label = L["输出频道"], labelPos = "top", type = "dropdown", w = 46, x = 51, y = 1 },
-                    { h = 6, key = "useCustomSound", label = L["使用自定义路径"], type = "checkbox", w = 46, x = 101, y = 1 },
-                    { h = 6, key = "randomSound", label = L["随机播放多条"], type = "checkbox", w = 46, x = 151, y = 1 },
-                } },
+                content = {
+                    kind = "grid",
+                    items = {
+                        { h = 6, key = "sound", label = L["内置音效"], labelPos = "top", labelSize = 20, type = "lsm_sound", w = 46, x = 1, y = 1 },
+                        { h = 6, items = { { L["主音量"], "Master" }, { L["效果"], "SFX" }, { L["环境"], "Ambience" }, { L["音乐"], "Music" }, { L["对话"], "Dialog" } }, key = "soundChannel", label = L["输出频道"], labelPos = "top", type = "dropdown", w = 46, x = 51, y = 1 },
+                        { h = 6, key = "useCustomSound", label = L["使用自定义路径"], type = "checkbox", w = 46, x = 101, y = 1 },
+                        { h = 6, key = "randomSound", label = L["随机播放多条"], type = "checkbox", w = 46, x = 151, y = 1 },
+                    }
+                },
             },
             {
-                id = "custom_sounds", title = L["自定义音效路径（固定 6 条）"], collapsible = true,
+                id = "custom_sounds",
+                title = L["自定义音效路径（固定 6 条）"],
+                collapsible = true,
                 placement = { target = "sound", side = "below" },
-                content = { kind = "grid", items = {
-                    { h = 6, key = "customSound1", label = L["音效 1"], labelPos = "left", parentKey = "customSounds", subKey = "1", type = "input", w = 196, x = 1, y = 1 },
-                    { h = 6, key = "customSound2", label = L["音效 2"], labelPos = "left", parentKey = "customSounds", subKey = "2", type = "input", w = 196, x = 1, y = 15 },
-                    { h = 6, key = "customSound3", label = L["音效 3"], labelPos = "left", parentKey = "customSounds", subKey = "3", type = "input", w = 196, x = 1, y = 29 },
-                    { h = 6, key = "customSound4", label = L["音效 4"], labelPos = "left", parentKey = "customSounds", subKey = "4", type = "input", w = 196, x = 1, y = 43 },
-                    { h = 6, key = "customSound5", label = L["音效 5"], labelPos = "left", parentKey = "customSounds", subKey = "5", type = "input", w = 196, x = 1, y = 57 },
-                    { h = 6, key = "customSound6", label = L["音效 6"], labelPos = "left", parentKey = "customSounds", subKey = "6", type = "input", w = 196, x = 1, y = 71 },
-                } },
+                content = {
+                    kind = "grid",
+                    items = {
+                        { h = 6, key = "customSound1", label = L["音效 1"], labelPos = "left", parentKey = "customSounds", subKey = "1", type = "input", w = 196, x = 1, y = 1 },
+                        { h = 6, key = "customSound2", label = L["音效 2"], labelPos = "left", parentKey = "customSounds", subKey = "2", type = "input", w = 196, x = 1, y = 15 },
+                        { h = 6, key = "customSound3", label = L["音效 3"], labelPos = "left", parentKey = "customSounds", subKey = "3", type = "input", w = 196, x = 1, y = 29 },
+                        { h = 6, key = "customSound4", label = L["音效 4"], labelPos = "left", parentKey = "customSounds", subKey = "4", type = "input", w = 196, x = 1, y = 43 },
+                        { h = 6, key = "customSound5", label = L["音效 5"], labelPos = "left", parentKey = "customSounds", subKey = "5", type = "input", w = 196, x = 1, y = 57 },
+                        { h = 6, key = "customSound6", label = L["音效 6"], labelPos = "left", parentKey = "customSounds", subKey = "6", type = "input", w = 196, x = 1, y = 71 },
+                    }
+                },
             },
             {
-                id = "test", title = L["测试操作"], collapsible = true,
+                id = "test",
+                title = L["测试操作"],
+                collapsible = true,
                 placement = { target = "custom_sounds", side = "below" },
-                content = { kind = "grid", items = {
-                    { h = 6, key = "btn_test", label = L["测试效果"], type = "button", w = 46, x = 1, y = 1 },
-                    { h = 6, key = "btn_stop", label = L["停止测试"], type = "button", w = 46, x = 51, y = 1 },
-                } },
+                content = {
+                    kind = "grid",
+                    items = {
+                        { h = 6, key = "btn_test", label = L["测试效果"], type = "button", w = 46, x = 1, y = 1 },
+                        { h = 6, key = "btn_stop", label = L["停止测试"], type = "button", w = 46, x = 51, y = 1 },
+                    }
+                },
             },
         },
+    }
 }
-
 ExwindTools:DeclareModuleSpecDefaults(MODULE_KEY, MODULE_SPEC.defaults)
 local DB = ExwindTools:GetModuleDB(MODULE_KEY)
 local central = EXUI:RegisterIconModule(MODULE_SPEC)

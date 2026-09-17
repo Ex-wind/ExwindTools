@@ -112,31 +112,63 @@ local MODULE_SPEC = {
                 id = "common", title = L["模块通用设置"], collapsible = true,
                 content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = {
                     bindRoot = true,
+                    presentation = "settings-list",
                     fields = {
-                        { column = 1, label = L["启用"], path = "enabled", row = 1, type = "checkbox" },
-                        { column = 2, label = L["数值为零时隐藏"], path = "hideWhenZero", row = 1, type = "checkbox" },
-                        { column = 3, label = L["数字缩写"], path = "abbreviateNumber", row = 1, type = "checkbox" },
+                        { column = 1, label = L["启用"], path = "enabled", presentation = "switch", row = 1, type = "checkbox" },
+                        { column = 2, label = L["数值为零时隐藏"], path = "hideWhenZero", presentation = "switch", row = 1, type = "checkbox" },
+                        { column = 3, label = L["数字缩写"], path = "abbreviateNumber", presentation = "switch", row = 1, type = "checkbox" },
                     },
                     fixedLayout = {
                         controlH = 6, controlW = 46, firstY = 0, logicalWidth = 200,
                         rowStep = 14, slotX = { 3, 53, 103, 153 },
                     },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "moduleCommon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "icon", title = L["治疗吸收图标样式"], collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "icon" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "icon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_text", title = L["治疗吸收文字样式"], collapsible = true,
                 placement = { target = "icon", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_text" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_text", fullWidth = true },
+                    },
+                },
+            },
+        },
+        settingsGroups = {
+            {
+                id = "appearance",
+                title = L["外观"],
+                cards = { "icon", "font_text" },
             },
         },
     },

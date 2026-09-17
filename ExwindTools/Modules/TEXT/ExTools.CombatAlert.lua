@@ -86,17 +86,30 @@ local MODULE_SPEC = {
                 id = "common", title = L["模块通用设置"], collapsible = true,
                 content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = {
                     bindRoot = true,
-                    fields = { { label = L["启用"], path = "enabled", type = "checkbox" } },
+                    presentation = "settings-list",
+                    fields = { { label = L["启用"], path = "enabled", presentation = "switch", type = "checkbox" } },
                     fixedLayout = {
                         controlH = 6, controlW = 46, firstY = 0, logicalWidth = 200,
                         rowStep = 14, slotX = { 3, 53, 103, 153 },
                     },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "moduleCommon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "messages", title = L["提示内容"], collapsible = true,
@@ -107,11 +120,26 @@ local MODULE_SPEC = {
                     { h = 6, key = "enterColor", label = L["进入战斗颜色"], type = "color", w = 46, x = 101, y = 1 },
                     { h = 6, key = "leaveColor", label = L["离开战斗颜色"], type = "color", w = 46, x = 151, y = 1 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enterMessage", label = L["进入战斗文本"] },
+                        { key = "leaveMessage", label = L["离开战斗文本"] },
+                        { key = "enterColor", label = L["进入战斗颜色"] },
+                        { key = "leaveColor", label = L["离开战斗颜色"] },
+                    },
+                },
             },
             {
                 id = "font_text", title = L["文字样式"], collapsible = true,
                 placement = { target = "messages", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_text" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_text", fullWidth = true },
+                    },
+                },
             },
         },
     },

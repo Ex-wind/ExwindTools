@@ -173,6 +173,19 @@ local MODULE_SPEC = {
                     { h = 6, key = "fullBarPercent", label = L["满条映射上限 (%)"], max = 500, min = 50, step = 1, type = "slider", w = 46, x = 101, y = 15 },
                     { h = 6, key = "btn_reset_pos", label = L["重置酒池位置"], type = "button", w = 46, x = 151, y = 15 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用酒池条"], presentation = "switch" },
+                        { key = "showText", label = L["显示文字"], presentation = "switch" },
+                        { key = "hideBar", label = L["隐藏条体"], presentation = "switch" },
+                        { key = "hideOnMounted", label = L["骑乘时隐藏"], presentation = "switch" },
+                        { key = "textColorFollowsBar", label = L["文字跟随条体颜色"], presentation = "switch" },
+                        { key = "textValueOnly", label = L["仅显示数值"], presentation = "switch" },
+                        { key = "fullBarPercent", label = L["满条映射上限 (%)"] },
+                        { key = "btn_reset_pos", label = L["重置酒池位置"] },
+                    },
+                },
             },
             {
                 id = "thresholds", title = L["酒池数值与阈值"], collapsible = true,
@@ -191,21 +204,74 @@ local MODULE_SPEC = {
                     { h = 6, key = "extraColor2ThresholdValue", label = L["阶段四(%)"], type = "input", w = 46, x = 51, y = 43 },
                     { h = 6, key = "extraColor2", label = L["阶段四颜色"], type = "color", w = 46, x = 101, y = 43 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["阶段"], weight = 1 },
+                        { title = L["阈值 (%)"], width = 120 },
+                        { title = L["颜色"], width = 120 },
+                    },
+                    rows = {
+                        { cells = {
+                            { key = "warningEnabled", presentation = "switch" },
+                            { text = L["阶段一"] },
+                            { key = "warningThresholdValue" },
+                            { key = "warningColor" },
+                        } },
+                        { cells = {
+                            { key = "dangerEnabled", presentation = "switch" },
+                            { text = L["阶段二"] },
+                            { key = "dangerThresholdValue" },
+                            { key = "dangerColor" },
+                        } },
+                        { cells = {
+                            { key = "extraColor1Enabled", presentation = "switch" },
+                            { text = L["阶段三"] },
+                            { key = "extraColor1ThresholdValue" },
+                            { key = "extraColor1" },
+                        } },
+                        { cells = {
+                            { key = "extraColor2Enabled", presentation = "switch" },
+                            { text = L["阶段四"] },
+                            { key = "extraColor2ThresholdValue" },
+                            { key = "extraColor2" },
+                        } },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
                 placement = { target = "thresholds", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "timer", title = L["酒池条样式"], collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "timerbargroup", key = "timerGroup" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "timerGroup", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font", title = L["酒池文字样式"], collapsible = true,
                 placement = { target = "timer", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_spell" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_spell", fullWidth = true },
+                    },
+                },
             },
         },
     },

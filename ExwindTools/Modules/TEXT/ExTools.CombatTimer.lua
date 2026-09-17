@@ -92,16 +92,39 @@ local MODULE_SPEC = {
                     { h = 6, key = "leftText", label = L["前缀文字 (左)"], labelPos = "top", type = "input", w = 46, x = 1, y = 15 },
                     { h = 6, key = "rightText", label = L["后缀文字 (右)"], labelPos = "top", type = "input", w = 46, x = 51, y = 15 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用计时器"], presentation = "switch" },
+                        { key = "resetOnBoss", label = L["首领重置"], presentation = "switch" },
+                        { key = "hideOutOfCombat", label = L["脱战隐藏"], presentation = "switch" },
+                        { key = "keepTimeOnLeaveCombat", label = L["脱战停表"], presentation = "switch" },
+                        { key = "leftText", label = L["前缀文字 (左)"] },
+                        { key = "rightText", label = L["后缀文字 (右)"] },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", parentKey = "font_text" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchorGroup", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_text", title = L["字体与整体位置"], collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_text" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_text", fullWidth = true },
+                    },
+                },
             },
         },
     },

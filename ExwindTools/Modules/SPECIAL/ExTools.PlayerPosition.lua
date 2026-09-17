@@ -91,7 +91,7 @@ local PLAYER_POSITION_ANCHOR_OPTS = {
 -- 距离判定仍是本模块既有业务字段；这里只声明它们应由哪一个标准通用卡承载。
 -- 图标的所有视觉尺寸、颜色、裁切、边框等只由后面的 icongroup 写入 DB.icon。
 local COMMON_FIELDS = {
-    { path = "enabled", type = "checkbox", label = L["启用指示器"], row = 1 },
+    { path = "enabled", type = "checkbox", label = L["启用指示器"], row = 1, presentation = "switch" },
     { path = "shapeType", type = "dropdown", label = L["图形样式"], row = 1,
         items = { { L["方块 (Square)"], "SQUARE" }, { L["十字 (Cross)"], "CROSS" },
             { L["圆形 (Circle)"], "CIRCLE" }, { L["圆环 (Ring)"], "RING" }, { L["菱形 (Diamond)"], "DIAMOND" } } },
@@ -101,6 +101,7 @@ local COMMON_FIELDS = {
 
 local COMMON_OPTS = {
     bindRoot = true,
+    presentation = "settings-list",
     fixedLayout = {
         logicalWidth = 200,
         controlW = 46,
@@ -188,24 +189,49 @@ local function EX_RegisterLayout()
             {
                 id = "common", title = L["玩家角色定位标记"], collapsible = true,
                 content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = COMMON_OPTS },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "moduleCommon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
-                placement = { target = "common", side = "below" },
+                placement = { target = "visibility", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", opts = PLAYER_POSITION_ANCHOR_OPTS },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchorGroup", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "icon", title = L["图标外观"], collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "icon", opts = {} },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "icon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "visibility", title = L["显示场景"], collapsible = true,
-                placement = { target = "icon", side = "below" },
+                placement = { target = "common", side = "below" },
                 content = { kind = "grid", items = {
                     { key = "visibility", type = "multiselect", x = 1, y = 1, w = 96, h = 8, label = L["触发场景"], items = VISIBILITY_OPTIONS },
                     { key = "enabledSpecs", type = "multiselect", x = 101, y = 1, w = 96, h = 8, label = L["启用专精"], items = SPEC_OPTIONS },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "visibility", label = L["触发场景"] },
+                        { key = "enabledSpecs", label = L["启用专精"] },
+                    },
+                },
             },
         },
     }

@@ -139,17 +139,17 @@ local MODULE_SPEC = {
                     component = "modulecommonsettings",
                     key = "moduleCommon",
                     opts = {
-                    bindRoot = true,
-                    fields = { { label = L["启用"], path = "enabled", type = "checkbox" } },
-                    fixedLayout = {
-                        controlH = 6,
-                        controlW = 46,
-                        firstY = 0,
-                        logicalWidth = 200,
-                        rowStep = 14,
-                        slotX = { 3, 53, 103, 153 },
+                        bindRoot = true,
+                        fields = { { label = L["启用"], path = "enabled", type = "checkbox" } },
+                        fixedLayout = {
+                            controlH = 6,
+                            controlW = 46,
+                            firstY = 0,
+                            logicalWidth = 200,
+                            rowStep = 14,
+                            slotX = { 3, 53, 103, 153 },
+                        },
                     },
-                },
                 },
             },
             {
@@ -237,7 +237,7 @@ local function BuildEntry(itemID, cooldown, isPreview)
             declaredBounds = { left = -width * .5, right = width * .5, bottom = -height * .5, top = height * .5 },
             semanticBounds = { ["core.time"] = MakeTextBounds(DB.font_time or {}) },
             interaction = isPreview and EXUI:BuildStandardPreviewInteraction("Icon", DB, MODULE_SPEC.preview.elements) or
-            nil,
+                nil,
         },
     }
 end

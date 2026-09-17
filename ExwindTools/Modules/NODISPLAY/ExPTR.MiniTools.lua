@@ -33,6 +33,14 @@ local function RegisterLayout()
                     { key = "autoLearnProf", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["开启专业专精一键全学按钮"] },
                     { key = "desc", type = "description", x = 1, y = 15, w = 200, h = 16, label = L["|cff808080* 以上功能仅在 Beta/PTR 环境生效。一键全学按钮会在专业专精页面显示。|r"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    descriptionKeys = { "desc" },
+                    rows = {
+                        { key = "blockFeedback", label = L["屏蔽PTR自带反馈框 (Tooltip Issue Reporter)"], presentation = "switch" },
+                        { key = "autoLearnProf", label = L["开启专业专精一键全学按钮"], presentation = "switch" },
+                    },
+                },
             },
         },
     }

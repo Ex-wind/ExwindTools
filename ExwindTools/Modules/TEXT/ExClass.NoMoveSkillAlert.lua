@@ -437,25 +437,58 @@ local MODULE_SPEC = {
                 content = { kind = "grid", items = {
                     { key = "enabled", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用"], presentation = "switch" },
+                    },
+                },
             },
             {
                 id = "anchor", title = L["锚点设置"], collapsible = true,
-                placement = { target = "common", side = "below" },
+                placement = { target = "evoker", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", parentKey = "font_alert", label = L["锚点设置"] },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchorGroup", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_alert", title = L["提示文字"], collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_alert", label = L["提示文字"] },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_alert", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "mage", title = L["|cff3fc7eb法师设置|r"], collapsible = true,
-                placement = { target = "font_alert", side = "below" },
+                placement = { target = "common", side = "below" },
                 content = { kind = "grid", items = {
                     { key = "mage_enable", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用"] },
                     { key = "desc_displayFormat", type = "description", x = 51, y = 1, w = 46, h = 6, label = L["|T135932:18:18:0:0:64:64:5:59:5:59|t 奥术  |T135810:18:18:0:0:64:64:5:59:5:59|t 火焰  |T135846:18:18:0:0:64:64:5:59:5:59|t 冰霜"] },
                     { key = "displayFormat", type = "input", x = 101, y = 1, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["专精"], weight = 1.2 },
+                        { title = L["显示CD时的内容 (用 %t 代表时间)"], weight = 1.8 },
+                    },
+                    rows = {
+                        { cells = {
+                            { key = "mage_enable", presentation = "switch" },
+                            { key = "desc_displayFormat" },
+                            { key = "displayFormat" },
+                        } },
+                    },
+                },
             },
             {
                 id = "deathknight", title = L["|cffc41e3a死亡骑士设置|r"], collapsible = true,
@@ -465,6 +498,21 @@ local MODULE_SPEC = {
                     { key = "desc_dk_fmt_steed", type = "description", x = 51, y = 1, w = 46, h = 6, label = L["|T135770:18:18:0:0:64:64:5:59:5:59|t 鲜血  |T135773:18:18:0:0:64:64:5:59:5:59|t 冰霜  |T135775:18:18:0:0:64:64:5:59:5:59|t 邪恶"] },
                     { key = "dk_fmt_steed", type = "input", x = 101, y = 1, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["专精"], weight = 1.2 },
+                        { title = L["显示CD时的内容 (用 %t 代表时间)"], weight = 1.8 },
+                    },
+                    rows = {
+                        { cells = {
+                            { key = "dk_enable_steed", presentation = "switch" },
+                            { key = "desc_dk_fmt_steed" },
+                            { key = "dk_fmt_steed" },
+                        } },
+                    },
+                },
             },
             {
                 id = "rogue", title = L["|cfffff468盗贼设置|r"], collapsible = true,
@@ -477,6 +525,26 @@ local MODULE_SPEC = {
                     { key = "desc_rogue_fmt_phantom", type = "description", x = 51, y = 15, w = 46, h = 6, label = L["|T236286:18:18:0:0:64:64:5:59:5:59|t 狂徒"] },
                     { key = "rogue_fmt_phantom", type = "input", x = 101, y = 15, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["专精"], weight = 1.2 },
+                        { title = L["显示CD时的内容 (用 %t 代表时间)"], weight = 1.8 },
+                    },
+                    rows = {
+                        { cells = {
+                            { key = "rogue_enable_shadow", presentation = "switch" },
+                            { key = "desc_rogue_fmt_shadow" },
+                            { key = "rogue_fmt_shadow" },
+                        } },
+                        { cells = {
+                            { key = "rogue_enable_phantom", presentation = "switch" },
+                            { key = "desc_rogue_fmt_phantom" },
+                            { key = "rogue_fmt_phantom" },
+                        } },
+                    },
+                },
             },
             {
                 id = "paladin", title = L["|cfff48cba圣骑士设置|r"], collapsible = true,
@@ -492,6 +560,31 @@ local MODULE_SPEC = {
                     { key = "desc_paladin_fmt_retribution", type = "description", x = 51, y = 29, w = 46, h = 6, label = L["|T135873:18:18:0:0:64:64:5:59:5:59|t 惩戒"] },
                     { key = "paladin_fmt_retribution", type = "input", x = 101, y = 29, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["专精"], weight = 1.2 },
+                        { title = L["显示CD时的内容 (用 %t 代表时间)"], weight = 1.8 },
+                    },
+                    rows = {
+                        { cells = {
+                            { key = "paladin_enable_holy", presentation = "switch" },
+                            { key = "desc_paladin_fmt_holy" },
+                            { key = "paladin_fmt_holy" },
+                        } },
+                        { cells = {
+                            { key = "paladin_enable_protection", presentation = "switch" },
+                            { key = "desc_paladin_fmt_protection" },
+                            { key = "paladin_fmt_protection" },
+                        } },
+                        { cells = {
+                            { key = "paladin_enable_retribution", presentation = "switch" },
+                            { key = "desc_paladin_fmt_retribution" },
+                            { key = "paladin_fmt_retribution" },
+                        } },
+                    },
+                },
             },
             {
                 id = "demonhunter", title = L["|cffa330c9恶魔猎手设置|r"], collapsible = true,
@@ -507,6 +600,31 @@ local MODULE_SPEC = {
                     { key = "desc_dh_fmt_devourer", type = "description", x = 51, y = 29, w = 46, h = 6, label = L["|T7455385:18:18:0:0:64:64:5:59:5:59|t 噬灭"] },
                     { key = "dh_fmt_devourer", type = "input", x = 101, y = 29, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["专精"], weight = 1.2 },
+                        { title = L["显示CD时的内容 (用 %t 代表时间)"], weight = 1.8 },
+                    },
+                    rows = {
+                        { cells = {
+                            { key = "dh_enable_havoc", presentation = "switch" },
+                            { key = "desc_dh_fmt_havoc" },
+                            { key = "dh_fmt_havoc" },
+                        } },
+                        { cells = {
+                            { key = "dh_enable_vengeance", presentation = "switch" },
+                            { key = "desc_dh_fmt_vengeance" },
+                            { key = "dh_fmt_vengeance" },
+                        } },
+                        { cells = {
+                            { key = "dh_enable_devourer", presentation = "switch" },
+                            { key = "desc_dh_fmt_devourer" },
+                            { key = "dh_fmt_devourer" },
+                        } },
+                    },
+                },
             },
             {
                 id = "evoker", title = L["|cff33937f唤魔师设置|r"], collapsible = true,
@@ -522,6 +640,31 @@ local MODULE_SPEC = {
                     { key = "desc_evoker_fmt_augmentation", type = "description", x = 51, y = 29, w = 46, h = 6, label = L["|T5198700:18:18:0:0:64:64:5:59:5:59|t 增辉"] },
                     { key = "evoker_fmt_augmentation", type = "input", x = 101, y = 29, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    columns = {
+                        { title = L["启用"], width = 64 },
+                        { title = L["专精"], weight = 1.2 },
+                        { title = L["显示CD时的内容 (用 %t 代表时间)"], weight = 1.8 },
+                    },
+                    rows = {
+                        { cells = {
+                            { key = "evoker_enable_devastation", presentation = "switch" },
+                            { key = "desc_evoker_fmt_devastation" },
+                            { key = "evoker_fmt_devastation" },
+                        } },
+                        { cells = {
+                            { key = "evoker_enable_preservation", presentation = "switch" },
+                            { key = "desc_evoker_fmt_preservation" },
+                            { key = "evoker_fmt_preservation" },
+                        } },
+                        { cells = {
+                            { key = "evoker_enable_augmentation", presentation = "switch" },
+                            { key = "desc_evoker_fmt_augmentation" },
+                            { key = "evoker_fmt_augmentation" },
+                        } },
+                    },
+                },
             },
         },
     },

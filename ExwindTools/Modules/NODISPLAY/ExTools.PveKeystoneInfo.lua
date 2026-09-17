@@ -99,21 +99,49 @@ local function EX_RegisterLayout()
                     { key = "offsetX", type = "slider", x = 1, y = 15, w = 46, h = 6, label = L["水平偏移 (X)"], min = -300, max = 300 },
                     { key = "offsetY", type = "slider", x = 51, y = 15, w = 46, h = 6, label = L["垂直偏移 (Y)"], min = -500, max = 500 },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用模块"], presentation = "switch" },
+                        { key = "previewMode", label = L["预览模式"], presentation = "switch" },
+                        { key = "side", label = L["依附侧"] },
+                        { key = "offsetX", label = L["水平偏移 (X)"] },
+                        { key = "offsetY", label = L["垂直偏移 (Y)"] },
+                    },
+                },
             },
             {
                 id = "player_font", title = L["玩家文字设置"], collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "playerFont", labelSize = 20 },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "playerFont", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "party_name_font", title = L["队友名称设置"], collapsible = true,
                 placement = { target = "player_font", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "partyNameFont", labelSize = 20 },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "partyNameFont", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "party_key_font", title = L["队友钥石设置"], collapsible = true,
                 placement = { target = "party_name_font", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "partyKeyFont", labelSize = 20 },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "partyKeyFont", fullWidth = true },
+                    },
+                },
             },
         },
     }

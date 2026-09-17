@@ -21,6 +21,9 @@ local function EX_RegisterLayout()
     -- key/type、按钮回调及下方全屏统计面板的业务排序和渲染禁止修改；header/description 不等于卡片容器。
     local layout = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "common", key = "desc" },
+        },
         cards = {
             {
                 id = "common", title = L["通用设置"], collapsible = true,
@@ -28,6 +31,12 @@ local function EX_RegisterLayout()
                     { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 6, label = L["全屏沉浸式的战绩分析面板。显示实时评分、称号线差距、国服排名、低保进度等。"] },
                     { key = "open", type = "button", x = 1, y = 15, w = 46, h = 6, label = L["立即打开面板"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "open", label = L["立即打开面板"] },
+                    },
+                },
             },
         },
     }

@@ -1663,11 +1663,25 @@ local function EX_RegisterLayout()
                     { key = "MapInfoHideMapID", type = "checkbox", x = 51, y = 1, w = 46, h = 8, label = L["不显示地图ID"] },
                     { key = "MapInfoAnchor", type = "dropdown", x = 101, y = 1, w = 46, h = 8, label = L["显示位置"], items = { "左下", "左上", "右下", "右上", "中下" } },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "ShowMapInfo", label = L["启用：世界地图显示坐标信息"], presentation = "switch" },
+                        { key = "MapInfoHideMapID", label = L["不显示地图ID"], presentation = "switch" },
+                        { key = "MapInfoAnchor", label = L["显示位置"] },
+                    },
+                },
             },
             {
                 id = "map_font", title = L["字体设置"], collapsible = true,
                 placement = { target = "map", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "MapInfoFont" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "MapInfoFont", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "utilities", title = L["小功能"], collapsible = true,
@@ -1682,6 +1696,19 @@ local function EX_RegisterLayout()
                     { key = "AutoInsertKeystone", type = "checkbox", x = 101, y = 15, w = 46, h = 6, label = L["打开大秘境面板自动插入钥石"] },
                     { key = "AutoResetDamageMeter", type = "checkbox", x = 151, y = 15, w = 46, h = 6, label = L["启用: 进入副本时弹出重置伤害统计确认框"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "AutoDelete", label = L["启用: 删除物品时自动填写 'DELETE'"], presentation = "switch" },
+                        { key = "MacroEnhancement", label = L["启用:宏界面增强|cffff1f13(注意 功能测试中!!!)|r"], presentation = "switch" },
+                        { key = "AutoSellJunk", label = L["启用: 打开商人时自动出售灰色物品"], presentation = "switch" },
+                        { key = "EJTooltip", label = L["启用:地下城手侧显示法术Tooltip"], presentation = "switch" },
+                        { key = "BulkBuy", label = L["启用: Shift+点击 接管商人物品购买"], presentation = "switch" },
+                        { key = "BulkBuy_WarnThreshold", label = L["需要确认金额"] },
+                        { key = "AutoInsertKeystone", label = L["打开大秘境面板自动插入钥石"], presentation = "switch" },
+                        { key = "AutoResetDamageMeter", label = L["启用: 进入副本时弹出重置伤害统计确认框"], presentation = "switch" },
+                    },
+                },
             },
             {
                 id = "combat_log", title = L["自动战斗记录"], collapsible = true,
@@ -1700,6 +1727,31 @@ local function EX_RegisterLayout()
                     { key = "ACL_RaidHeroic", type = "checkbox", x = 101, y = 57, w = 46, h = 6, label = L["英雄"] },
                     { key = "ACL_RaidMythic", type = "checkbox", x = 151, y = 57, w = 46, h = 6, label = L["史诗"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "AutoCombatLog", label = L["启用模块 (总开关)"], presentation = "switch" },
+                        {
+                            controls = {
+                                { key = "lbl_dungeon", role = "label" },
+                                { key = "ACL_DungeonFollower", presentation = "pill" },
+                                { key = "ACL_DungeonNormal", presentation = "pill" },
+                                { key = "ACL_DungeonHeroic", presentation = "pill" },
+                                { key = "ACL_DungeonMythic", presentation = "pill" },
+                                { key = "ACL_DungeonChallenge", presentation = "pill" },
+                            },
+                        },
+                        {
+                            controls = {
+                                { key = "lbl_raid", role = "label" },
+                                { key = "ACL_RaidLFR", presentation = "pill" },
+                                { key = "ACL_RaidNormal", presentation = "pill" },
+                                { key = "ACL_RaidHeroic", presentation = "pill" },
+                                { key = "ACL_RaidMythic", presentation = "pill" },
+                            },
+                        },
+                    },
+                },
             },
             {
                 id = "battle_tag", title = L["修改战网名称"], collapsible = true,
@@ -1708,6 +1760,13 @@ local function EX_RegisterLayout()
                     { key = "HideBattleTag", type = "checkbox", x = 1, y = 1, w = 46, h = 7, label = L["启用: 修改战网名称 |cffff0c08(需要 /rl 生效)|r"] },
                     { key = "BattleTagText", type = "input", x = 51, y = 1, w = 46, h = 6, label = L["输入名称 (留空则隐藏)"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "HideBattleTag", label = L["启用: 修改战网名称 |cffff0c08(需要 /rl 生效)|r"], presentation = "switch" },
+                        { key = "BattleTagText", label = L["输入名称 (留空则隐藏)"] },
+                    },
+                },
             },
             {
                 id = "repair", title = L["自动修理"], collapsible = true,
@@ -1717,6 +1776,14 @@ local function EX_RegisterLayout()
                     { key = "AutoRepair_UseGuildBank", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["优先使用公会银行修理（公会银行余额不足则自费）"] },
                     { key = "AutoRepair_ShowMessage", type = "checkbox", x = 101, y = 1, w = 46, h = 6, label = L["修理后在聊天框显示花费提示"] },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "AutoRepair", label = L["启用：打开商人时自动修理全部装备"], presentation = "switch" },
+                        { key = "AutoRepair_UseGuildBank", label = L["优先使用公会银行修理（公会银行余额不足则自费）"], presentation = "switch" },
+                        { key = "AutoRepair_ShowMessage", label = L["修理后在聊天框显示花费提示"], presentation = "switch" },
+                    },
+                },
             },
             {
                 id = "merchant", title = L["商人界面增强"], collapsible = true,
@@ -1725,6 +1792,13 @@ local function EX_RegisterLayout()
                     { key = "MerchantExpansion", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用：商人界面加宽 (不改动高度)"] },
                     { key = "MerchantColumns", type = "dropdown", x = 51, y = 1, w = 46, h = 8, label = L["显示列数"], items = { "2", "3", "4", "5" } },
                 } },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "MerchantExpansion", label = L["启用：商人界面加宽 (不改动高度)"], presentation = "switch" },
+                        { key = "MerchantColumns", label = L["显示列数"] },
+                    },
+                },
             },
         },
     }

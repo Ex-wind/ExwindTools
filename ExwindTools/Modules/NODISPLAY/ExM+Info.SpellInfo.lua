@@ -161,15 +161,27 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；打开按钮仍只负责进入自有手册窗口。
     -- 跨模块 mythicLevel 绑定、key/type 与按钮回调禁止修改；header/subheader/description 不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 1, y = 4, w = 188, h = 8, label = L["大米法术手册 (Mythic Spell Guide)"], labelSize = 25 },
-        { key = "desc", type = "description", x = 1, y = 16, w = 188, h = 4, label = L["此模块提供了一个极度详细的地下城百科，涵盖所有层数下的怪物技能数值。"] },
-        { key = "open", type = "button", x = 1, y = 24, w = 60, h = 8, label = L["立即打开手册"] },
-        { key = "sub_sim", type = "subheader", x = 1, y = 36, w = 188, h = 4, label = L["数值模拟 (全局同步)"] },
-        { key = "mythicLevel", type = "slider", x = 1, y = 48, w = 96, h = 8, label = L["模拟层数"], min = 0, max = 30, parentKey = "ExM+.MythicDamage" },
-        { key = "info", type = "description", x = 1, y = 60, w = 188, h = 8, label = "|cff888888" .. L["注：模拟层数与“大秘境伤害计算”模块共享数据。"] .. "|r" },
+        version = 1,
+        cards = {
+            {
+                id = "guide", title = L["法术手册"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 6, label = L["此模块提供了一个极度详细的地下城百科，涵盖所有层数下的怪物技能数值。"] },
+                    { key = "open", type = "button", x = 1, y = 15, w = 46, h = 6, label = L["立即打开手册"] },
+                } },
+            },
+            {
+                id = "simulation", title = L["数值模拟 (全局同步)"], collapsible = true,
+                placement = { target = "guide", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "mythicLevel", type = "slider", x = 1, y = 1, w = 46, h = 6, label = L["模拟层数"], min = 0, max = 30, parentKey = "ExM+.MythicDamage" },
+                    { key = "info", type = "description", x = 1, y = 15, w = 200, h = 8, label = "|cff888888" .. L["注：模拟层数与“大秘境伤害计算”模块共享数据。"] .. "|r" },
+                } },
+            },
+        },
     }
 
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 
 -- 3. 立即注册

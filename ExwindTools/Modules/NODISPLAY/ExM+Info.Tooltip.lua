@@ -29,14 +29,20 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
     -- key/type 与 PVE Tooltip/传送冷却 hook 禁止修改；description/header/divider 只是内容项，不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 8, y = 4, w = 193, h = 8, label = L["大米信息增强 (Mythic Plus Tooltips)"], labelSize = 25 },
-        { key = "desc", type = "description", x = 8, y = 16, w = 193, h = 12, label = L["开启后，鼠标悬停在 PVE 挑战面板的副本图标上时，会显示该副本的详细通关记录、队友专精以及该副本的快捷传送冷却状态。"] },
-        { key = "enabled", type = "checkbox", x = 8, y = 28, w = 52, h = 4, label = L["启用法术提示增强"] },
-        { key = "divider_8437", type = "divider", x = 8, y = 44, w = 193, h = 4, label = "新组件" },
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["通用设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 12, label = L["开启后，鼠标悬停在 PVE 挑战面板的副本图标上时，会显示该副本的详细通关记录、队友专精以及该副本的快捷传送冷却状态。"] },
+                    { key = "enabled", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用法术提示增强"] },
+                    { key = "divider_8437", type = "divider", x = 1, y = 29, w = 200, h = 4, label = "新组件" },
+                } },
+            },
+        },
     }
 
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    ExwindTools.UI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 
 -- 3. 立即注册

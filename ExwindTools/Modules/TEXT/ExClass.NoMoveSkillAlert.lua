@@ -430,19 +430,98 @@ local MODULE_SPEC = {
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- 上方 GUI_STATIC 与下列 fields 的职业顺序、key/type/parentKey、DB path、anchor/preview/defaults 与回调均禁止修改；复合控件整体引用，header 不等于容器。
     gui = {
-        static = GUI_STATIC,
-        fields = {
-            { key = "font_alert", type = "fontgroup", x = 1, y = 50, w = 200, h = 50, label = L["提示文字"], labelSize = 20 },
+        version = 1,
+        cards = {
             {
-                key = "anchorGroup",
-                parentKey = "font_alert",
-                type = "anchorgroup",
-                x = 1,
-                y = 30,
-                w = 200,
-                h = 18,
-                measure = true,
-                label = L["锚点设置"]
+                id = "common", title = L["通用设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "enabled", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用"] },
+                } },
+            },
+            {
+                id = "anchor", title = L["锚点设置"], collapsible = true,
+                placement = { target = "common", side = "below" },
+                content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", parentKey = "font_alert", label = L["锚点设置"] },
+            },
+            {
+                id = "font_alert", title = L["提示文字"], collapsible = true,
+                placement = { target = "anchor", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "font_alert", label = L["提示文字"] },
+            },
+            {
+                id = "mage", title = L["|cff3fc7eb法师设置|r"], collapsible = true,
+                placement = { target = "font_alert", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "mage_enable", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_displayFormat", type = "description", x = 51, y = 1, w = 46, h = 6, label = L["|T135932:18:18:0:0:64:64:5:59:5:59|t 奥术  |T135810:18:18:0:0:64:64:5:59:5:59|t 火焰  |T135846:18:18:0:0:64:64:5:59:5:59|t 冰霜"] },
+                    { key = "displayFormat", type = "input", x = 101, y = 1, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                } },
+            },
+            {
+                id = "deathknight", title = L["|cffc41e3a死亡骑士设置|r"], collapsible = true,
+                placement = { target = "mage", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "dk_enable_steed", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_dk_fmt_steed", type = "description", x = 51, y = 1, w = 46, h = 6, label = L["|T135770:18:18:0:0:64:64:5:59:5:59|t 鲜血  |T135773:18:18:0:0:64:64:5:59:5:59|t 冰霜  |T135775:18:18:0:0:64:64:5:59:5:59|t 邪恶"] },
+                    { key = "dk_fmt_steed", type = "input", x = 101, y = 1, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                } },
+            },
+            {
+                id = "rogue", title = L["|cfffff468盗贼设置|r"], collapsible = true,
+                placement = { target = "deathknight", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "rogue_enable_shadow", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_rogue_fmt_shadow", type = "description", x = 51, y = 1, w = 46, h = 6, label = L["|T236270:18:18:0:0:64:64:5:59:5:59|t 奇袭  |T132320:18:18:0:0:64:64:5:59:5:59|t 敏锐"] },
+                    { key = "rogue_fmt_shadow", type = "input", x = 101, y = 1, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                    { key = "rogue_enable_phantom", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_rogue_fmt_phantom", type = "description", x = 51, y = 15, w = 46, h = 6, label = L["|T236286:18:18:0:0:64:64:5:59:5:59|t 狂徒"] },
+                    { key = "rogue_fmt_phantom", type = "input", x = 101, y = 15, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                } },
+            },
+            {
+                id = "paladin", title = L["|cfff48cba圣骑士设置|r"], collapsible = true,
+                placement = { target = "rogue", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "paladin_enable_holy", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_paladin_fmt_holy", type = "description", x = 51, y = 1, w = 46, h = 6, label = L["|T135920:18:18:0:0:64:64:5:59:5:59|t 神圣"] },
+                    { key = "paladin_fmt_holy", type = "input", x = 101, y = 1, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                    { key = "paladin_enable_protection", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_paladin_fmt_protection", type = "description", x = 51, y = 15, w = 46, h = 6, label = L["|T236264:18:18:0:0:64:64:5:59:5:59|t 防护"] },
+                    { key = "paladin_fmt_protection", type = "input", x = 101, y = 15, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                    { key = "paladin_enable_retribution", type = "checkbox", x = 1, y = 29, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_paladin_fmt_retribution", type = "description", x = 51, y = 29, w = 46, h = 6, label = L["|T135873:18:18:0:0:64:64:5:59:5:59|t 惩戒"] },
+                    { key = "paladin_fmt_retribution", type = "input", x = 101, y = 29, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                } },
+            },
+            {
+                id = "demonhunter", title = L["|cffa330c9恶魔猎手设置|r"], collapsible = true,
+                placement = { target = "paladin", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "dh_enable_havoc", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_dh_fmt_havoc", type = "description", x = 51, y = 1, w = 46, h = 6, label = L["|T1247264:18:18:0:0:64:64:5:59:5:59|t 浩劫"] },
+                    { key = "dh_fmt_havoc", type = "input", x = 101, y = 1, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                    { key = "dh_enable_vengeance", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_dh_fmt_vengeance", type = "description", x = 51, y = 15, w = 46, h = 6, label = L["|T1247265:18:18:0:0:64:64:5:59:5:59|t 复仇"] },
+                    { key = "dh_fmt_vengeance", type = "input", x = 101, y = 15, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                    { key = "dh_enable_devourer", type = "checkbox", x = 1, y = 29, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_dh_fmt_devourer", type = "description", x = 51, y = 29, w = 46, h = 6, label = L["|T7455385:18:18:0:0:64:64:5:59:5:59|t 噬灭"] },
+                    { key = "dh_fmt_devourer", type = "input", x = 101, y = 29, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                } },
+            },
+            {
+                id = "evoker", title = L["|cff33937f唤魔师设置|r"], collapsible = true,
+                placement = { target = "demonhunter", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "evoker_enable_devastation", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_evoker_fmt_devastation", type = "description", x = 51, y = 1, w = 46, h = 6, label = L["|T4511811:18:18:0:0:64:64:5:59:5:59|t 湮灭"] },
+                    { key = "evoker_fmt_devastation", type = "input", x = 101, y = 1, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                    { key = "evoker_enable_preservation", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_evoker_fmt_preservation", type = "description", x = 51, y = 15, w = 46, h = 6, label = L["|T4511812:18:18:0:0:64:64:5:59:5:59|t 恩护"] },
+                    { key = "evoker_fmt_preservation", type = "input", x = 101, y = 15, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                    { key = "evoker_enable_augmentation", type = "checkbox", x = 1, y = 29, w = 46, h = 6, label = L["启用"] },
+                    { key = "desc_evoker_fmt_augmentation", type = "description", x = 51, y = 29, w = 46, h = 6, label = L["|T5198700:18:18:0:0:64:64:5:59:5:59|t 增辉"] },
+                    { key = "evoker_fmt_augmentation", type = "input", x = 101, y = 29, w = 96, h = 6, label = L["显示CD时的内容 (用 %t 代表时间)"], labelPos = "top" },
+                } },
             },
         },
     },

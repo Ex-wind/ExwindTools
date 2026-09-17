@@ -273,28 +273,51 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅静态项及动态副本简称项的 x/y/w/h、卡片分组可迁移。
     -- challengeModeID key、mapNames 绑定、地图枚举顺序、fontgroup 内容及 secure 传送业务禁止修改；header/subheader 不等于容器。
     local layout = {
-        { key = "header", type = "header", x = 1, y = 3, w = 200, h = 8, label = L["大米分数"], labelSize = 25 },
-        { key = "showBestLevel", type = "checkbox", x = 1, y = 13, w = 46, h = 6, label = L["显示最佳层数 (居中)"], parentKey = "displayOptions" },
-        { key = "showScore", type = "checkbox", x = 51, y = 13, w = 46, h = 6, label = L["显示副本评分 (底部)"], parentKey = "displayOptions" },
-        { key = "nameStyle", type = "fontgroup", x = 1, y = 25, w = 200, h = 50, label = L["副本名称样式"], labelSize = 20 },
-        { key = "levelStyle", type = "fontgroup", x = 1, y = 80, w = 200, h = 50, label = L["最佳层数样式"], labelSize = 20 },
-        { key = "scoreStyle", type = "fontgroup", x = 1, y = 135, w = 200, h = 50, label = L["副本评分样式"], labelSize = 20 },
-        { key = "sub_maps", type = "subheader", x = 2, y = 192, w = 200, h = 8, label = L["副本简称自定义 (留空则使用默认)"], labelSize = 20 },
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["通用设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "showBestLevel", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["显示最佳层数 (居中)"], parentKey = "displayOptions" },
+                    { key = "showScore", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["显示副本评分 (底部)"], parentKey = "displayOptions" },
+                } },
+            },
+            {
+                id = "name_style", title = L["副本名称样式"], collapsible = true,
+                placement = { target = "common", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "nameStyle" },
+            },
+            {
+                id = "level_style", title = L["最佳层数样式"], collapsible = true,
+                placement = { target = "name_style", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "levelStyle" },
+            },
+            {
+                id = "score_style", title = L["副本评分样式"], collapsible = true,
+                placement = { target = "level_style", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "scoreStyle" },
+            },
+            {
+                id = "map_names", title = L["副本简称自定义 (留空则使用默认)"], collapsible = true,
+                placement = { target = "score_style", side = "below" },
+                content = { kind = "grid", items = {} },
+            },
+        },
     }
 
 
     local maps = EXWIND_GetChallengeModeInstances()
     for index, meta in ipairs(maps) do
         local challengeModeID = tonumber(meta.challengeModeID) or 0
-        local column = (index - 1) % 2
-        local row = math.floor((index - 1) / 2)
+        local column = (index - 1) % 4
+        local row = math.floor((index - 1) / 4)
         local shortName = EXWIND_GetLocalizedDefaultMapName(challengeModeID)
 
-        layout[#layout + 1] = {
+        layout.cards[5].content.items[#layout.cards[5].content.items + 1] = {
             key = tostring(challengeModeID),
             type = "input",
-            x = column == 0 and 3 or 53,
-            y = 210 + (row * 10),
+            x = ({ 1, 51, 101, 151 })[column + 1],
+            y = 1 + (row * 14),
             w = 46,
             h = 6,
             label = string.format("%s (%d)", shortName, challengeModeID),
@@ -306,7 +329,7 @@ local function EX_RegisterLayout()
 
 
 
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 
 -- 3. 立即注册

@@ -47,35 +47,33 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
     -- 上方预览文本生成、key/type/items、重置按钮及施法事件订阅禁止修改；预览 description/header 不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["传送喊话"], labelSize = 25 },
-        {
-            key = "descInfo",
-            type = "description",
-            x = 1,
-            y = 11,
-            w = 196,
-            h = 16,
-            label = L["|cffffd100变量说明:|r\
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["喊话设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "shoutTiming", type = "dropdown", x = 1, y = 1, w = 46, h = 6, label = L["喊话时机"], items = "施法开始,施法成功" },
+                    { key = "reset", type = "button", x = 51, y = 1, w = 46, h = 6, label = L["恢复默认喊话"] },
+                    { key = "teleportShoutText", type = "input", x = 1, y = 15, w = 200, h = 6, label = L["自定义喊话内容"] },
+                } },
+            },
+            {
+                id = "preview", title = L["变量与预览"], collapsible = true,
+                placement = { target = "common", side = "below" },
+                content = { kind = "grid", items = {
+                    {
+                        key = "descInfo", type = "description", x = 1, y = 1, w = 200, h = 16,
+                        label = L["|cffffd100变量说明:|r\
   |cff00ff00%link|r  = 法术链接\
-  |cff00ff00%name|r = 副本名称"],
-            labelSize = 18
+  |cff00ff00%name|r = 副本名称"], labelSize = 18,
+                    },
+                    { key = "previewLabel", type = "description", x = 1, y = 19, w = 200, h = 15, label = previewText, labelSize = 18 },
+                } },
+            },
         },
-        { key = "shoutTiming", type = "dropdown", x = 1, y = 31, w = 46, h = 6, label = L["喊话时机"], items = "施法开始,施法成功" },
-        { key = "teleportShoutText", type = "input", x = 1, y = 44, w = 200, h = 6, label = L["自定义喊话内容"] },
-        {
-            key = "previewLabel",
-            type = "description",
-            x = 1,
-            y = 52,
-            w = 200,
-            h = 15,
-            label = previewText,
-            labelSize = 18
-        },
-        { key = "reset", type = "button", x = 51, y = 31, w = 46, h = 6, label = L["恢复默认喊话"] },
     }
 
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 
 -- 3. 立即注册

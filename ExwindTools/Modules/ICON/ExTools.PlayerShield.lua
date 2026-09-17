@@ -74,14 +74,11 @@ local MODULE_SPEC = {
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
-        fields = {
+        version = 1,
+        cards = {
             {
-                group = "settings",
-                h = 32,
-                key = "moduleCommon",
-                label = L["模块通用设置"],
-                measure = true,
-                options = {
+                id = "common", title = L["模块通用设置"], collapsible = true,
+                content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = {
                     bindRoot = true,
                     fields = {
                         { label = L["启用"], path = "enabled", type = "checkbox", },
@@ -96,29 +93,23 @@ local MODULE_SPEC = {
                         rowStep = 14,
                         slotX = { 3, 53, 103, 153, },
                     },
-                },
-                order = 1,
-                type = "modulecommonsettings",
-                w = 200,
-                x = 1,
-                y = 16,
+                } },
             },
             {
-                group = "settings", h = 20, key = "anchor", label = L["锚点设置"], measure = true,
-                order = 2, type = "anchorgroup", w = 200, x = 1, y = 51,
+                id = "anchor", title = L["锚点设置"], collapsible = true,
+                placement = { target = "common", side = "below" },
+                content = { kind = "composite", component = "anchorgroup", key = "anchor" },
             },
             {
-                group = "settings", h = 50, key = "icon", label = L["护盾图标样式"], labelSize = 20,
-                order = 3, type = "icongroup", w = 200, x = 1, y = 74,
+                id = "icon", title = L["护盾图标样式"], collapsible = true,
+                placement = { target = "anchor", side = "below" },
+                content = { kind = "composite", component = "icongroup", key = "icon" },
             },
             {
-                group = "settings", h = 50, key = "font_text", label = L["护盾文字样式"], labelSize = 20,
-                order = 4, type = "fontgroup", w = 200, x = 1, y = 127,
+                id = "font_text", title = L["护盾文字样式"], collapsible = true,
+                placement = { target = "icon", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "font_text" },
             },
-        },
-        groups = { { key = "settings", order = 1, }, },
-        static = {
-            { h = 8, key = "header", label = L["玩家护盾量"], labelSize = 25, type = "header", w = 197, x = 1, y = 4, },
         },
     },
 }

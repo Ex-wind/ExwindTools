@@ -56,29 +56,50 @@ local MODULE_SPEC = {
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
-        static = {
-            { key = "header", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["距离监视"], labelSize = 25 },
-            { key = "desc", type = "description", x = 1, y = 7, w = 200, h = 8, label = L["实时显示目标距离范围，根据与目标的最小距离自动变色。"] },
-            { key = "sub_general", type = "subheader", x = 1, y = 15, w = 200, h = 8, label = L["基础设置"], labelSize = 20 },
-            { key = "desc_format", type = "description", x = 1, y = 137, w = 200, h = 6, label = L["范围格式需要两个 %d (最小/最大，如%d - %d)，仅最小值格式需要一个 %d+。留空使用默认格式。"] },
-            { key = "sub_colors", type = "subheader", x = 1, y = 144, w = 200, h = 8, label = L["距离颜色设置"], labelSize = 20 },
-        },
-        fields = {
-            { key = "enabled", type = "checkbox", x = 1, y = 24, w = 46, h = 6, label = L["启用"] },
-            { key = "showText", type = "checkbox", x = 51, y = 24, w = 46, h = 6, label = L["显示距离范围"] },
-            { key = "frameScale", type = "slider", x = 1, y = 37, w = 46, h = 6, label = L["缩放"], min = 0.5, max = 3, labelPos = "top" },
-            { key = "hideThreshold", type = "slider", x = 51, y = 37, w = 46, h = 6, label = L["隐藏距离阈值"], min = 5, max = 100, labelPos = "top" },
-            { key = "anchorGroup", type = "anchorgroup", x = 1, y = 47, w = 200, h = 18, label = L["锚点设置"] },
-            { key = "font_text", type = "fontgroup", x = 1, y = 68, w = 200, h = 50, label = L["距离文本"], labelSize = 20 },
-            { key = "rangeFormat", type = "input", x = 1, y = 127, w = 46, h = 6, label = L["范围格式"], labelPos = "top" },
-            { key = "minOnlyFormat", type = "input", x = 51, y = 127, w = 46, h = 6, label = L["仅最小值格式"], labelPos = "top" },
-            { key = "crColor", type = "color", x = 1, y = 157, w = 46, h = 6, label = L["< 5 码"] },
-            { key = "srColor", type = "color", x = 51, y = 157, w = 46, h = 6, label = L[">= 5 码"] },
-            { key = "s10Color", type = "color", x = 101, y = 157, w = 46, h = 6, label = L[">= 10 码"] },
-            { key = "s15Color", type = "color", x = 151, y = 157, w = 46, h = 6, label = L[">= 15 码"] },
-            { key = "mrColor", type = "color", x = 1, y = 168, w = 46, h = 6, label = L[">= 20 码"] },
-            { key = "lrColor", type = "color", x = 51, y = 168, w = 46, h = 6, label = L[">= 30 码"] },
-            { key = "oorColor", type = "color", x = 101, y = 168, w = 46, h = 6, label = L[">= 40 码"] },
+        version = 1,
+        cards = {
+            {
+                id = "general", title = L["基础设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 8, label = L["实时显示目标距离范围，根据与目标的最小距离自动变色。"] },
+                    { key = "enabled", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用"] },
+                    { key = "showText", type = "checkbox", x = 51, y = 15, w = 46, h = 6, label = L["显示距离范围"] },
+                    { key = "frameScale", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["缩放"], min = 0.5, max = 3, labelPos = "top" },
+                    { key = "hideThreshold", type = "slider", x = 151, y = 15, w = 46, h = 6, label = L["隐藏距离阈值"], min = 5, max = 100, labelPos = "top" },
+                } },
+            },
+            {
+                id = "anchor", title = L["锚点设置"], collapsible = true,
+                placement = { target = "general", side = "below" },
+                content = { kind = "composite", component = "anchorgroup", key = "anchorGroup" },
+            },
+            {
+                id = "font_text", title = L["距离文本"], collapsible = true,
+                placement = { target = "anchor", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "font_text" },
+            },
+            {
+                id = "format", title = L["显示格式"], collapsible = true,
+                placement = { target = "font_text", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "rangeFormat", type = "input", x = 1, y = 1, w = 46, h = 6, label = L["范围格式"], labelPos = "top" },
+                    { key = "minOnlyFormat", type = "input", x = 51, y = 1, w = 46, h = 6, label = L["仅最小值格式"], labelPos = "top" },
+                    { key = "desc_format", type = "description", x = 1, y = 15, w = 200, h = 6, label = L["范围格式需要两个 %d (最小/最大，如%d - %d)，仅最小值格式需要一个 %d+。留空使用默认格式。"] },
+                } },
+            },
+            {
+                id = "colors", title = L["距离颜色设置"], collapsible = true,
+                placement = { target = "format", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "crColor", type = "color", x = 1, y = 1, w = 46, h = 6, label = L["< 5 码"] },
+                    { key = "srColor", type = "color", x = 51, y = 1, w = 46, h = 6, label = L[">= 5 码"] },
+                    { key = "s10Color", type = "color", x = 101, y = 1, w = 46, h = 6, label = L[">= 10 码"] },
+                    { key = "s15Color", type = "color", x = 151, y = 1, w = 46, h = 6, label = L[">= 15 码"] },
+                    { key = "mrColor", type = "color", x = 1, y = 15, w = 46, h = 6, label = L[">= 20 码"] },
+                    { key = "lrColor", type = "color", x = 51, y = 15, w = 46, h = 6, label = L[">= 30 码"] },
+                    { key = "oorColor", type = "color", x = 101, y = 15, w = 46, h = 6, label = L[">= 40 码"] },
+                } },
+            },
         },
     },
 }

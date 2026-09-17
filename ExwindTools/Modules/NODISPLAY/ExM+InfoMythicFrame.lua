@@ -20,12 +20,19 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列入口说明/打开按钮的 x/y/w/h 与卡片分组可迁移。
     -- key/type、按钮回调及下方全屏统计面板的业务排序和渲染禁止修改；header/description 不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 8, y = 4, w = 188, h = 8, label = L["大米统计面板 (Mythic Dashboard)"], labelSize = 25 },
-        { key = "desc", type = "description", x = 8, y = 16, w = 188, h = 4, label = L["全屏沉浸式的战绩分析面板。显示实时评分、称号线差距、国服排名、低保进度等。"] },
-        { key = "open", type = "button", x = 8, y = 24, w = 64, h = 12, label = L["立即打开面板"] },
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["通用设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 6, label = L["全屏沉浸式的战绩分析面板。显示实时评分、称号线差距、国服排名、低保进度等。"] },
+                    { key = "open", type = "button", x = 1, y = 15, w = 46, h = 6, label = L["立即打开面板"] },
+                } },
+            },
+        },
     }
 
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    ExwindTools.UI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 EX_RegisterLayout()
 

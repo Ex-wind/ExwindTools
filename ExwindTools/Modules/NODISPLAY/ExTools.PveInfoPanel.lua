@@ -18,14 +18,21 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列设置 layout 的 x/y/w/h 与卡片分组可迁移。
     -- key/type、PVE 附着字段与自有侧栏的内容顺序/按钮/显隐回调禁止修改；header/description 不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 1, y = 4, w = 188, h = 8, label = L["本周大秘境信息"] },
-        { key = "desc", type = "description", x = 1, y = 12, w = 188, h = 4, label = L["自动依附在 PVE 面板侧边的信息架。"] },
-        { key = "enabled", type = "checkbox", x = 1, y = 20, w = 48, h = 8, label = L["启用模块"] },
-        { key = "side", type = "select", x = 60, y = 20, w = 48, h = 8, label = L["依附侧"], options = { ["LEFT"] = L["左侧"], ["RIGHT"] = L["右侧"] } },
-        { key = "offsetX", type = "slider", x = 1, y = 40, w = 60, h = 8, label = L["水平偏移 (X)"], min = -100, max = 100, step = 1 },
-        { key = "offsetY", type = "slider", x = 72, y = 40, w = 60, h = 8, label = L["垂直偏移 (Y)"], min = -500, max = 500, step = 5 },
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["通用设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 6, label = L["自动依附在 PVE 面板侧边的信息架。"] },
+                    { key = "enabled", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用模块"] },
+                    { key = "side", type = "select", x = 51, y = 15, w = 46, h = 6, label = L["依附侧"], options = { ["LEFT"] = L["左侧"], ["RIGHT"] = L["右侧"] } },
+                    { key = "offsetX", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["水平偏移 (X)"], min = -100, max = 100, step = 1 },
+                    { key = "offsetY", type = "slider", x = 151, y = 15, w = 46, h = 6, label = L["垂直偏移 (Y)"], min = -500, max = 500, step = 5 },
+                } },
+            },
+        },
     }
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 EX_RegisterLayout()
 

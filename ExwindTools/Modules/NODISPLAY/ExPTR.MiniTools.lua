@@ -24,12 +24,19 @@ local function RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
     -- key/type、Beta 门禁及反馈/专业按钮 hook 禁止修改；header/description 不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 8, y = 8, w = 193, h = 8, label = L["PTR 工具箱"], labelSize = 25 },
-        { key = "blockFeedback", type = "checkbox", x = 8, y = 24, w = 8, h = 8, label = L["屏蔽PTR自带反馈框 (Tooltip Issue Reporter)"] },
-        { key = "autoLearnProf", type = "checkbox", x = 8, y = 40, w = 8, h = 8, label = L["开启专业专精一键全学按钮"] },
-        { key = "desc", type = "description", x = 8, y = 56, w = 193, h = 16, label = L["|cff808080* 以上功能仅在 Beta/PTR 环境生效。一键全学按钮会在专业专精页面显示。|r"] },
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["通用设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "blockFeedback", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["屏蔽PTR自带反馈框 (Tooltip Issue Reporter)"] },
+                    { key = "autoLearnProf", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["开启专业专精一键全学按钮"] },
+                    { key = "desc", type = "description", x = 1, y = 15, w = 200, h = 16, label = L["|cff808080* 以上功能仅在 Beta/PTR 环境生效。一键全学按钮会在专业专精页面显示。|r"] },
+                } },
+            },
+        },
     }
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    ExwindTools.UI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 
 RegisterLayout()

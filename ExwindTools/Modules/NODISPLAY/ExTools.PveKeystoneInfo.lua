@@ -88,18 +88,37 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列设置 layout 的 x/y/w/h 与卡片分组可迁移；三个 fontgroup 必须整体引用。
     -- key/type、PVE 附着字段、数据请求/刷新/显隐回调禁止修改；header 本身不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["大米队友钥石"], labelSize = 25 },
-        { key = "enabled", type = "checkbox", x = 1, y = 11, w = 46, h = 6, label = L["启用模块"] },
-        { key = "side", type = "select", x = 60, y = 20, w = 48, h = 8, label = L["依附侧"] },
-        { key = "offsetX", type = "slider", x = 1, y = 27, w = 46, h = 6, label = L["水平偏移 (X)"], min = -300, max = 300 },
-        { key = "offsetY", type = "slider", x = 51, y = 27, w = 46, h = 6, label = L["垂直偏移 (Y)"], min = -500, max = 500 },
-        { key = "previewMode", type = "checkbox", x = 53, y = 11, w = 46, h = 6, label = L["预览模式"] },
-        { key = "playerFont", type = "fontgroup", x = 1, y = 39, w = 200, h = 50, label = L["玩家文字设置"], labelSize = 20 },
-        { key = "partyNameFont", type = "fontgroup", x = 1, y = 92, w = 200, h = 50, label = L["队友名称设置"], labelSize = 20 },
-        { key = "partyKeyFont", type = "fontgroup", x = 1, y = 147, w = 200, h = 50, label = L["队友钥石设置"], labelSize = 20 },
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["通用设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "enabled", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用模块"] },
+                    { key = "previewMode", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["预览模式"] },
+                    { key = "side", type = "select", x = 101, y = 1, w = 46, h = 8, label = L["依附侧"] },
+                    { key = "offsetX", type = "slider", x = 1, y = 15, w = 46, h = 6, label = L["水平偏移 (X)"], min = -300, max = 300 },
+                    { key = "offsetY", type = "slider", x = 51, y = 15, w = 46, h = 6, label = L["垂直偏移 (Y)"], min = -500, max = 500 },
+                } },
+            },
+            {
+                id = "player_font", title = L["玩家文字设置"], collapsible = true,
+                placement = { target = "common", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "playerFont", labelSize = 20 },
+            },
+            {
+                id = "party_name_font", title = L["队友名称设置"], collapsible = true,
+                placement = { target = "player_font", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "partyNameFont", labelSize = 20 },
+            },
+            {
+                id = "party_key_font", title = L["队友钥石设置"], collapsible = true,
+                placement = { target = "party_name_font", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "partyKeyFont", labelSize = 20 },
+            },
+        },
     }
 
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 EX_RegisterLayout()
 

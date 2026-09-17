@@ -1654,52 +1654,81 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列多功能设置项的 x/y/w/h 与卡片分组可迁移；fontgroup 必须整体引用。
     -- key/type/items、各功能业务顺序、商人/宏界面 hook、购买确认和战斗记录回调禁止修改；header/description 不等于卡片容器。
     local layout = {
-        { key = "head", type = "header", x = 1, y = 1, w = 193, h = 8, label = L["小工具箱 (Mini Tools)"], labelSize = 25 },
-        { key = "h_map", type = "header", x = 1, y = 9, w = 200, h = 8, label = L["地图"], labelSize = 20 },
-        { key = "ShowMapInfo", type = "checkbox", x = 1, y = 17, w = 100, h = 8, label = L["启用：世界地图显示坐标信息"], labelSize = 18 },
-        { key = "MapInfoHideMapID", type = "checkbox", x = 1, y = 26, w = 65, h = 8, label = L["不显示地图ID"] },
-        { key = "MapInfoAnchor", type = "dropdown", x = 103, y = 20, w = 56, h = 8, label = L["显示位置"], items = { "左下", "左上", "右下", "右上", "中下" } },
-        { key = "MapInfoFont", type = "fontgroup", x = 1, y = 35, w = 200, h = 50, label = L["字体设置"] },
-        { key = "h_del", type = "header", x = 2, y = 86, w = 200, h = 5, label = L["小功能"], labelSize = 20 },
-        { key = "AutoDelete", type = "checkbox", x = 1, y = 93, w = 95, h = 6, label = L["启用: 删除物品时自动填写 'DELETE'"] },
-        { key = "AutoSellJunk", type = "checkbox", x = 1, y = 100, w = 95, h = 6, label = L["启用: 打开商人时自动出售灰色物品"] },
-        { key = "AutoInsertKeystone", type = "checkbox", x = 101, y = 107, w = 95, h = 6, label = L["打开大秘境面板自动插入钥石"] },
-        { key = "h_acl", type = "header", x = 1, y = 122, w = 200, h = 6, label = L["自动战斗记录"], labelSize = 18 },
-        { key = "AutoCombatLog", type = "checkbox", x = 1, y = 129, w = 120, h = 6, label = L["启用模块 (总开关)"] },
-        { key = "lbl_dungeon", type = "description", x = 1, y = 136, w = 79, h = 3, label = L["|cffffd1005人地下城|r"] },
-        { key = "ACL_DungeonNormal", type = "checkbox", x = 26, y = 140, w = 20, h = 6, label = L["普通"] },
-        { key = "ACL_DungeonHeroic", type = "checkbox", x = 51, y = 140, w = 20, h = 6, label = L["英雄"] },
-        { key = "ACL_DungeonMythic", type = "checkbox", x = 76, y = 140, w = 20, h = 6, label = L["史诗"] },
-        { key = "ACL_DungeonChallenge", type = "checkbox", x = 101, y = 140, w = 24, h = 6, label = L["大秘境"] },
-        { key = "ACL_DungeonFollower", type = "checkbox", x = 1, y = 140, w = 20, h = 6, label = L["追随者"] },
-        { key = "lbl_raid", type = "description", x = 1, y = 147, w = 40, h = 3, label = L["|cffffd100团队副本|r"] },
-        { key = "ACL_RaidLFR", type = "checkbox", x = 1, y = 150, w = 19, h = 6, label = L["随机"] },
-        { key = "ACL_RaidNormal", type = "checkbox", x = 26, y = 150, w = 20, h = 6, label = L["普通"] },
-        { key = "ACL_RaidHeroic", type = "checkbox", x = 51, y = 150, w = 20, h = 6, label = L["英雄"] },
-        { key = "ACL_RaidMythic", type = "checkbox", x = 76, y = 150, w = 24, h = 6, label = L["史诗"] },
-        { key = "BulkBuy", type = "checkbox", x = 1, y = 107, w = 60, h = 6, label = L["启用: Shift+点击 接管商人物品购买"] },
-        { key = "BulkBuy_WarnThreshold", type = "input", x = 83, y = 107, w = 13, h = 6, label = L["需要确认金额"], labelPos = "left" },
-        { key = "AutoResetDamageMeter", type = "checkbox", x = 1, y = 114, w = 95, h = 6, label = L["启用: 进入副本时弹出重置伤害统计确认框"] },
-        { key = "h_btag", type = "header", x = 1, y = 160, w = 192, h = 7, label = L["修改战网名称"], labelSize = 20 },
-        { key = "HideBattleTag", type = "checkbox", x = 1, y = 168, w = 119, h = 7, label = L["启用: 修改战网名称 |cffff0c08(需要 /rl 生效)|r"] },
-        { key = "BattleTagText", type = "input", x = 1, y = 180, w = 80, h = 6, label = L["输入名称 (留空则隐藏)"] },
-        { key = "h_repair", type = "header", x = 1, y = 190, w = 200, h = 8, label = L["自动修理"], labelSize = 20 },
-        { key = "AutoRepair", type = "checkbox", x = 1, y = 198, w = 120, h = 6, label = L["启用：打开商人时自动修理全部装备"] },
-        { key = "AutoRepair_UseGuildBank", type = "checkbox", x = 1, y = 204, w = 120, h = 6, label = L["优先使用公会银行修理（公会银行余额不足则自费）"] },
-        { key = "AutoRepair_ShowMessage", type = "checkbox", x = 1, y = 210, w = 120, h = 6, label = L["修理后在聊天框显示花费提示"] },
-        { key = "EJTooltip", type = "checkbox", x = 101, y = 99, w = 95, h = 6, label = L["启用:地下城手侧显示法术Tooltip"] },
-        { key = "h_merch", type = "header", x = 1, y = 220, w = 200, h = 6, label = L["商人界面增强"], labelSize = 20 },
-        { key = "MerchantExpansion", type = "checkbox", x = 1, y = 229, w = 66, h = 6, label = L["启用：商人界面加宽 (不改动高度)"] },
-        { key = "MerchantColumns", type = "dropdown", x = 1, y = 240, w = 60, h = 8, label = L["显示列数"], items = { "2", "3", "4", "5" } },
-        { key = "MacroEnhancement", type = "checkbox", x = 101, y = 93, w = 95, h = 6, label = L["启用:宏界面增强|cffff1f13(注意 功能测试中!!!)|r"] },
+        version = 1,
+        cards = {
+            {
+                id = "map", title = L["地图"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "ShowMapInfo", type = "checkbox", x = 1, y = 1, w = 46, h = 8, label = L["启用：世界地图显示坐标信息"], labelSize = 18 },
+                    { key = "MapInfoHideMapID", type = "checkbox", x = 51, y = 1, w = 46, h = 8, label = L["不显示地图ID"] },
+                    { key = "MapInfoAnchor", type = "dropdown", x = 101, y = 1, w = 46, h = 8, label = L["显示位置"], items = { "左下", "左上", "右下", "右上", "中下" } },
+                } },
+            },
+            {
+                id = "map_font", title = L["字体设置"], collapsible = true,
+                placement = { target = "map", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "MapInfoFont" },
+            },
+            {
+                id = "utilities", title = L["小功能"], collapsible = true,
+                placement = { target = "map_font", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "AutoDelete", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用: 删除物品时自动填写 'DELETE'"] },
+                    { key = "MacroEnhancement", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["启用:宏界面增强|cffff1f13(注意 功能测试中!!!)|r"] },
+                    { key = "AutoSellJunk", type = "checkbox", x = 101, y = 1, w = 46, h = 6, label = L["启用: 打开商人时自动出售灰色物品"] },
+                    { key = "EJTooltip", type = "checkbox", x = 151, y = 1, w = 46, h = 6, label = L["启用:地下城手侧显示法术Tooltip"] },
+                    { key = "BulkBuy", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用: Shift+点击 接管商人物品购买"] },
+                    { key = "BulkBuy_WarnThreshold", type = "input", x = 51, y = 15, w = 46, h = 6, label = L["需要确认金额"], labelPos = "left" },
+                    { key = "AutoInsertKeystone", type = "checkbox", x = 101, y = 15, w = 46, h = 6, label = L["打开大秘境面板自动插入钥石"] },
+                    { key = "AutoResetDamageMeter", type = "checkbox", x = 151, y = 15, w = 46, h = 6, label = L["启用: 进入副本时弹出重置伤害统计确认框"] },
+                } },
+            },
+            {
+                id = "combat_log", title = L["自动战斗记录"], collapsible = true,
+                placement = { target = "utilities", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "AutoCombatLog", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用模块 (总开关)"] },
+                    { key = "lbl_dungeon", type = "description", x = 1, y = 15, w = 200, h = 3, label = L["|cffffd1005人地下城|r"] },
+                    { key = "ACL_DungeonFollower", type = "checkbox", x = 1, y = 22, w = 46, h = 6, label = L["追随者"] },
+                    { key = "ACL_DungeonNormal", type = "checkbox", x = 51, y = 22, w = 46, h = 6, label = L["普通"] },
+                    { key = "ACL_DungeonHeroic", type = "checkbox", x = 101, y = 22, w = 46, h = 6, label = L["英雄"] },
+                    { key = "ACL_DungeonMythic", type = "checkbox", x = 151, y = 22, w = 46, h = 6, label = L["史诗"] },
+                    { key = "ACL_DungeonChallenge", type = "checkbox", x = 1, y = 36, w = 46, h = 6, label = L["大秘境"] },
+                    { key = "lbl_raid", type = "description", x = 1, y = 50, w = 200, h = 3, label = L["|cffffd100团队副本|r"] },
+                    { key = "ACL_RaidLFR", type = "checkbox", x = 1, y = 57, w = 46, h = 6, label = L["随机"] },
+                    { key = "ACL_RaidNormal", type = "checkbox", x = 51, y = 57, w = 46, h = 6, label = L["普通"] },
+                    { key = "ACL_RaidHeroic", type = "checkbox", x = 101, y = 57, w = 46, h = 6, label = L["英雄"] },
+                    { key = "ACL_RaidMythic", type = "checkbox", x = 151, y = 57, w = 46, h = 6, label = L["史诗"] },
+                } },
+            },
+            {
+                id = "battle_tag", title = L["修改战网名称"], collapsible = true,
+                placement = { target = "combat_log", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "HideBattleTag", type = "checkbox", x = 1, y = 1, w = 46, h = 7, label = L["启用: 修改战网名称 |cffff0c08(需要 /rl 生效)|r"] },
+                    { key = "BattleTagText", type = "input", x = 51, y = 1, w = 46, h = 6, label = L["输入名称 (留空则隐藏)"] },
+                } },
+            },
+            {
+                id = "repair", title = L["自动修理"], collapsible = true,
+                placement = { target = "battle_tag", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "AutoRepair", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用：打开商人时自动修理全部装备"] },
+                    { key = "AutoRepair_UseGuildBank", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["优先使用公会银行修理（公会银行余额不足则自费）"] },
+                    { key = "AutoRepair_ShowMessage", type = "checkbox", x = 101, y = 1, w = 46, h = 6, label = L["修理后在聊天框显示花费提示"] },
+                } },
+            },
+            {
+                id = "merchant", title = L["商人界面增强"], collapsible = true,
+                placement = { target = "repair", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "MerchantExpansion", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用：商人界面加宽 (不改动高度)"] },
+                    { key = "MerchantColumns", type = "dropdown", x = 51, y = 1, w = 46, h = 8, label = L["显示列数"], items = { "2", "3", "4", "5" } },
+                } },
+            },
+        },
     }
-
-
-
-
-
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 
 EX_RegisterLayout()

@@ -39,18 +39,29 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；打开按钮仍只负责进入自有窗口。
     -- key/type、筛选/按钮绑定及历史记录排序禁止修改；header/divider 只是内容项，不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 8, y = 4, w = 193, h = 8, label = L["大秘境赛季记录 (Run History)"], labelSize = 25 },
-        { key = "desc", type = "description", x = 8, y = 20, w = 193, h = 4, label = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"] },
-        { key = "open", type = "button", x = 8, y = 84, w = 84, h = 12, label = L["打开记录预览"] },
-        { key = "sub_filter", type = "subheader", x = 8, y = 32, w = 193, h = 4, label = L["过滤设置"], labelSize = 20 },
-        { key = "filterThisWeek", type = "checkbox", x = 8, y = 44, w = 40, h = 8, label = L["只看本周记录"] },
-        { key = "filterTimed", type = "checkbox", x = 52, y = 44, w = 40, h = 8, label = L["只看限时记录"] },
-        { key = "size", type = "slider", x = 8, y = 64, w = 84, h = 12, label = L["显示字号"], min = 10, max = 30 },
-        { key = "divider_1965", type = "divider", x = 8, y = 36, w = 193, h = 4, label = "新组件" },
+        version = 1,
+        cards = {
+            {
+                id = "filters", title = L["过滤设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 6, label = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"] },
+                    { key = "filterThisWeek", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["只看本周记录"] },
+                    { key = "filterTimed", type = "checkbox", x = 51, y = 15, w = 46, h = 6, label = L["只看限时记录"] },
+                    { key = "size", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["显示字号"], min = 10, max = 30 },
+                    { key = "divider_1965", type = "divider", x = 1, y = 29, w = 200, h = 4, label = "新组件" },
+                } },
+            },
+            {
+                id = "preview", title = L["记录预览"], collapsible = true,
+                placement = { target = "filters", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "open", type = "button", x = 1, y = 1, w = 46, h = 6, label = L["打开记录预览"] },
+                } },
+            },
+        },
     }
 
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 
 -- 3. 立即注册

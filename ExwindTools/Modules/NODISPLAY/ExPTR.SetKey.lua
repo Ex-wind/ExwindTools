@@ -116,39 +116,86 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
     -- key/type、Beta 门禁、PVE 侧栏位置配置与 secure 制钥按钮回调禁止修改；header/description 不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 1, y = 4, w = 188, h = 8, label = L["BETA 大米制作挂架"] },
-        { key = "desc", type = "description", x = 1, y = 12, w = 188, h = 4, label = L["自动依附在 PVE 面板左侧的快速设钥架。"] },
-        { key = "enabled", type = "checkbox", x = 1, y = 20, w = 48, h = 8, label = L["启用模块"] },
-        { key = "side", type = "select", x = 56, y = 20, w = 48, h = 8, label = L["依附侧"], options = { ["LEFT"] = L["左侧"], ["RIGHT"] = L["右侧"] } },
-        { key = "offsetX", type = "slider", x = 1, y = 40, w = 60, h = 8, label = L["整体 X 偏移"], min = -100, max = 100, step = 1 },
-        { key = "offsetY", type = "slider", x = 72, y = 40, w = 60, h = 8, label = L["整体 Y 偏移"], min = -500, max = 500, step = 5 },
-
-        { key = "sub_global", type = "subheader", x = 1, y = 52, w = 188, h = 4, label = L["图标整体偏移 (不建议动框架, 动这个)"] },
-        { key = "iconsX", type = "slider", x = 1, y = 60, w = 60, h = 8, label = L["图标组 X"], min = -100, max = 100, step = 1 },
-        { key = "iconsY", type = "slider", x = 72, y = 60, w = 60, h = 8, label = L["图标组 Y"], min = -100, max = 100, step = 1 },
-
-        { key = "sub_cur", type = "subheader", x = 1, y = 72, w = 188, h = 4, label = L["当前显示"] },
-        { key = "groupX", type = "slider", x = 1, y = 80, w = 60, h = 8, label = L["模块 X"], min = -100, max = 100, parentKey = "current" },
-        { key = "groupY", type = "slider", x = 72, y = 80, w = 60, h = 8, label = L["模块 Y"], min = -100, max = 100, parentKey = "current" },
-        { key = "current", type = "fontgroup", x = 1, y = 104, w = 200, h = 50, label = L["当前文字设置"] },
-
-        { key = "sub_level", type = "subheader", x = 1, y = 180, w = 188, h = 4, label = L["等级按钮"] },
-        { key = "groupX", type = "slider", x = 1, y = 188, w = 60, h = 8, label = L["模块 X"], min = -100, max = 100, parentKey = "level" },
-        { key = "groupY", type = "slider", x = 72, y = 188, w = 60, h = 8, label = L["模块 Y"], min = -100, max = 100, parentKey = "level" },
-        { key = "spacingX", type = "slider", x = 72, y = 200, w = 60, h = 8, label = L["横向间距"], min = 20, max = 100, parentKey = "level" },
-        { key = "level", type = "fontgroup", x = 1, y = 212, w = 200, h = 50, label = L["数字字体设置"] },
-
-        { key = "sub_map", type = "subheader", x = 1, y = 288, w = 188, h = 4, label = L["地图按钮"] },
-        { key = "groupX", type = "slider", x = 1, y = 296, w = 60, h = 8, label = L["模块 X"], min = -100, max = 100, parentKey = "map" },
-        { key = "groupY", type = "slider", x = 72, y = 296, w = 60, h = 8, label = L["模块 Y"], min = -100, max = 100, parentKey = "map" },
-        { key = "spacingX", type = "slider", x = 72, y = 308, w = 60, h = 8, label = L["横向间距"], min = 20, max = 120, parentKey = "map" },
-        { key = "spacingY", type = "slider", x = 1, y = 320, w = 60, h = 8, label = L["纵向间距"], min = 20, max = 120, parentKey = "map" },
-        { key = "map", type = "fontgroup", x = 1, y = 332, w = 200, h = 50, label = L["副本字体设置"] },
-        { key = "currentIconStyle", type = "icongroup", x = 1, y = 412, w = 200, h = 50, label = L["当前图标"], labelSize = 20, opts = { enableOffset = false } },
-        { key = "levelIconStyle", type = "icongroup", x = 1, y = 512, w = 200, h = 50, label = L["等级图标"], labelSize = 20, opts = { enableOffset = false } },
-        { key = "mapIconStyle", type = "icongroup", x = 1, y = 612, w = 200, h = 50, label = L["地图图标"], labelSize = 20, opts = { enableOffset = false } },
+        version = 1,
+        cards = {
+            {
+                id = "overview", title = L["BETA 大米制作挂架"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 4, label = L["自动依附在 PVE 面板左侧的快速设钥架。"] },
+                } },
+            },
+            {
+                id = "common", title = L["通用设置"], collapsible = true,
+                placement = { target = "overview", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "enabled", type = "checkbox", x = 1, y = 1, w = 46, h = 8, label = L["启用模块"] },
+                    { key = "side", type = "select", x = 51, y = 1, w = 46, h = 8, label = L["依附侧"], options = { ["LEFT"] = L["左侧"], ["RIGHT"] = L["右侧"] } },
+                    { key = "offsetX", type = "slider", x = 101, y = 1, w = 46, h = 8, label = L["整体 X 偏移"], min = -100, max = 100, step = 1 },
+                    { key = "offsetY", type = "slider", x = 151, y = 1, w = 46, h = 8, label = L["整体 Y 偏移"], min = -500, max = 500, step = 5 },
+                    { key = "iconsX", type = "slider", x = 1, y = 15, w = 46, h = 8, label = L["图标组 X"], min = -100, max = 100, step = 1 },
+                    { key = "iconsY", type = "slider", x = 51, y = 15, w = 46, h = 8, label = L["图标组 Y"], min = -100, max = 100, step = 1 },
+                } },
+            },
+            {
+                id = "current_position", title = L["当前显示"], collapsible = true,
+                placement = { target = "common", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "groupX", type = "slider", x = 1, y = 1, w = 46, h = 8, label = L["模块 X"], min = -100, max = 100, parentKey = "current" },
+                    { key = "groupY", type = "slider", x = 51, y = 1, w = 46, h = 8, label = L["模块 Y"], min = -100, max = 100, parentKey = "current" },
+                } },
+            },
+            {
+                id = "current_font", title = L["当前文字设置"], collapsible = true,
+                placement = { target = "current_position", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "current" },
+            },
+            {
+                id = "level_position", title = L["等级按钮"], collapsible = true,
+                placement = { target = "current_font", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "groupX", type = "slider", x = 1, y = 1, w = 46, h = 8, label = L["模块 X"], min = -100, max = 100, parentKey = "level" },
+                    { key = "groupY", type = "slider", x = 51, y = 1, w = 46, h = 8, label = L["模块 Y"], min = -100, max = 100, parentKey = "level" },
+                    { key = "spacingX", type = "slider", x = 101, y = 1, w = 46, h = 8, label = L["横向间距"], min = 20, max = 100, parentKey = "level" },
+                } },
+            },
+            {
+                id = "level_font", title = L["数字字体设置"], collapsible = true,
+                placement = { target = "level_position", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "level" },
+            },
+            {
+                id = "map_position", title = L["地图按钮"], collapsible = true,
+                placement = { target = "level_font", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "groupX", type = "slider", x = 1, y = 1, w = 46, h = 8, label = L["模块 X"], min = -100, max = 100, parentKey = "map" },
+                    { key = "groupY", type = "slider", x = 51, y = 1, w = 46, h = 8, label = L["模块 Y"], min = -100, max = 100, parentKey = "map" },
+                    { key = "spacingX", type = "slider", x = 101, y = 1, w = 46, h = 8, label = L["横向间距"], min = 20, max = 120, parentKey = "map" },
+                    { key = "spacingY", type = "slider", x = 151, y = 1, w = 46, h = 8, label = L["纵向间距"], min = 20, max = 120, parentKey = "map" },
+                } },
+            },
+            {
+                id = "map_font", title = L["副本字体设置"], collapsible = true,
+                placement = { target = "map_position", side = "below" },
+                content = { kind = "composite", component = "fontgroup", key = "map" },
+            },
+            {
+                id = "current_icon", title = L["当前图标"], collapsible = true,
+                placement = { target = "map_font", side = "below" },
+                content = { kind = "composite", component = "icongroup", key = "currentIconStyle", labelSize = 20, opts = { enableOffset = false } },
+            },
+            {
+                id = "level_icon", title = L["等级图标"], collapsible = true,
+                placement = { target = "current_icon", side = "below" },
+                content = { kind = "composite", component = "icongroup", key = "levelIconStyle", labelSize = 20, opts = { enableOffset = false } },
+            },
+            {
+                id = "map_icon", title = L["地图图标"], collapsible = true,
+                placement = { target = "level_icon", side = "below" },
+                content = { kind = "composite", component = "icongroup", key = "mapIconStyle", labelSize = 20, opts = { enableOffset = false } },
+            },
+        },
     }
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 EX_RegisterLayout()
 

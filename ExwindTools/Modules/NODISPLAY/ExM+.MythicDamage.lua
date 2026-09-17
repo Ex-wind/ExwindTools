@@ -127,17 +127,29 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
     -- 上方倍率/说明计算、key/type、按钮与刷新绑定禁止修改；description/header 只是内容项，不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 1, y = 4, w = 200, h = 3, label = L["大秘境伤害计算"], labelSize = 25 },
-        { key = "desc", type = "description", x = 1, y = 12, w = 200, h = 8, label = L["法术描述的数值会随着层数改变"] },
-        { key = "useColoredNumbers", type = "checkbox", x = 1, y = 23, w = 46, h = 6, label = L["数值染色"] },
-        { key = "mythicLevel", type = "slider", x = 2, y = 39, w = 46, h = 6, label = L["模拟层数 (0-30)"], min = 0, max = 30 },
-        { key = "damageColor", type = "color", x = 52, y = 39, w = 46, h = 6, label = L["伤害数值颜色"] },
-        { key = "openSpellInfo", type = "button", x = 116, y = 24, w = 55, h = 10, label = L["大米怪物法术"] },
-        { key = "abbreviateNumbers", type = "checkbox", x = 51, y = 23, w = 46, h = 6, label = L["简写数字 (万/亿)"] },
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["通用设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 8, label = L["法术描述的数值会随着层数改变"] },
+                    { key = "useColoredNumbers", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["数值染色"] },
+                    { key = "abbreviateNumbers", type = "checkbox", x = 51, y = 15, w = 46, h = 6, label = L["简写数字 (万/亿)"] },
+                    { key = "mythicLevel", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["模拟层数 (0-30)"], min = 0, max = 30 },
+                    { key = "damageColor", type = "color", x = 151, y = 15, w = 46, h = 6, label = L["伤害数值颜色"] },
+                } },
+            },
+            {
+                id = "tools", title = L["工具"], collapsible = true,
+                placement = { target = "common", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "openSpellInfo", type = "button", x = 1, y = 1, w = 46, h = 6, label = L["大米怪物法术"] },
+                } },
+            },
+        },
     }
 
-
-    ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
 end
 
 -- 3. 立即注册

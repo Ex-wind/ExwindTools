@@ -66,27 +66,48 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅静态项及动态 itemconfig 项的 x/y/w/h、卡片分组可迁移。
     -- 预设/自定义物品顺序、itemID/key/parentKey/subKey、增删按钮与购买逻辑禁止修改；header/subheader 不是卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 1, y = 4, w = 188, h = 12, label = L["自动购买 (Auto Buy)"], labelSize = 25 },
-        { key = "desc", type = "description", x = 1, y = 16, w = 188, h = 8, label = L["当打开商人界面时，自动购买背包中缺少的物品 (自动补齐到设置数量)"] },
-        { key = "sub_add", type = "subheader", x = 1, y = 24, w = 188, h = 4, label = L["手动添加 (输入物品ID)"], labelSize = 20 },
-        { key = "addID", type = "input", x = 1, y = 36, w = 72, h = 8, label = L["输入 ID"] },
-        { key = "addItem", type = "button", x = 80, y = 36, w = 32, h = 8, label = L["添加"] },
-        { key = "sub_c", type = "subheader", x = 1, y = 48, w = 188, h = 8, label = L["自定义购买列表 (支持拖拽添加)"], labelSize = 20 },
+        version = 1,
+        cards = {
+            {
+                id = "overview", title = L["自动购买 (Auto Buy)"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 8, label = L["当打开商人界面时，自动购买背包中缺少的物品 (自动补齐到设置数量)"] },
+                } },
+            },
+            {
+                id = "manual_add", title = L["手动添加 (输入物品ID)"], collapsible = true,
+                placement = { target = "overview", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "addID", type = "input", x = 1, y = 1, w = 46, h = 8, label = L["输入 ID"] },
+                    { key = "addItem", type = "button", x = 51, y = 1, w = 46, h = 8, label = L["添加"] },
+                } },
+            },
+            {
+                id = "custom_items", title = L["自定义购买列表 (支持拖拽添加)"], collapsible = true,
+                placement = { target = "manual_add", side = "below" },
+                content = { kind = "grid", items = {} },
+            },
+            {
+                id = "preset_items", title = L["预设项目 (仅支持开启/禁用)"], collapsible = true,
+                placement = { target = "custom_items", side = "below" },
+                content = { kind = "grid", items = {} },
+            },
+        },
     }
 
 
     -- 问号框（添加位）始终固定在自定义列表开头
-    table.insert(layout, {
+    table.insert(layout.cards[3].content.items, {
         key = "new_item_drop",
         type = "itemconfig",
         itemID = 0,
         x = 1,
-        y = 56,
-        w = 140,
+        y = 1,
+        w = 200,
         h = 8
     })
 
-    local y = 70
+    local y = 15
 
     -- 渲染自定义列表
     local customList = {}
@@ -94,7 +115,7 @@ local function EX_RegisterLayout()
     table.sort(customList)
 
     for _, id in ipairs(customList) do
-        table.insert(layout, {
+        table.insert(layout.cards[3].content.items, {
             key = id,
             parentKey = "CustomItems",
             subKey = id,
@@ -102,7 +123,7 @@ local function EX_RegisterLayout()
             itemID = id,
             x = 1,
             y = y,
-            w = 140,
+            w = 200,
             h = 8,
             canDelete = true, -- 显式启用删除按钮（上报事件模式）
             labelSize = 18
@@ -110,10 +131,7 @@ local function EX_RegisterLayout()
         y = y + 10
     end
 
-    y = y + 4
-    table.insert(layout,
-        { key = "sub_p", type = "subheader", x = 1, y = y, w = 188, h = 4, label = L["预设项目 (仅支持开启/禁用)"] })
-    y = y + 8
+    y = 1
 
     local cats = { { k = "food", n = L["消耗品"] }, { k = "key", n = L["钥石设置"] }, { k = "map", n = L["副本地图"] } }
     for _, cat in ipairs(cats) do
@@ -122,13 +140,13 @@ local function EX_RegisterLayout()
         local shouldShow = (not isBetaOnly) or ExwindTools.IsBeta
 
         if shouldShow then
-            table.insert(layout,
+            table.insert(layout.cards[4].content.items,
                 {
                     key = "t_" .. cat.k,
                     type = "description",
                     x = 1,
                     y = y,
-                    w = 188,
+                    w = 200,
                     h = 4,
                     label = "|cffffd100" .. cat.n ..
                         "|r"
@@ -137,7 +155,7 @@ local function EX_RegisterLayout()
             for _, it in ipairs(PRESET_ITEMS) do
                 if it.cat == cat.k then
                     if not EX_DB.Items[it.id] then EX_DB.Items[it.id] = { enabled = true, quantity = it.buy } end
-                    table.insert(layout, {
+                    table.insert(layout.cards[4].content.items, {
                         key = it.id,
                         parentKey = "Items",
                         subKey = it.id,
@@ -145,7 +163,7 @@ local function EX_RegisterLayout()
                         itemID = it.id,
                         x = 1,
                         y = y,
-                        w = 140,
+                        w = 200,
                         h = 8,
                         canDelete = false, -- 预设项目不可删除
                         labelSize = 18

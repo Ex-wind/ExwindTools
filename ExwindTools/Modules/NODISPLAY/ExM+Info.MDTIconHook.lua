@@ -167,26 +167,41 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
     -- key/type/items、apply.func、NPC/法术解析与标记写入顺序均属业务合同，禁止修改；header/subheader 不等于卡片容器。
     local layout = {
-        { key = "header", type = "header", x = 1, y = 1, w = 200, h = 8, label = L["MDT 法术图标替换"], labelSize = 25 },
-        { key = "enabled", type = "checkbox", x = 1, y = 9, w = 40, h = 8, label = L["开启功能"] },
-        { key = "sub_c", type = "subheader", x = 1, y = 21, w = 84, h = 8, label = L["自定义图标 (NPCID = SpellID) 用回车换行分隔"] },
-        { key = "customIconsText", type = "input", x = 1, y = 33, w = 84, h = 65, label = "" },
-        { key = "sub_b", type = "subheader", x = 95, y = 20, w = 89, h = 8, label = L["黑名单 NPC (ID 用逗号分隔)"] },
-        { key = "blacklistText", type = "input", x = 97, y = 36, w = 87, h = 62, label = "" },
-        { key = "apply", type = "button", x = 1, y = 104, w = 46, h = 6, label = L["保存并刷新"] },
-        { key = "interruptMarkerIcon", type = "dropdown", x = 1, y = 117, w = 46, h = 6, label = L["打断标记"], items = { { "无", "0" }, { "星星 (1)", "1" }, { "圆圈 (2)", "2" }, { "菱形 (3)", "3" }, { "三角 (4)", "4" }, { "月亮 (5)", "5" }, { "方块 (6)", "6" }, { "叉叉 (7)", "7" }, { "骷髅 (8)", "8" } } },
-        { key = "btn_apply_interrupt_markers", type = "button", x = 50, y = 117, w = 46, h = 6, label = L["给所有打断怪标记"] },
-        { key = "eliteMarkerIcon", type = "dropdown", x = 1, y = 129, w = 46, h = 6, label = L["精英标记"], items = { { "无", "0" }, { "星星 (1)", "1" }, { "圆圈 (2)", "2" }, { "菱形 (3)", "3" }, { "三角 (4)", "4" }, { "月亮 (5)", "5" }, { "方块 (6)", "6" }, { "叉叉 (7)", "7" }, { "骷髅 (8)", "8" } } },
-        { key = "btn_apply_elite_markers", type = "button", x = 51, y = 129, w = 46, h = 6, label = L["给所有精英怪标记"] },
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["通用设置"], collapsible = true,
+                content = { kind = "grid", items = {
+                    { key = "enabled", type = "checkbox", x = 1, y = 1, w = 46, h = 8, label = L["开启功能"] },
+                } },
+            },
+            {
+                id = "custom_icons", title = L["自定义图标 (NPCID = SpellID) 用回车换行分隔"], collapsible = true,
+                placement = { target = "common", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "customIconsText", type = "input", x = 1, y = 1, w = 200, h = 65, label = "" },
+                } },
+            },
+            {
+                id = "blacklist", title = L["黑名单 NPC (ID 用逗号分隔)"], collapsible = true,
+                placement = { target = "custom_icons", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "blacklistText", type = "input", x = 1, y = 1, w = 200, h = 62, label = "" },
+                    { key = "apply", type = "button", x = 1, y = 66, w = 46, h = 6, label = L["保存并刷新"], func = ApplyCustomSettings },
+                } },
+            },
+            {
+                id = "markers", title = L["标记设置"], collapsible = true,
+                placement = { target = "blacklist", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "interruptMarkerIcon", type = "dropdown", x = 1, y = 1, w = 46, h = 6, label = L["打断标记"], items = { { "无", "0" }, { "星星 (1)", "1" }, { "圆圈 (2)", "2" }, { "菱形 (3)", "3" }, { "三角 (4)", "4" }, { "月亮 (5)", "5" }, { "方块 (6)", "6" }, { "叉叉 (7)", "7" }, { "骷髅 (8)", "8" } } },
+                    { key = "btn_apply_interrupt_markers", type = "button", x = 51, y = 1, w = 46, h = 6, label = L["给所有打断怪标记"] },
+                    { key = "eliteMarkerIcon", type = "dropdown", x = 101, y = 1, w = 46, h = 6, label = L["精英标记"], items = { { "无", "0" }, { "星星 (1)", "1" }, { "圆圈 (2)", "2" }, { "菱形 (3)", "3" }, { "三角 (4)", "4" }, { "月亮 (5)", "5" }, { "方块 (6)", "6" }, { "叉叉 (7)", "7" }, { "骷髅 (8)", "8" } } },
+                    { key = "btn_apply_elite_markers", type = "button", x = 151, y = 1, w = 46, h = 6, label = L["给所有精英怪标记"] },
+                } },
+            },
+        },
     }
-
-
-    for _, item in ipairs(layout) do
-        if item.key == "apply" then
-            item.func = ApplyCustomSettings
-            break
-        end
-    end
 
     ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
 end

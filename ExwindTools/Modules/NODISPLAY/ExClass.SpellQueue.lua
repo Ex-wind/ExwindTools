@@ -52,7 +52,7 @@ local function EX_RegisterLayout()
     --GRID引擎数据
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；live_status 是设置页文字，不是运行时锚点。
     -- AI/固定模式的 key、专精 parentKey 切换、专精业务顺序与 CVar 回调禁止修改；header/divider 只是旧布局项，不等于卡片容器。
-    local layout = {
+    local items = {
         { key = "header", type = "header", x = 8, y = 4, w = 193, h = 8, label = L["全职业延迟容限 (SpellQueueWindow)"], labelSize = 25 },
         { key = "desc", type = "description", x = 8, y = 16, w = 120, h = 8, label = L["AI模式：容限 = 延迟 + 偏移。固定模式：容限 = 设定值。"] },
         { key = "live_status", type = "description", x = 8, y = 20, w = 193, h = 8, label = GetCurrentInfo() },
@@ -121,8 +121,8 @@ local function EX_RegisterLayout()
     local targetStorage = EX_DB.aiMode and "specsAI" or "specs"
     local suffix = EX_DB.aiMode and " |cff00ffff(AI)|r" or ""
 
-    for i = 1, #layout do
-        local item = layout[i]
+    for i = 1, #items do
+        local item = items[i]
 
         -- 全局默认值切换 (双向修复)
         -- 无论当前 layout 里写的是 globalFixed 还是 globalOffset，都根据 aiMode 强制修正
@@ -151,6 +151,51 @@ local function EX_RegisterLayout()
                 -- 还原 Label (如果有 baseLabel)
                 if item.baseLabel then item.label = item.baseLabel end
             end
+        end
+    end
+
+    local layout = {
+        version = 1,
+        cards = {
+            { id = "overview", title = L["全职业延迟容限 (SpellQueueWindow)"], collapsible = true,
+                content = { kind = "grid", items = {} } },
+            { id = "core", title = L["核心控制"], collapsible = true,
+                placement = { target = "overview", side = "below" }, content = { kind = "grid", items = {} } },
+            { id = "plate", title = L["板甲职业"], collapsible = true,
+                placement = { target = "core", side = "below" }, content = { kind = "grid", items = {} } },
+            { id = "mail", title = L["锁甲职业"], collapsible = true,
+                placement = { target = "plate", side = "below" }, content = { kind = "grid", items = {} } },
+            { id = "leather", title = L["皮甲职业"], collapsible = true,
+                placement = { target = "mail", side = "below" }, content = { kind = "grid", items = {} } },
+            { id = "cloth", title = L["布甲职业"], collapsible = true,
+                placement = { target = "leather", side = "below" }, content = { kind = "grid", items = {} } },
+        },
+    }
+    local cardIndex = { overview = 1, core = 2, plate = 3, mail = 4, leather = 5, cloth = 6 }
+    local currentCard = "overview"
+    local slotX = { 1, 51, 101, 151 }
+    for _, item in ipairs(items) do
+        if item.key == "ctrl_header" then
+            currentCard = "core"
+        elseif item.key == "h_板甲职业" then
+            currentCard = "plate"
+        elseif item.key == "h_锁甲职业" then
+            currentCard = "mail"
+        elseif item.key == "h_皮甲职业" then
+            currentCard = "leather"
+        elseif item.key == "h_布甲职业" then
+            currentCard = "cloth"
+        elseif item.type ~= "header" and item.type ~= "subheader" and item.type ~= "divider" then
+            local target = layout.cards[cardIndex[currentCard]].content.items
+            local index = #target + 1
+            if currentCard == "overview" then
+                item.x, item.y, item.w = 1, 1 + ((index - 1) * 14), 200
+            else
+                item.x = slotX[((index - 1) % 4) + 1]
+                item.y = 1 + (math.floor((index - 1) / 4) * 14)
+                item.w = 46
+            end
+            target[index] = item
         end
     end
 

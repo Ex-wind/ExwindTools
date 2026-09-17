@@ -368,89 +368,95 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
         -- [卡片迁移边界：设置页] 仅静态项及动态预设/自定义记录的 x/y/w/h、卡片分组可迁移。
         -- 预设优先级与枚举顺序、ID/key/parentKey/subKey、增删按钮及自动对话回调禁止修改；标题项不等于卡片容器。
         local layout = {
-            { key = "header", type = "header", x = 1, y = 4, w = 200, h = 6, label = L["对话ID显示 / 自动对话"], labelSize = 25 },
-            { key = "enabled", type = "checkbox", x = 1, y = 12, w = 80, h = 6, label = L["启用功能"] },
-            { key = "showQuestID", type = "checkbox", x = 1, y = 18, w = 80, h = 6, label = L["显示任务 ID"] },
-            { key = "showOptionID", type = "checkbox", x = 1, y = 24, w = 80, h = 6, label = L["显示对话选项 ID"] },
-            { key = "autoSelectEnabled", type = "checkbox", x = 1, y = 30, w = 80, h = 6, label = L["启用自动对话"] },
-            { key = "showActionButton", type = "checkbox", x = 1, y = 40, w = 80, h = 8, label = L["显示加入按钮"] },
-            { key = "buttonPosition", type = "dropdown", x = 84, y = 41, w = 64, h = 8, label = L["按钮位置"], items = { { L["前面"], "LEFT" }, { L["后面"], "RIGHT" } } },
-            { key = "sub_manual", type = "subheader", x = 1, y = 53, w = 192, h = 4, label = L["手动添加"] },
-            { key = "manualAddID", type = "input", x = 15, y = 60, w = 46, h = 6, label = L["对话 ID"], labelPos = "left", labelSize = 16 },
-            { key = "manualAddName", type = "input", x = 76, y = 60, w = 46, h = 6, label = L["名称"], labelPos = "left", labelSize = 16 },
-            { key = "btn_add_auto_option", type = "button", x = 135, y = 60, w = 46, h = 6, label = L["添加"] },
+            version = 1,
+            cards = {
+                {
+                    id = "common", title = L["通用设置"], collapsible = true,
+                    content = { kind = "grid", items = {
+                        { key = "enabled", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["启用功能"] },
+                        { key = "showQuestID", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["显示任务 ID"] },
+                        { key = "showOptionID", type = "checkbox", x = 101, y = 1, w = 46, h = 6, label = L["显示对话选项 ID"] },
+                        { key = "autoSelectEnabled", type = "checkbox", x = 151, y = 1, w = 46, h = 6, label = L["启用自动对话"] },
+                        { key = "showActionButton", type = "checkbox", x = 1, y = 15, w = 46, h = 8, label = L["显示加入按钮"] },
+                        { key = "buttonPosition", type = "dropdown", x = 51, y = 15, w = 46, h = 8, label = L["按钮位置"], items = { { L["前面"], "LEFT" }, { L["后面"], "RIGHT" } } },
+                    } },
+                },
+                {
+                    id = "manual", title = L["手动添加"], collapsible = true,
+                    placement = { target = "common", side = "below" },
+                    content = { kind = "grid", items = {
+                        { key = "manualAddID", type = "input", x = 1, y = 1, w = 46, h = 6, label = L["对话 ID"], labelPos = "left", labelSize = 16 },
+                        { key = "manualAddName", type = "input", x = 51, y = 1, w = 46, h = 6, label = L["名称"], labelPos = "left", labelSize = 16 },
+                        { key = "btn_add_auto_option", type = "button", x = 101, y = 1, w = 46, h = 6, label = L["添加"] },
+                    } },
+                },
+                {
+                    id = "presets", title = L["预设自动对话"], collapsible = true,
+                    placement = { target = "manual", side = "below" },
+                    content = { kind = "grid", items = {} },
+                },
+                {
+                    id = "custom", title = L["自定义自动对话"], collapsible = true,
+                    placement = { target = "presets", side = "below" },
+                    content = { kind = "grid", items = {} },
+                },
+            },
         }
 
-        local y = 70
-
-        layout[#layout + 1] = { key = "sub_preset", type = "subheader", x = 1, y = y, w = 194, h = 7, label = L
-        ["预设自动对话"] }
-        y = y + 10
+        local y = 1
 
         for _, definition in ipairs(PRESET_DEFINITIONS) do
-            layout[#layout + 1] = {
+            layout.cards[3].content.items[#layout.cards[3].content.items + 1] = {
                 key = "preset_enabled_" .. definition.key,
                 parentKey = "presetStates." .. definition.key,
                 subKey = "enabled",
                 type = "checkbox",
                 x = 1,
                 y = y,
-                w = 20,
+                w = 46,
                 h = 6,
                 label = "",
             }
-            layout[#layout + 1] = {
+            layout.cards[3].content.items[#layout.cards[3].content.items + 1] = {
                 key = "preset_name_" .. definition.key,
                 type = "description",
-                x = 21,
+                x = 51,
                 y = y,
                 w = 96,
                 h = 6,
                 label = GetPresetTitle(definition),
             }
-            layout[#layout + 1] = {
+            layout.cards[3].content.items[#layout.cards[3].content.items + 1] = {
                 key = "preset_ids_" .. definition.key,
                 type = "description",
-                x = 119,
+                x = 151,
                 y = y,
-                w = 80,
+                w = 46,
                 h = 6,
                 label = GetPresetIDsText(definition),
             }
-            y = y + 10
+            y = y + 14
         end
 
-        layout[#layout + 1] = {
+        layout.cards[3].content.items[#layout.cards[3].content.items + 1] = {
             key = "desc_preset_note",
             type = "description",
-            x = 8,
+            x = 1,
             y = y,
-            w = 192,
+            w = 200,
             h = 8,
             label = L["若某个自定义 ID 后续进入预设，将自动移除自定义项并以预设为准。"],
         }
-        y = y + 16
-
-        layout[#layout + 1] = {
-            key = "sub_custom",
-            type = "subheader",
-            x = 8,
-            y = y,
-            w = 192,
-            h = 4,
-            label = L
-                ["自定义自动对话"]
-        }
-        y = y + 8
+        y = 1
 
         local ids = GetSortedCustomOptionIDs()
         if #ids == 0 then
-            layout[#layout + 1] = {
+            layout.cards[4].content.items[#layout.cards[4].content.items + 1] = {
                 key = "empty_custom",
                 type = "description",
-                x = 8,
+                x = 1,
                 y = y,
-                w = 192,
+                w = 200,
                 h = 8,
                 label = L["当前没有自定义自动对话项。点击对话行图标，或在上方手动添加。"],
             }
@@ -462,49 +468,49 @@ local function RebuildLayoutAndRefreshUI(refreshGossip)
                 local idLabel = instanceName
                     and string.format("(%d) [%s]", optionID, instanceName)
                     or string.format("(%d)", optionID)
-                layout[#layout + 1] = {
+                layout.cards[4].content.items[#layout.cards[4].content.items + 1] = {
                     key = "custom_enabled_" .. optionID,
                     parentKey = entryPath,
                     subKey = "enabled",
                     type = "checkbox",
-                    x = 8,
+                    x = 1,
                     y = y,
-                    w = 16,
+                    w = 46,
                     h = 8,
                     label = "",
                 }
-                layout[#layout + 1] = {
+                layout.cards[4].content.items[#layout.cards[4].content.items + 1] = {
                     key = "custom_name_" .. optionID,
                     parentKey = entryPath,
                     subKey = "name",
                     type = "input",
-                    x = 20,
+                    x = 51,
                     y = y,
-                    w = 88,
+                    w = 46,
                     h = 8,
                     label = "",
                     labelPos = "left",
                     labelSize = 16,
                 }
-                layout[#layout + 1] = {
+                layout.cards[4].content.items[#layout.cards[4].content.items + 1] = {
                     key = "custom_id_" .. optionID,
                     type = "description",
-                    x = 112,
+                    x = 101,
                     y = y,
-                    w = 64,
+                    w = 46,
                     h = 8,
                     label = idLabel,
                 }
-                layout[#layout + 1] = {
+                layout.cards[4].content.items[#layout.cards[4].content.items + 1] = {
                     key = "btn_delete_custom_" .. optionID,
                     type = "button",
-                    x = 176,
+                    x = 151,
                     y = y,
-                    w = 24,
+                    w = 46,
                     h = 8,
                     label = L["删除"],
                 }
-                y = y + 12
+                y = y + 14
             end
         end
 

@@ -879,7 +879,7 @@ function EX_RegisterLayout()
 
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；live_status 仍是设置页文字，不是运行时锚点。
     -- 专精列表顺序、key/type/parentKey、测试按钮、CVar/overlay 回调及动态刷新禁止修改；现成复合控件整体引用，header/divider 不等于容器。
-    local layout = {
+    local items = {
         { key = "header", type = "header", x = 8, y = 4, w = 193, h = 12, label = L["法术触发透明度 (SpellActivationOverlay)"], labelSize = 25 },
         { key = "desc", type = "description", x = 8, y = 16, w = 120, h = 8, label = L["根据当前专精自动调整屏幕中心法术触发特效的透明度。"] },
         { key = "live_status", type = "description", x = 8, y = 24, w = 120, h = 8, label = GetStatusText() },
@@ -957,6 +957,71 @@ function EX_RegisterLayout()
 
 
 
+
+    local layout = {
+        version = 1,
+        cards = {
+            { id = "overview", title = L["法术触发透明度 (SpellActivationOverlay)"], collapsible = true,
+                content = { kind = "grid", items = {} } },
+            { id = "common", title = L["常用设置"], collapsible = true,
+                placement = { target = "overview", side = "below" }, content = { kind = "grid", items = {} } },
+            { id = "plate", title = L["板甲职业"], collapsible = true,
+                placement = { target = "common", side = "below" }, content = { kind = "grid", items = {} } },
+            { id = "mail", title = L["锁甲职业"], collapsible = true,
+                placement = { target = "plate", side = "below" }, content = { kind = "grid", items = {} } },
+            { id = "leather", title = L["皮甲职业"], collapsible = true,
+                placement = { target = "mail", side = "below" }, content = { kind = "grid", items = {} } },
+            { id = "cloth", title = L["布甲职业"], collapsible = true,
+                placement = { target = "leather", side = "below" }, content = { kind = "grid", items = {} } },
+            { id = "advanced", title = L["法术触发特效调整"], collapsible = true,
+                placement = { target = "cloth", side = "below" }, content = { kind = "grid", items = {} } },
+        },
+    }
+    local cardIndex = { overview = 1, common = 2, plate = 3, mail = 4, leather = 5, cloth = 6, advanced = 7 }
+    local advancedKeys = {
+        advancedEnabled = true, btn_test_stop = true, btn_test = true,
+        globalScale = true, offsetX = true, offsetY = true,
+        overlayScale = true, sideSpacing = true, vertSpacing = true,
+        pulseMagnitude = true, pulseSpeed = true, fadeSpeed = true, fadeOutSpeed = true,
+        btn_pick_lr_tex = true, btn_pick_tb_tex = true, desc_layout = true,
+    }
+    local currentCard = "plate"
+    local slotX = { 1, 51, 101, 151 }
+    for _, item in ipairs(items) do
+        local targetCard
+        if item.key == "desc" or item.key == "live_status" then
+            targetCard = "overview"
+        elseif item.key == "enabled" or item.key == "globalDefault" then
+            targetCard = "common"
+        elseif advancedKeys[item.key] then
+            targetCard = "advanced"
+        elseif item.key == "h_板甲职业" then
+            currentCard = "plate"
+        elseif item.key == "h_锁甲职业" then
+            currentCard = "mail"
+        elseif item.key == "h_皮甲职业" then
+            currentCard = "leather"
+        elseif item.key == "h_布甲职业" then
+            currentCard = "cloth"
+        elseif item.parentKey == "specs" then
+            targetCard = currentCard
+        end
+
+        if targetCard then
+            local target = layout.cards[cardIndex[targetCard]].content.items
+            local index = #target + 1
+            if targetCard == "overview" then
+                item.x, item.y, item.w = 1, 1 + ((index - 1) * 14), 200
+            elseif targetCard == "common" or targetCard == "advanced" then
+                item.x = slotX[((index - 1) % 4) + 1]
+                item.y = 1 + (math.floor((index - 1) / 4) * 14)
+                item.w = 46
+            else
+                item.x, item.y, item.w = slotX[((index - 1) % 4) + 1], 1 + (math.floor((index - 1) / 4) * 14), 46
+            end
+            target[index] = item
+        end
+    end
 
     ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
 end

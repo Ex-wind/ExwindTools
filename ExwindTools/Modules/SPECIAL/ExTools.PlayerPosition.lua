@@ -183,16 +183,31 @@ local function EX_RegisterLayout()
     -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；modulecommonsettings/icongroup/anchorgroup 必须整体引用。
     -- key/type/opts、筛选字段、世界/运行/面板 Collection 与回调禁止修改；header/subheader 不等于卡片容器。
     local layout = {
-        { key = "head", type = "header", x = 1, y = 1, w = 200, h = 6, label = L["玩家角色定位标记"], labelSize = 25 },
-        { key = "moduleCommon", type = "modulecommonsettings", x = 1, y = 10, w = 200, h = 42, measure = true,
-            label = L["模块通用设置"], opts = COMMON_OPTS },
-        { key = "anchorGroup", type = "anchorgroup", x = 1, y = 55, w = 200, h = 25, measure = true,
-            label = L["锚点设置"], opts = PLAYER_POSITION_ANCHOR_OPTS },
-        { key = "icon", type = "icongroup", x = 1, y = 83, w = 200, h = 50, label = L["图标外观"], labelSize = 20,
-            opts = {} },
-        { key = "h_visibility", type = "subheader", x = 1, y = 136, w = 200, h = 6, label = L["显示场景"], labelSize = 20 },
-        { key = "visibility", type = "multiselect", x = 1, y = 146, w = 96, h = 8, label = L["触发场景"], items = VISIBILITY_OPTIONS },
-        { key = "enabledSpecs", type = "multiselect", x = 101, y = 146, w = 96, h = 8, label = L["启用专精"], items = SPEC_OPTIONS },
+        version = 1,
+        cards = {
+            {
+                id = "common", title = L["玩家角色定位标记"], collapsible = true,
+                content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = COMMON_OPTS },
+            },
+            {
+                id = "anchor", title = L["锚点设置"], collapsible = true,
+                placement = { target = "common", side = "below" },
+                content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", opts = PLAYER_POSITION_ANCHOR_OPTS },
+            },
+            {
+                id = "icon", title = L["图标外观"], collapsible = true,
+                placement = { target = "anchor", side = "below" },
+                content = { kind = "composite", component = "icongroup", key = "icon", opts = {} },
+            },
+            {
+                id = "visibility", title = L["显示场景"], collapsible = true,
+                placement = { target = "icon", side = "below" },
+                content = { kind = "grid", items = {
+                    { key = "visibility", type = "multiselect", x = 1, y = 1, w = 96, h = 8, label = L["触发场景"], items = VISIBILITY_OPTIONS },
+                    { key = "enabledSpecs", type = "multiselect", x = 101, y = 1, w = 96, h = 8, label = L["启用专精"], items = SPEC_OPTIONS },
+                } },
+            },
+        },
     }
 
     ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)

@@ -541,7 +541,7 @@ function EXSP.CreateMainFrame()
     search:SetScript("OnTextChanged",
         function(s) if EXSP.CurrentDungeon then EXSP_RefreshMobList(EXSP.CurrentDungeon, s:GetText()) end end)
 
-    local mobSF = CreateFrame("ScrollFrame", nil, f, "ScrollFrameTemplate"); mobSF:EnableMouseWheel(true); mobSF:SetSize(285, 600); mobSF
+    local mobSF = CreateFrame("ScrollFrame", nil, f, "ScrollFrameTemplate"); mobSF:EnableMouseWheel(true); EXUI:ApplyModernScrollFrame(mobSF); mobSF:SetSize(307, 600); mobSF
         :SetPoint("TOPLEFT", 20, -180)
     local mobChild = CreateFrame("Frame", nil, mobSF); mobChild:SetSize(270, 1); mobSF:SetScrollChild(mobChild)
     EXSP.MobScroll = mobSF
@@ -566,7 +566,7 @@ function EXSP.CreateMainFrame()
     infoPanel.IDFootnote = infoPanel:CreateFontString(nil, "OVERLAY"); infoPanel.IDFootnote:SetPoint("TOP",
         infoPanel.CenterInfo, "BOTTOM", 0, -8); infoPanel.IDFootnote:SetJustifyH("CENTER")
 
-    local spellSF = CreateFrame("ScrollFrame", nil, f, "ScrollFrameTemplate"); spellSF:EnableMouseWheel(true); spellSF:SetSize(710, 640); spellSF
+    local spellSF = CreateFrame("ScrollFrame", nil, f, "ScrollFrameTemplate"); spellSF:EnableMouseWheel(true); EXUI:ApplyModernScrollFrame(spellSF); spellSF:SetSize(717, 640); spellSF
         :SetPoint("TOPLEFT", 915, -140)
     local spellChild = CreateFrame("Frame", nil, spellSF); spellChild:SetSize(700, 1); spellSF:SetScrollChild(spellChild)
     EXSP.SpellScroll = spellSF

@@ -258,8 +258,9 @@ function EXMYRUN:CreateMainFrame()
 
     f.Scroll = CreateFrame("ScrollFrame", "EXMYRUNHistoryScroll", f, "ScrollFrameTemplate")
     f.Scroll:EnableMouseWheel(true)
+    EXUI:ApplyModernScrollFrame(f.Scroll)
     f.Scroll:SetPoint("TOPLEFT", 10, headerY - 25)
-    f.Scroll:SetPoint("BOTTOMRIGHT", -30, 10)
+    f.Scroll:SetPoint("BOTTOMRIGHT", -18, 10)
 
     f.ScrollChild = CreateFrame("Frame", nil, f.Scroll)
     f.ScrollChild:SetSize(self.FrameWidth - 40, 1)

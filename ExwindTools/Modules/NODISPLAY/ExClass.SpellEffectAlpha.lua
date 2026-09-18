@@ -223,8 +223,9 @@ local function EnsureOverlayPickerFrame()
 
     local scroll = CreateFrame("ScrollFrame", nil, frame, "ScrollFrameTemplate")
     scroll:EnableMouseWheel(true)
+    EXUI:ApplyModernScrollFrame(scroll)
     scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 14, -78)
-    scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -34, 46)
+    scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -18, 46)
     frame.scroll = scroll
 
     local content = CreateFrame("Frame", nil, scroll)

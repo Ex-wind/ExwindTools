@@ -14,9 +14,9 @@ local VIS_SHOW_OUT_OF_COMBAT = "show_out_of_combat"
 local VIS_ONLY_IN_INSTANCE = "only_in_instance"
 
 local VISIBILITY_OPTIONS = {
-    { L["战斗中显示"], VIS_SHOW_IN_COMBAT },
-    { L["战斗外显示"], VIS_SHOW_OUT_OF_COMBAT },
-    { L["仅副本内"], VIS_ONLY_IN_INSTANCE },
+    { value = VIS_SHOW_IN_COMBAT, label = L["战斗中显示"] },
+    { value = VIS_SHOW_OUT_OF_COMBAT, label = L["战斗外显示"] },
+    { value = VIS_ONLY_IN_INSTANCE, label = L["仅副本内"] },
 }
 
 local SPEC_OPTION_DEFS = {
@@ -91,25 +91,16 @@ local PLAYER_POSITION_ANCHOR_OPTS = {
 -- 距离判定仍是本模块既有业务字段；这里只声明它们应由哪一个标准通用卡承载。
 -- 图标的所有视觉尺寸、颜色、裁切、边框等只由后面的 icongroup 写入 DB.icon。
 local COMMON_FIELDS = {
-    { path = "enabled", type = "checkbox", label = L["启用指示器"], row = 1, presentation = "switch" },
-    { path = "shapeType", type = "dropdown", label = L["图形样式"], row = 1,
+    { path = "enabled", type = "checkbox", label = L["启用指示器"] },
+    { path = "shapeType", type = "dropdown", label = L["图形样式"],
         items = { { L["方块 (Square)"], "SQUARE" }, { L["十字 (Cross)"], "CROSS" },
             { L["圆形 (Circle)"], "CIRCLE" }, { L["圆环 (Ring)"], "RING" }, { L["菱形 (Diamond)"], "DIAMOND" } } },
-    { path = "rangeSpell", type = "input", label = L["距离判定法术(ID)"], row = 2 },
-    { path = "rangeColor", type = "color", label = L["超距颜色"], row = 2 },
+    { path = "rangeSpell", type = "input", label = L["距离判定法术(ID)"] },
+    { path = "rangeColor", type = "color", label = L["超距颜色"] },
 }
 
 local COMMON_OPTS = {
     bindRoot = true,
-    presentation = "settings-list",
-    fixedLayout = {
-        logicalWidth = 200,
-        controlW = 46,
-        controlH = 6,
-        slotX = { 3, 53, 103, 153 },
-        firstY = 0,
-        rowStep = 14,
-    },
     fields = COMMON_FIELDS,
 }
 
@@ -127,7 +118,7 @@ local function BuildSpecOptions()
 
     for _, def in ipairs(SPEC_OPTION_DEFS) do
         local value = GetSpecOptionValue(def.specID)
-        options[#options + 1] = { BuildSpecOptionLabel(def), value }
+        options[#options + 1] = { value = value, label = BuildSpecOptionLabel(def) }
     end
 
     return options
@@ -181,57 +172,29 @@ end
 -- 01. 页面：通用设置 → 整体锚点 → 图标本体 → 既有业务筛选
 -- =============================================================
 local function EX_RegisterLayout()
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；modulecommonsettings/icongroup/anchorgroup 必须整体引用。
-    -- key/type/opts、筛选字段、世界/运行/面板 Collection 与回调禁止修改；header/subheader 不等于卡片容器。
+    -- [声明迁移边界：设置页] 三个复合控件与原多选控件各只声明一次。
+    -- key/type/opts、筛选字段、世界/运行/面板 Collection 与回调禁止修改。
     local layout = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["玩家角色定位标记"], collapsible = true,
-                content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = COMMON_OPTS },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "moduleCommon", fullWidth = true },
-                    },
+                kind = "composite", id = "common", title = L["玩家角色定位标记"],
+                component = "modulecommonsettings", key = "moduleCommon", opts = COMMON_OPTS,
+            },
+            {
+                kind = "settings", id = "visibility", title = L["显示场景"],
+                items = {
+                    { key = "visibility", type = "select", multiple = true, label = L["触发场景"], options = VISIBILITY_OPTIONS },
+                    { key = "enabledSpecs", type = "select", multiple = true, label = L["启用专精"], options = SPEC_OPTIONS },
                 },
             },
             {
-                id = "anchor", title = L["锚点设置"], collapsible = true,
-                placement = { target = "visibility", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", opts = PLAYER_POSITION_ANCHOR_OPTS },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "anchorGroup", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "anchor", title = L["锚点设置"],
+                component = "anchorgroup", key = "anchorGroup", opts = PLAYER_POSITION_ANCHOR_OPTS,
             },
             {
-                id = "icon", title = L["图标外观"], collapsible = true,
-                placement = { target = "anchor", side = "below" },
-                content = { kind = "composite", component = "icongroup", key = "icon", opts = {} },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "icon", fullWidth = true },
-                    },
-                },
-            },
-            {
-                id = "visibility", title = L["显示场景"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "grid", items = {
-                    { key = "visibility", type = "multiselect", x = 1, y = 1, w = 96, h = 8, label = L["触发场景"], items = VISIBILITY_OPTIONS },
-                    { key = "enabledSpecs", type = "multiselect", x = 101, y = 1, w = 96, h = 8, label = L["启用专精"], items = SPEC_OPTIONS },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "visibility", label = L["触发场景"] },
-                        { key = "enabledSpecs", label = L["启用专精"] },
-                    },
-                },
+                kind = "composite", id = "icon", title = L["图标外观"],
+                component = "icongroup", key = "icon", opts = {},
             },
         },
     }

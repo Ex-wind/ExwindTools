@@ -30,15 +30,15 @@ EX_DB.customNPCIcons = EX_DB.customNPCIcons or {}
 EX_DB.blacklistNPCs = EX_DB.blacklistNPCs or {}
 
 local RAID_MARKER_DROPDOWN_ITEMS = {
-    { L["无"], "0" },
-    { L["星星 (1)"], "1" },
-    { L["圆圈 (2)"], "2" },
-    { L["菱形 (3)"], "3" },
-    { L["三角 (4)"], "4" },
-    { L["月亮 (5)"], "5" },
-    { L["方块 (6)"], "6" },
-    { L["叉叉 (7)"], "7" },
-    { L["骷髅 (8)"], "8" },
+    { value = "0", label = "无" },
+    { value = "1", label = "星星 (1)" },
+    { value = "2", label = "圆圈 (2)" },
+    { value = "3", label = "菱形 (3)" },
+    { value = "4", label = "三角 (4)" },
+    { value = "5", label = "月亮 (5)" },
+    { value = "6", label = "方块 (6)" },
+    { value = "7", label = "叉叉 (7)" },
+    { value = "8", label = "骷髅 (8)" },
 }
 
 local MDT_HOOK_INSTALLED = false
@@ -165,14 +165,16 @@ local function ApplyCustomSettings()
     RefreshMDTMap(false)
 end
 
-local RAW_TABLE_COLUMNS = {
-    { title = L["原始记录"], weight = 1 },
-    { title = L["解析结果"], width = 180 },
-    { title = L["操作"], width = 96 },
-}
+local function GetRawTableColumns(kind)
+    return {
+        { title = kind == "custom" and L["NPC ID = 法术 ID"] or L["NPC ID"] },
+        { title = L["操作"] },
+    }
+end
 
 local function ReleaseRawTableControl(control)
     if not control then return end
+    if EXUI.RestoreSettingsListControl then EXUI:RestoreSettingsListControl(control) end
     local factory = _G.ExwindFactory
     if factory and control._isCompositeHost then
         factory:ReleaseCompositeHost(control)
@@ -246,11 +248,9 @@ local function GetRawTableRecords(kind)
         local lines = TokenizeLines(EX_DB.customIconsText)
         local records = {}
         for index, line in ipairs(lines) do
-            local npcID, spellID = line.text:match("(%d+)%s*=%s*(%d+)")
             records[#records + 1] = {
                 index = index,
                 text = line.text,
-                result = npcID and (npcID .. " → " .. spellID) or L["未解析"],
                 editable = true,
             }
         end
@@ -265,7 +265,6 @@ local function GetRawTableRecords(kind)
             tokenIndex = tokenIndex,
             text = token.text,
             displayText = visibleText,
-            result = token.digit and (L["NPC ID"] .. ": " .. token.text) or L["保留的原始分隔文本"],
             editable = token.digit,
         }
     end
@@ -329,34 +328,6 @@ local function AppendRawRecord(kind, text)
     return true
 end
 
-local function LayoutRawTable(host, ctx, width)
-    local controls = host._exRawTableControls
-    if not controls then return end
-    width = math.max(1, tonumber(width) or ctx:GetContentWidth())
-    local headerHeight, columnRects = EXUI:UpdateSettingsTableHeaderLayout(controls.header, width)
-    controls.header:ClearAllPoints()
-    controls.header:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
-    local top = headerHeight
-    for _, row in ipairs(controls.rows) do
-        local metrics = {
-            { height = row.input:GetHeight(), visible = true },
-            { height = row.result:GetHeight(), visible = true },
-            { height = row.action:GetHeight(), visible = true },
-        }
-        local rowHeight, rects = EXUI:UpdateSettingsTableRowLayout(row.host, width, columnRects, metrics)
-        row.host:ClearAllPoints()
-        row.host:SetPoint("TOPLEFT", host, "TOPLEFT", 0, -top)
-        for index, control in ipairs({ row.input, row.result, row.action }) do
-            control:ClearAllPoints()
-            control:SetPoint("TOPLEFT", row.host, "TOPLEFT", rects[index].x, -rects[index].y)
-            control:SetSize(rects[index].width, math.max(24, rowHeight - 16))
-        end
-        top = top + rowHeight
-    end
-    host:SetHeight(math.max(1, top))
-    if ctx.SetContentHeight then ctx:SetContentHeight(top) end
-end
-
 local function ClearRawTableRows(controls)
     for index = #controls.rows, 1, -1 do
         local row = controls.rows[index]
@@ -365,9 +336,7 @@ local function ClearRawTableRows(controls)
             row.input:SetScript("OnEnterPressed", nil)
         end
         ReleaseRawTableControl(row.action)
-        ReleaseRawTableControl(row.result)
         ReleaseRawTableControl(row.input)
-        ReleaseRawTableControl(row.host)
         controls.rows[index] = nil
     end
 end
@@ -389,16 +358,15 @@ end
 RebuildRawTable = function(host, ctx, kind)
     local controls = host._exRawTableControls
     if not controls then return end
+    ctx:ReleaseTablePresentation()
     ClearRawTableRows(controls)
     local records = GetRawTableRecords(kind)
 
     local addRow = {
-        host = EXUI:CreateSettingsTableRow(host, { isLast = #records == 0 }),
         input = EXUI:CreateEditBox(host, "", 1, 28, nil, {
             placeholder = kind == "custom" and L["NPCID = SpellID"] or L["NPC ID"],
         }),
         inputIsEditBox = true,
-        result = EXUI:CreateDescription(host, L["新增记录"], 1),
     }
     addRow.action = EXUI:CreateButton(host, 1, 28, L["添加"], function()
         if AppendRawRecord(kind, addRow.input:GetText()) then
@@ -408,10 +376,9 @@ RebuildRawTable = function(host, ctx, kind)
     end, { variant = "primary", compact = true })
     controls.rows[#controls.rows + 1] = addRow
 
-    for index, record in ipairs(records) do
+    for _, record in ipairs(records) do
         local target = record
-        local row = { host = EXUI:CreateSettingsTableRow(host, { isLast = index == #records }) }
-        row.result = EXUI:CreateDescription(host, record.result, 1)
+        local row = {}
         if record.editable then
             row.input = EXUI:CreateEditBox(host, record.text, 1, 28, nil, {})
             row.inputIsEditBox = true
@@ -447,21 +414,36 @@ RebuildRawTable = function(host, ctx, kind)
         end
         controls.rows[#controls.rows + 1] = row
     end
-    LayoutRawTable(host, ctx)
+
+    local presentedRecords = {}
+    for index = 2, #controls.rows do
+        local row = controls.rows[index]
+        presentedRecords[#presentedRecords + 1] = {
+            cells = {
+                { widget = row.input, type = row.inputIsEditBox and "input" or "text" },
+                { widget = row.action, type = row.inputIsEditBox and "button" or "text" },
+            },
+        }
+    end
+    ctx:SetTableControls({
+        add = {
+            cells = {
+                { widget = addRow.input, type = "input" },
+                { widget = addRow.action, type = "button" },
+            },
+        },
+        records = presentedRecords,
+    })
 end
 
 local Grid = ExwindTools.Grid
 if not Grid then error("MDTIconHook requires ExwindGrid", 2) end
 
-local function RegisterRawTableRenderer(rendererKey, kind)
-    Grid:RegisterCustomRenderer(rendererKey, {
-        measure = function()
-            return 38 + (1 + #GetRawTableRecords(kind)) * 56
-        end,
+local function RegisterRawTableControls(rendererKey, kind)
+    Grid:RegisterTableControls(rendererKey, {
         mount = function(host, ctx)
             host._exRawTableLease = {}
             host._exRawTableControls = {
-                header = EXUI:CreateSettingsTableHeader(host, { columns = RAW_TABLE_COLUMNS }),
                 rows = {},
             }
             RebuildRawTable(host, ctx, kind)
@@ -469,15 +451,9 @@ local function RegisterRawTableRenderer(rendererKey, kind)
         update = function(host, ctx)
             RebuildRawTable(host, ctx, kind)
         end,
-        layout = function(host, ctx, width)
-            LayoutRawTable(host, ctx, width)
-        end,
         release = function(host)
             local controls = host._exRawTableControls
-            if controls then
-                ClearRawTableRows(controls)
-                ReleaseRawTableControl(controls.header)
-            end
+            if controls then ClearRawTableRows(controls) end
             host._exRawTableControls = nil
             host._exRawTableRefreshQueued = nil
             host._exRawTableLease = nil
@@ -485,74 +461,44 @@ local function RegisterRawTableRenderer(rendererKey, kind)
     })
 end
 
-RegisterRawTableRenderer(CUSTOM_ICONS_RENDERER, "custom")
-RegisterRawTableRenderer(BLACKLIST_RENDERER, "blacklist")
+RegisterRawTableControls(CUSTOM_ICONS_RENDERER, "custom")
+RegisterRawTableControls(BLACKLIST_RENDERER, "blacklist")
 
 local function EX_RegisterLayout()
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
-    -- key/type/items、apply.func、NPC/法术解析与标记写入顺序均属业务合同，禁止修改；header/subheader 不等于卡片容器。
+    -- [声明迁移边界：设置页] 两组原始控件由唯一 shared table 承载，其余控件改为 typed sections。
+    -- key/type、apply.func、NPC/法术解析与标记写入顺序均属业务合同，禁止修改。
     local layout = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { key = "enabled", type = "checkbox", x = 1, y = 1, w = 46, h = 8, label = L["开启功能"] },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "enabled", label = L["开启功能"], presentation = "switch" },
-                    },
+                kind = "settings", id = "common", title = L["通用设置"],
+                items = {
+                    { key = "enabled", type = "switch", label = L["开启功能"] },
                 },
             },
             {
-                id = "custom_icons", title = L["自定义图标 (NPCID = SpellID) 用回车换行分隔"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "grid", items = {
-                    { key = "customIconsRecords", type = "custom", renderer = CUSTOM_ICONS_RENDERER,
-                        measure = true, x = 1, y = 1, w = 200, h = 12 },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "customIconsRecords", fullWidth = true },
-                    },
+                kind = "table", id = "custom_icons", title = L["自定义图标"],
+                key = "customIconsRecords", controlFactory = CUSTOM_ICONS_RENDERER,
+                columns = GetRawTableColumns("custom"), supportsAdd = true,
+            },
+            {
+                kind = "table", id = "blacklist", title = L["黑名单 NPC"],
+                key = "blacklistRecords", controlFactory = BLACKLIST_RENDERER,
+                columns = GetRawTableColumns("blacklist"), supportsAdd = true,
+            },
+            {
+                kind = "settings", id = "apply", title = L["保存并刷新"],
+                items = {
+                    { key = "apply", type = "button", label = L["保存并刷新"], func = ApplyCustomSettings },
                 },
             },
             {
-                id = "blacklist", title = L["黑名单 NPC (ID 用逗号分隔)"], collapsible = true,
-                placement = { target = "custom_icons", side = "below" },
-                content = { kind = "grid", items = {
-                    { key = "blacklistRecords", type = "custom", renderer = BLACKLIST_RENDERER,
-                        measure = true, x = 1, y = 1, w = 200, h = 12 },
-                    { key = "apply", type = "button", x = 1, y = 66, w = 46, h = 6, label = L["保存并刷新"], func = ApplyCustomSettings },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "blacklistRecords", fullWidth = true },
-                        { key = "apply", label = L["保存并刷新"] },
-                    },
-                },
-            },
-            {
-                id = "markers", title = L["标记设置"], collapsible = true,
-                placement = { target = "blacklist", side = "below" },
-                content = { kind = "grid", items = {
-                    { key = "interruptMarkerIcon", type = "dropdown", x = 1, y = 1, w = 46, h = 6, label = L["打断标记"], items = { { "无", "0" }, { "星星 (1)", "1" }, { "圆圈 (2)", "2" }, { "菱形 (3)", "3" }, { "三角 (4)", "4" }, { "月亮 (5)", "5" }, { "方块 (6)", "6" }, { "叉叉 (7)", "7" }, { "骷髅 (8)", "8" } } },
-                    { key = "btn_apply_interrupt_markers", type = "button", x = 51, y = 1, w = 46, h = 6, label = L["给所有打断怪标记"] },
-                    { key = "eliteMarkerIcon", type = "dropdown", x = 101, y = 1, w = 46, h = 6, label = L["精英标记"], items = { { "无", "0" }, { "星星 (1)", "1" }, { "圆圈 (2)", "2" }, { "菱形 (3)", "3" }, { "三角 (4)", "4" }, { "月亮 (5)", "5" }, { "方块 (6)", "6" }, { "叉叉 (7)", "7" }, { "骷髅 (8)", "8" } } },
-                    { key = "btn_apply_elite_markers", type = "button", x = 151, y = 1, w = 46, h = 6, label = L["给所有精英怪标记"] },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "interruptMarkerIcon", label = L["打断标记"] },
-                        { key = "btn_apply_interrupt_markers", label = L["给所有打断怪标记"] },
-                        { key = "eliteMarkerIcon", label = L["精英标记"] },
-                        { key = "btn_apply_elite_markers", label = L["给所有精英怪标记"] },
-                    },
+                kind = "settings", id = "markers", title = L["标记设置"],
+                items = {
+                    { key = "interruptMarkerIcon", type = "select", label = L["打断标记"], options = RAID_MARKER_DROPDOWN_ITEMS },
+                    { key = "btn_apply_interrupt_markers", type = "button", label = L["给所有打断怪标记"] },
+                    { key = "eliteMarkerIcon", type = "select", label = L["精英标记"], options = RAID_MARKER_DROPDOWN_ITEMS },
+                    { key = "btn_apply_elite_markers", type = "button", label = L["给所有精英怪标记"] },
                 },
             },
         },

@@ -15,31 +15,24 @@ local EXWIND_MODULE_KEY = "ExTools.PveInfoPanel"
 -- 第一部分：Grid 布局定义
 -- =============================================================
 local function EX_RegisterLayout()
-    -- [卡片迁移边界：设置页] 仅下列设置 layout 的 x/y/w/h 与卡片分组可迁移。
-    -- key/type、PVE 附着字段与自有侧栏的内容顺序/按钮/显隐回调禁止修改；header/description 不等于卡片容器。
+    -- [声明迁移边界：设置页] 仅把原设置控件改为唯一 settings 声明。
+    -- key/type、PVE 附着字段与自有侧栏的内容顺序/按钮/显隐回调禁止修改。
     local layout = {
         version = 1,
-        settingsPageDescriptions = {
-            { card = "common", key = "desc" },
-        },
-        cards = {
+        sections = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 6, label = L["自动依附在 PVE 面板侧边的信息架。"] },
-                    { key = "enabled", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["启用模块"] },
-                    { key = "side", type = "select", x = 51, y = 15, w = 46, h = 6, label = L["依附侧"], options = { ["LEFT"] = L["左侧"], ["RIGHT"] = L["右侧"] } },
-                    { key = "offsetX", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["水平偏移 (X)"], min = -100, max = 100, step = 1 },
-                    { key = "offsetY", type = "slider", x = 151, y = 15, w = 46, h = 6, label = L["垂直偏移 (Y)"], min = -500, max = 500, step = 5 },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "enabled", label = L["启用模块"], presentation = "switch" },
-                        { key = "side", label = L["依附侧"] },
-                        { key = "offsetX", label = L["水平偏移 (X)"] },
-                        { key = "offsetY", label = L["垂直偏移 (Y)"] },
-                    },
+                kind = "settings",
+                id = "common",
+                title = L["通用设置"],
+                description = L["自动依附在 PVE 面板侧边的信息架。"],
+                items = {
+                    { key = "enabled", type = "switch", label = L["启用模块"] },
+                    { key = "side", type = "select", label = L["依附侧"], options = {
+                        { value = "LEFT", label = L["左侧"] },
+                        { value = "RIGHT", label = L["右侧"] },
+                    } },
+                    { key = "offsetX", type = "slider", label = L["水平偏移 (X)"], min = -100, max = 100, step = 1 },
+                    { key = "offsetY", type = "slider", label = L["垂直偏移 (Y)"], min = -500, max = 500, step = 5 },
                 },
             },
         },

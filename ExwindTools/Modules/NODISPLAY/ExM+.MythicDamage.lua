@@ -124,44 +124,29 @@ local function EX_RegisterLayout()
         level, seasonID, 1.76, multi
     )
 
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
-    -- 上方倍率/说明计算、key/type、按钮与刷新绑定禁止修改；description/header 只是内容项，不等于卡片容器。
+    -- [声明迁移边界：设置页] 仅把原设置控件改为 settings 声明。
+    -- 上方倍率/说明计算、key/type、按钮与刷新绑定禁止修改。
     local layout = {
         version = 1,
-        settingsPageDescriptions = {
-            { card = "common", key = "desc" },
-        },
-        cards = {
+        sections = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 8, label = L["法术描述的数值会随着层数改变"] },
-                    { key = "useColoredNumbers", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["数值染色"] },
-                    { key = "abbreviateNumbers", type = "checkbox", x = 51, y = 15, w = 46, h = 6, label = L["简写数字 (万/亿)"] },
-                    { key = "mythicLevel", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["模拟层数 (0-30)"], min = 0, max = 30 },
-                    { key = "damageColor", type = "color", x = 151, y = 15, w = 46, h = 6, label = L["伤害数值颜色"] },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "useColoredNumbers", label = L["数值染色"], presentation = "switch" },
-                        { key = "abbreviateNumbers", label = L["简写数字 (万/亿)"], presentation = "switch" },
-                        { key = "mythicLevel", label = L["模拟层数 (0-30)"] },
-                        { key = "damageColor", label = L["伤害数值颜色"] },
-                    },
+                kind = "settings",
+                id = "common",
+                title = L["通用设置"],
+                description = L["法术描述的数值会随着层数改变"],
+                items = {
+                    { key = "useColoredNumbers", type = "switch", label = L["数值染色"] },
+                    { key = "abbreviateNumbers", type = "switch", label = L["简写数字 (万/亿)"] },
+                    { key = "mythicLevel", type = "slider", label = L["模拟层数 (0-30)"], min = 0, max = 30 },
+                    { key = "damageColor", type = "color", label = L["伤害数值颜色"] },
                 },
             },
             {
-                id = "tools", title = L["工具"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "grid", items = {
-                    { key = "openSpellInfo", type = "button", x = 1, y = 1, w = 46, h = 6, label = L["大米怪物法术"] },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "openSpellInfo", label = L["大米怪物法术"] },
-                    },
+                kind = "settings",
+                id = "tools",
+                title = L["工具"],
+                items = {
+                    { key = "openSpellInfo", type = "button", label = L["大米怪物法术"] },
                 },
             },
         },

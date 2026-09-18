@@ -773,7 +773,6 @@ local function EX_RegisterLayout()
                     rows = {
                         { key = "showBg", label = L["显示背景"], presentation = "switch" },
                         { key = "showBorder", label = L["显示边框"], presentation = "switch" },
-                        { key = "bgGroup", fullWidth = true },
                         { key = "texture", label = L["背景材质"] },
                         { key = "bgColor", label = L["背景颜色"] },
                         { key = "borderTexture", label = L["边框材质"] },
@@ -822,7 +821,6 @@ local function EX_RegisterLayout()
                         { key = "btn_down", fullWidth = true },
                         { key = "btn_add", fullWidth = true },
                         { key = "btn_delete", fullWidth = true },
-                        { key = "RowEditor", fullWidth = true },
                         { key = "enabled", label = L["启用此行"], presentation = "switch" },
                         { key = "label", label = L["名称"] },
                         { key = "key", label = L["属性"] },

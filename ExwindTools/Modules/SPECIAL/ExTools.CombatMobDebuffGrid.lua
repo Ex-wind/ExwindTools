@@ -81,9 +81,9 @@ local spellDisplayCache = {}
 local spellRendererHost, spellRendererContext
 
 local SPELL_LIST_COLUMNS = {
-    { title = L["法术 ID"], width = 180 },
-    { title = L["法术名称"], weight = 1 },
-    { title = L["操作"], width = 96 },
+    { title = L["法术 ID"] },
+    { title = L["法术名称"] },
+    { title = L["操作"] },
 }
 
 local function ParseSpellID(value)
@@ -128,8 +128,8 @@ local function BuildSpecOptions()
     local options = {}
     for _, def in ipairs(SPEC_OPTION_DEFS) do
         options[#options + 1] = {
-            string.format("|cff%s%s|r - %s", def.colorHex, L[def.className] or def.className, L[def.specName] or def.specName),
-            GetSpecOptionValue(def.specID),
+            value = GetSpecOptionValue(def.specID),
+            label = string.format("|cff%s%s|r - %s", def.colorHex, L[def.className] or def.className, L[def.specName] or def.specName),
         }
     end
     return options
@@ -256,6 +256,7 @@ end
 
 local function ReleaseSpellRendererControl(control)
     if not control then return end
+    if EXUI.RestoreSettingsListControl then EXUI:RestoreSettingsListControl(control) end
     local factory = _G.ExwindFactory
     if factory and control._isCompositeHost then
         factory:ReleaseCompositeHost(control)
@@ -335,35 +336,6 @@ local function GetSpellDisplay(value)
     return name
 end
 
-local function LayoutSpellRenderer(host, ctx, width)
-    local controls = host._exSpellListControls
-    if not controls then return end
-    width = math.max(1, tonumber(width) or ctx:GetContentWidth())
-    local headerHeight, columnRects = EXUI:UpdateSettingsTableHeaderLayout(controls.header, width)
-    controls.header:ClearAllPoints()
-    controls.header:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
-
-    local top = headerHeight
-    for _, record in ipairs(controls.rows) do
-        local metrics = {
-            { height = record.idControl:GetHeight(), visible = true },
-            { height = record.nameText:GetHeight(), visible = true },
-            { height = record.action:GetHeight(), visible = true },
-        }
-        local rowHeight, rects = EXUI:UpdateSettingsTableRowLayout(record.host, width, columnRects, metrics)
-        record.host:ClearAllPoints()
-        record.host:SetPoint("TOPLEFT", host, "TOPLEFT", 0, -top)
-        for index, control in ipairs({ record.idControl, record.nameText, record.action }) do
-            control:ClearAllPoints()
-            control:SetPoint("TOPLEFT", record.host, "TOPLEFT", rects[index].x, -rects[index].y)
-            control:SetSize(rects[index].width, math.max(24, rowHeight - 16))
-        end
-        top = top + rowHeight
-    end
-    host:SetHeight(math.max(1, top))
-    if ctx.SetContentHeight then ctx:SetContentHeight(top) end
-end
-
 local function ClearSpellRendererRows(controls)
     for index = #controls.rows, 1, -1 do
         local record = controls.rows[index]
@@ -374,7 +346,6 @@ local function ClearSpellRendererRows(controls)
         ReleaseSpellRendererControl(record.action)
         ReleaseSpellRendererControl(record.nameText)
         ReleaseSpellRendererControl(record.idControl)
-        ReleaseSpellRendererControl(record.host)
         controls.rows[index] = nil
     end
 end
@@ -392,6 +363,7 @@ end
 RebuildSpellRenderer = function(host, ctx)
     local controls = host and host._exSpellListControls
     if not controls then return end
+    ctx:ReleaseTablePresentation()
     ClearSpellRendererRows(controls)
 
     local entries = GetStoredSpellEntries(false)
@@ -401,19 +373,26 @@ RebuildSpellRenderer = function(host, ctx)
         local invalid = type(existing) == "table" and rawget(existing, "debuffSpellEntries") ~= nil
         if invalid then
             controls.rows[1] = {
-                host = EXUI:CreateSettingsTableRow(host, { isLast = true }),
                 idControl = EXUI:CreateDescription(host, L["现有法术列表不是表，已保持原值"], 1),
                 nameText = EXUI:CreateDescription(host, "—", 1),
                 action = EXUI:CreateDescription(host, "—", 1),
             }
-            LayoutSpellRenderer(host, ctx)
+            ctx:SetTableControls({
+                add = {
+                    cells = {
+                        { widget = controls.rows[1].idControl, type = "text" },
+                        { widget = controls.rows[1].nameText, type = "text" },
+                        { widget = controls.rows[1].action, type = "text" },
+                    },
+                },
+                records = {},
+            })
             return
         end
         entries = {}
     end
 
     local addRecord = {
-        host = EXUI:CreateSettingsTableRow(host, { isLast = #entries == 0 }),
         idControl = EXUI:CreateEditBox(host, "", 1, 28, nil, { placeholder = L["输入法术 ID"] }),
         idControlIsEditBox = true,
         nameText = EXUI:CreateDescription(host, L["添加新的监控法术"], 1),
@@ -432,9 +411,7 @@ RebuildSpellRenderer = function(host, ctx)
         local rowIndex = index
         local isRecord = type(entry) == "table"
         local valueText = isRecord and (entry.value == nil and "" or tostring(entry.value)) or tostring(entry)
-        local record = {
-            host = EXUI:CreateSettingsTableRow(host, { isLast = index == #entries }),
-        }
+        local record = {}
         if isRecord then
             record.idControl = EXUI:CreateEditBox(host, valueText, 1, 28, nil, {})
             record.idControlIsEditBox = true
@@ -468,7 +445,28 @@ RebuildSpellRenderer = function(host, ctx)
         end
         controls.rows[#controls.rows + 1] = record
     end
-    LayoutSpellRenderer(host, ctx)
+
+    local presentedRecords = {}
+    for index = 2, #controls.rows do
+        local record = controls.rows[index]
+        presentedRecords[#presentedRecords + 1] = {
+            cells = {
+                { widget = record.idControl, type = record.idControlIsEditBox and "input" or "text" },
+                { widget = record.nameText, type = "text" },
+                { widget = record.action, type = record.idControlIsEditBox and "button" or "text" },
+            },
+        }
+    end
+    ctx:SetTableControls({
+        add = {
+            cells = {
+                { widget = addRecord.idControl, type = "input" },
+                { widget = addRecord.nameText, type = "text" },
+                { widget = addRecord.action, type = "button" },
+            },
+        },
+        records = presentedRecords,
+    })
 end
 
 local function PickAnchor()
@@ -489,99 +487,50 @@ local ANCHOR_OPTS = {
 
 local COMMON_OPTS = {
     bindRoot = true,
-    presentation = "settings-list",
-    fixedLayout = {
-        logicalWidth = 200,
-        controlW = 46,
-        controlH = 6,
-        slotX = { 3, 53, 103, 153 },
-        firstY = 0,
-        rowStep = 14,
-    },
     fields = {
-        { path = "enabled", type = "checkbox", label = L["启用周围怪物DEBUFF监控"], row = 1, presentation = "switch" },
+        { path = "enabled", type = "checkbox", label = L["启用周围怪物DEBUFF监控"] },
     },
 }
 
--- [卡片迁移边界：设置页] 仅下列声明项的 x/y/w/h 与卡片分组可迁移；modulecommonsettings/anchorgroup 必须整体引用。
--- key/type/opts、专精与 SpellID 顺序、AuraContainer/runtime 刷新和编辑模式回调禁止修改；header/subheader 不等于卡片容器。
+-- [声明迁移边界：设置页] 原始法术控件由唯一 shared table 承载，其余控件改为 typed sections。
+-- key/type/opts、专精与 SpellID 顺序、AuraContainer/runtime 刷新和编辑模式回调禁止修改。
 ExwindTools:RegisterModuleLayout(MODULE_KEY, {
     version = 1,
-    settingsGroups = {
+    sections = {
         {
-            id = "general",
-            title = L["通用设置"],
-            collapsible = false,
-            cards = { "common", "load_conditions", "appearance" },
+            kind = "composite", id = "common", title = L["模块设置"],
+            component = "modulecommonsettings", key = "moduleCommon", opts = COMMON_OPTS,
         },
-    },
-    cards = {
         {
-            id = "common", title = L["模块设置"], collapsible = true,
-            content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = COMMON_OPTS },
-            settingsList = {
-                preserveHeader = true,
-                rows = {
-                    { key = "moduleCommon", fullWidth = true },
-                },
+            kind = "settings", id = "load_conditions", title = L["加载条件"],
+            items = {
+                { key = "enabledSpecs", type = "select", multiple = true,
+                    label = L["启用专精"], options = SPEC_OPTIONS },
             },
         },
         {
-            id = "load_conditions", title = L["加载条件"], collapsible = true,
-            placement = { target = "common", side = "below" },
-            content = { kind = "grid", items = {
-                { key = "enabledSpecs", type = "multiselect", x = 1, y = 1, w = 200, h = 8,
-                    label = L["启用专精"], items = SPEC_OPTIONS },
-            } },
-            settingsList = {
-                preserveHeader = true,
-                rows = {
-                    { key = "enabledSpecs", label = L["启用专精"] },
-                },
-            },
-        },
-        {
-            id = "anchor", title = L["锚点设置"], collapsible = true,
-            placement = { target = "appearance", side = "below" },
-            content = { kind = "composite", component = "anchorgroup", key = "anchor", opts = ANCHOR_OPTS },
-            settingsList = {
-                preserveHeader = true,
-                rows = {
-                    { key = "anchor", fullWidth = true },
-                },
-            },
-        },
-        {
-            id = "appearance", title = L["格子外观"], collapsible = true,
-            placement = { target = "load_conditions", side = "below" },
-            content = { kind = "grid", items = {
-                { key = "cellWidth", type = "slider", x = 1, y = 1, w = 46, h = 6,
+            kind = "settings", id = "appearance", title = L["格子外观"],
+            items = {
+                { key = "cellWidth", type = "slider",
                     label = L["方块宽度"], min = 8, max = 100, step = 1 },
-                { key = "cellHeight", type = "slider", x = 51, y = 1, w = 46, h = 6,
+                { key = "cellHeight", type = "slider",
                     label = L["方块高度"], min = 8, max = 100, step = 1 },
-                { key = "cellGap", type = "slider", x = 101, y = 1, w = 46, h = 6,
+                { key = "cellGap", type = "slider",
                     label = L["方块间距"], min = 0, max = 30, step = 1 },
-                { key = "cellsPerRow", type = "slider", x = 151, y = 1, w = 46, h = 6,
+                { key = "cellsPerRow", type = "slider",
                     label = L["每行方块数"], min = 1, max = 20, step = 1 },
-                { key = "noDebuffColor", type = "color", x = 1, y = 15, w = 46, h = 6,
-                    label = L["没有 Debuff 时的颜色"] },
-                { key = "debuffColor", type = "color", x = 51, y = 15, w = 46, h = 6,
-                    label = L["有 Debuff 时的颜色"] },
-                { key = "debuffSpellRecords", type = "custom", renderer = SPELL_LIST_RENDERER,
-                    measure = true, x = 1, y = 29, w = 196, h = 12 },
-            } },
-            settingsList = {
-                preserveHeader = true,
-                rows = {
-                    { key = "cellWidth", label = L["方块宽度"] },
-                    { key = "cellHeight", label = L["方块高度"] },
-                    { key = "cellGap", label = L["方块间距"] },
-                    { key = "cellsPerRow", label = L["每行方块数"] },
-                    { key = "noDebuffColor", label = L["没有 Debuff 时的颜色"] },
-                    { key = "debuffColor", label = L["有 Debuff 时的颜色"] },
-                    { key = "debuffSpellRecords", fullWidth = true },
-                },
+                { key = "noDebuffColor", type = "color", label = L["没有 Debuff 时的颜色"] },
+                { key = "debuffColor", type = "color", label = L["有 Debuff 时的颜色"] },
             },
+        },
+        {
+            kind = "table", id = "spells", title = L["监控法术"],
+            key = "debuffSpellRecords", controlFactory = SPELL_LIST_RENDERER,
+            columns = SPELL_LIST_COLUMNS, supportsAdd = true,
+        },
+        {
+            kind = "composite", id = "anchor", title = L["锚点设置"],
+            component = "anchorgroup", key = "anchor", opts = ANCHOR_OPTS,
         },
     },
 })
@@ -649,15 +598,10 @@ end
 
 local Grid = ExwindTools.Grid
 if not Grid then error("CombatMobDebuffGrid requires ExwindGrid", 2) end
-Grid:RegisterCustomRenderer(SPELL_LIST_RENDERER, {
-    measure = function()
-        local entries = GetStoredSpellEntries(false)
-        return 38 + math.max(1, 1 + (type(entries) == "table" and #entries or 0)) * 56
-    end,
+Grid:RegisterTableControls(SPELL_LIST_RENDERER, {
     mount = function(host, ctx)
         spellRendererHost, spellRendererContext = host, ctx
         host._exSpellListControls = {
-            header = EXUI:CreateSettingsTableHeader(host, { columns = SPELL_LIST_COLUMNS }),
             rows = {},
         }
         RebuildSpellRenderer(host, ctx)
@@ -666,15 +610,9 @@ Grid:RegisterCustomRenderer(SPELL_LIST_RENDERER, {
         spellRendererHost, spellRendererContext = host, ctx
         RebuildSpellRenderer(host, ctx)
     end,
-    layout = function(host, ctx, width)
-        LayoutSpellRenderer(host, ctx, width)
-    end,
     release = function(host)
         local controls = host._exSpellListControls
-        if controls then
-            ClearSpellRendererRows(controls)
-            ReleaseSpellRendererControl(controls.header)
-        end
+        if controls then ClearSpellRendererRows(controls) end
         host._exSpellListControls = nil
         if spellRendererHost == host then
             spellRendererHost, spellRendererContext = nil, nil

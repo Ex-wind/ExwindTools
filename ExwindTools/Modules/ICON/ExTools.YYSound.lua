@@ -129,6 +129,14 @@ local MODULE_SPEC = {
                         { h = 6, key = "iconTexture", label = L["图标路径/ID"], labelPos = "top", type = "input", w = 46, x = 101, y = 1 },
                     }
                 },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "enabled", label = L["启用"], presentation = "switch" },
+                        { key = "spellID", label = L["法术 ID（优先）"] },
+                        { key = "iconTexture", label = L["图标路径/ID"] },
+                    },
+                },
             },
             {
                 id = "anchor",
@@ -136,6 +144,12 @@ local MODULE_SPEC = {
                 collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "icon",
@@ -143,6 +157,12 @@ local MODULE_SPEC = {
                 collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "icon" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "icon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_time",
@@ -150,6 +170,12 @@ local MODULE_SPEC = {
                 collapsible = true,
                 placement = { target = "icon", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_time" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_time", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "sound",
@@ -164,6 +190,15 @@ local MODULE_SPEC = {
                         { h = 6, key = "useCustomSound", label = L["使用自定义路径"], type = "checkbox", w = 46, x = 101, y = 1 },
                         { h = 6, key = "randomSound", label = L["随机播放多条"], type = "checkbox", w = 46, x = 151, y = 1 },
                     }
+                },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "sound", label = L["内置音效"] },
+                        { key = "soundChannel", label = L["输出频道"] },
+                        { key = "useCustomSound", label = L["使用自定义路径"], presentation = "switch" },
+                        { key = "randomSound", label = L["随机播放多条"], presentation = "switch" },
+                    },
                 },
             },
             {
@@ -194,6 +229,13 @@ local MODULE_SPEC = {
                         { h = 6, key = "btn_test", label = L["测试效果"], type = "button", w = 46, x = 1, y = 1 },
                         { h = 6, key = "btn_stop", label = L["停止测试"], type = "button", w = 46, x = 51, y = 1 },
                     }
+                },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "btn_test", fullWidth = true },
+                        { key = "btn_stop", fullWidth = true },
+                    },
                 },
             },
         },

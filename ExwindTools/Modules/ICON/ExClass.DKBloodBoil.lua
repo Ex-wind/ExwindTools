@@ -129,6 +129,9 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
+        settingsPageDescriptions = {
+            { card = "description", key = "description" },
+        },
         cards = {
             {
                 id = "common",
@@ -140,7 +143,8 @@ local MODULE_SPEC = {
                     key = "moduleCommon",
                     opts = {
                         bindRoot = true,
-                        fields = { { label = L["启用"], path = "enabled", type = "checkbox" } },
+                        presentation = "settings-list",
+                        fields = { { label = L["启用"], path = "enabled", presentation = "switch", type = "checkbox" } },
                         fixedLayout = {
                             controlH = 6,
                             controlW = 46,
@@ -151,6 +155,12 @@ local MODULE_SPEC = {
                         },
                     },
                 },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "moduleCommon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "anchor",
@@ -158,6 +168,12 @@ local MODULE_SPEC = {
                 collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "icon",
@@ -165,6 +181,12 @@ local MODULE_SPEC = {
                 collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "icon" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "icon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_time",
@@ -172,6 +194,12 @@ local MODULE_SPEC = {
                 collapsible = true,
                 placement = { target = "icon", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_time" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_time", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "description",
@@ -183,6 +211,10 @@ local MODULE_SPEC = {
                     items = {
                         { h = 8, key = "description", label = L["血沸冷却更新时显示 3 秒倒数图标。"], type = "description", w = 200, x = 1, y = 1 },
                     },
+                },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {},
                 },
             },
         },

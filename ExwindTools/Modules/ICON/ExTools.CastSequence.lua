@@ -22,6 +22,7 @@ local ignoredRendererHost, ignoredRendererContext
 
 local function ReleaseIgnoredRendererControl(control)
     if not control then return end
+    if EXUI.RestoreSettingsListControl then EXUI:RestoreSettingsListControl(control) end
     local factory = _G.ExwindFactory
     if factory and control._isCompositeHost then
         factory:ReleaseCompositeHost(control)
@@ -83,7 +84,8 @@ local function LayoutIgnoredSpellRenderer(host, ctx, width)
         for index, control in ipairs({ record.idText, record.nameText, record.delete }) do
             control:ClearAllPoints()
             control:SetPoint("TOPLEFT", record.host, "TOPLEFT", rects[index].x, -rects[index].y)
-            control:SetSize(rects[index].width, math.max(24, rowHeight - 16))
+            EXUI:UpdateSettingsListControlLayout(control, rects[index].width)
+            if control._gridType == "GridButton" then EXUI:ApplyControlAppearance(control) end
         end
         top = top + rowHeight
     end
@@ -116,12 +118,15 @@ local function RebuildIgnoredSpellRenderer(host, ctx)
             idText = EXUI:CreateDescription(host, entry.displayID, 1),
             nameText = EXUI:CreateDescription(host, spellText, 1),
         }
+        EXUI:PrepareSettingsListControl(record.idText, { role = "label" })
+        EXUI:PrepareSettingsListControl(record.nameText, { role = "label" })
         record.delete = EXUI:CreateButton(host, 1, 28, L["删除"], function()
             if type(DB.ignoredSpellIds) == "table" then DB.ignoredSpellIds[rawID] = nil end
             if PublishRecords then PublishRecords() end
             RebuildIgnoredSpellRenderer(host, ctx)
             ctx:RequestReflow()
         end, { variant = "danger", compact = true })
+        EXUI:PrepareSettingsListControl(record.delete, {})
         controls.rows[#controls.rows + 1] = record
     end
     LayoutIgnoredSpellRenderer(host, ctx)
@@ -373,7 +378,7 @@ local Grid = ExwindTools.Grid
 if not Grid then error("CastSequence requires ExwindGrid", 2) end
 Grid:RegisterCustomRenderer(IGNORED_SPELLS_RENDERER, {
     measure = function()
-        return 38 + #GetSortedIgnoredSpellEntries(DB) * 56
+        return 38 + #GetSortedIgnoredSpellEntries(DB) * 48
     end,
     mount = function(host, ctx)
         ignoredRendererHost, ignoredRendererContext = host, ctx

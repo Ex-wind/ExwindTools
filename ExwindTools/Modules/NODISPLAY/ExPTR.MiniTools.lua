@@ -21,25 +21,19 @@ local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
 -- [布局注册] Grid 设置界面
 -- ========================================================================
 local function RegisterLayout()
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
-    -- key/type、Beta 门禁及反馈/专业按钮 hook 禁止修改；header/description 不等于卡片容器。
+    -- [声明迁移边界：设置页] 仅把原设置控件改为唯一 settings 声明。
+    -- key/type、Beta 门禁及反馈/专业按钮 hook 禁止修改。
     local layout = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { key = "blockFeedback", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["屏蔽PTR自带反馈框 (Tooltip Issue Reporter)"] },
-                    { key = "autoLearnProf", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["开启专业专精一键全学按钮"] },
-                    { key = "desc", type = "description", x = 1, y = 15, w = 200, h = 16, label = L["|cff808080* 以上功能仅在 Beta/PTR 环境生效。一键全学按钮会在专业专精页面显示。|r"] },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    descriptionKeys = { "desc" },
-                    rows = {
-                        { key = "blockFeedback", label = L["屏蔽PTR自带反馈框 (Tooltip Issue Reporter)"], presentation = "switch" },
-                        { key = "autoLearnProf", label = L["开启专业专精一键全学按钮"], presentation = "switch" },
-                    },
+                kind = "settings",
+                id = "common",
+                title = L["通用设置"],
+                description = L["|cff808080* 以上功能仅在 Beta/PTR 环境生效。一键全学按钮会在专业专精页面显示。|r"],
+                items = {
+                    { key = "blockFeedback", type = "switch", label = L["屏蔽PTR自带反馈框 (Tooltip Issue Reporter)"] },
+                    { key = "autoLearnProf", type = "switch", label = L["开启专业专精一键全学按钮"] },
                 },
             },
         },

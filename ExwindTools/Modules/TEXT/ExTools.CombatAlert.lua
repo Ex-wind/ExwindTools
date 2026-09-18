@@ -81,6 +81,14 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
+        settingsGroups = {
+            {
+                id = "general",
+                title = L["通用设置"],
+                collapsible = false,
+                cards = { "common", "messages" },
+            },
+        },
         cards = {
             {
                 id = "common", title = L["模块通用设置"], collapsible = true,

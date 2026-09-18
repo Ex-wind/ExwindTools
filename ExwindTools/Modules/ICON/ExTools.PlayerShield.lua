@@ -125,10 +125,11 @@ local MODULE_SPEC = {
                     key = "moduleCommon",
                     opts = {
                         bindRoot = true,
+                        presentation = "settings-list",
                         fields = {
-                            { label = L["启用"], path = "enabled", type = "checkbox", },
-                            { label = L["数值为零时隐藏"], path = "hideWhenZero", type = "checkbox", },
-                            { label = L["数字缩写"], path = "abbreviateNumber", type = "checkbox", },
+                            { column = 1, label = L["启用"], path = "enabled", presentation = "switch", row = 1, type = "checkbox", },
+                            { column = 2, label = L["数值为零时隐藏"], path = "hideWhenZero", presentation = "switch", row = 1, type = "checkbox", },
+                            { column = 3, label = L["数字缩写"], path = "abbreviateNumber", presentation = "switch", row = 1, type = "checkbox", },
                         },
                         fixedLayout = {
                             controlH = 6,
@@ -140,6 +141,12 @@ local MODULE_SPEC = {
                         },
                     }
                 },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "moduleCommon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "anchor",
@@ -147,6 +154,12 @@ local MODULE_SPEC = {
                 collapsible = true,
                 placement = { target = "common", side = "below" },
                 content = { kind = "composite", component = "anchorgroup", key = "anchor" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "anchor", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "icon",
@@ -154,6 +167,12 @@ local MODULE_SPEC = {
                 collapsible = true,
                 placement = { target = "anchor", side = "below" },
                 content = { kind = "composite", component = "icongroup", key = "icon" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "icon", fullWidth = true },
+                    },
+                },
             },
             {
                 id = "font_text",
@@ -161,6 +180,20 @@ local MODULE_SPEC = {
                 collapsible = true,
                 placement = { target = "icon", side = "below" },
                 content = { kind = "composite", component = "fontgroup", key = "font_text" },
+                settingsList = {
+                    preserveHeader = true,
+                    rows = {
+                        { key = "font_text", fullWidth = true },
+                    },
+                },
+            },
+        },
+        settingsGroups = {
+            {
+                id = "appearance",
+                title = L["外观"],
+                collapsible = false,
+                cards = { "icon", "font_text" },
             },
         },
     },

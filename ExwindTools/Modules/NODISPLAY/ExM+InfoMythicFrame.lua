@@ -17,25 +17,18 @@ if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 -- 4. Grid 布局
 local function EX_RegisterLayout()
-    -- [卡片迁移边界：设置页] 仅下列入口说明/打开按钮的 x/y/w/h 与卡片分组可迁移。
-    -- key/type、按钮回调及下方全屏统计面板的业务排序和渲染禁止修改；header/description 不等于卡片容器。
+    -- [声明迁移边界：设置页] 仅把原入口按钮改为唯一 settings 声明。
+    -- key/type、按钮回调及下方全屏统计面板的业务排序和渲染禁止修改。
     local layout = {
         version = 1,
-        settingsPageDescriptions = {
-            { card = "common", key = "desc" },
-        },
-        cards = {
+        sections = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 6, label = L["全屏沉浸式的战绩分析面板。显示实时评分、称号线差距、国服排名、低保进度等。"] },
-                    { key = "open", type = "button", x = 1, y = 15, w = 46, h = 6, label = L["立即打开面板"] },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "open", label = L["立即打开面板"] },
-                    },
+                kind = "settings",
+                id = "common",
+                title = L["通用设置"],
+                description = L["全屏沉浸式的战绩分析面板。显示实时评分、称号线差距、国服排名、低保进度等。"],
+                items = {
+                    { key = "open", type = "button", label = L["立即打开面板"] },
                 },
             },
         },

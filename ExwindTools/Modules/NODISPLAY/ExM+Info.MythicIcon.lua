@@ -270,40 +270,46 @@ end
 
 -- 2. Grid 布局
 local function EX_RegisterLayout()
-    -- [卡片迁移边界：设置页] 仅静态项及动态副本简称项的 x/y/w/h、卡片分组可迁移。
-    -- challengeModeID key、mapNames 绑定、地图枚举顺序、fontgroup 内容及 secure 传送业务禁止修改；header/subheader 不等于容器。
+    -- [声明迁移边界：设置页] 仅把原静态项、动态副本简称项和 fontgroup 改为 typed sections。
+    -- challengeModeID key、mapNames 绑定、地图枚举顺序、fontgroup 内容及 secure 传送业务禁止修改。
     local layout = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { key = "showBestLevel", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["显示最佳层数 (居中)"], parentKey = "displayOptions" },
-                    { key = "showScore", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["显示副本评分 (底部)"], parentKey = "displayOptions" },
-                } },
+                kind = "settings",
+                id = "common",
+                title = L["通用设置"],
+                items = {
+                    { key = "showBestLevel", type = "switch", label = L["显示最佳层数 (居中)"], parentKey = "displayOptions" },
+                    { key = "showScore", type = "switch", label = L["显示副本评分 (底部)"], parentKey = "displayOptions" },
+                },
             },
             {
-                id = "name_style", title = L["副本名称样式"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "nameStyle" },
-                settingsList = { preserveHeader = true, rows = { { key = "nameStyle", fullWidth = true } } },
+                kind = "composite",
+                id = "name_style",
+                title = L["副本名称样式"],
+                component = "fontgroup",
+                key = "nameStyle",
             },
             {
-                id = "level_style", title = L["最佳层数样式"], collapsible = true,
-                placement = { target = "name_style", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "levelStyle" },
-                settingsList = { preserveHeader = true, rows = { { key = "levelStyle", fullWidth = true } } },
+                kind = "composite",
+                id = "level_style",
+                title = L["最佳层数样式"],
+                component = "fontgroup",
+                key = "levelStyle",
             },
             {
-                id = "score_style", title = L["副本评分样式"], collapsible = true,
-                placement = { target = "level_style", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "scoreStyle" },
-                settingsList = { preserveHeader = true, rows = { { key = "scoreStyle", fullWidth = true } } },
+                kind = "composite",
+                id = "score_style",
+                title = L["副本评分样式"],
+                component = "fontgroup",
+                key = "scoreStyle",
             },
             {
-                id = "map_names", title = L["副本简称自定义 (留空则使用默认)"], collapsible = true,
-                placement = { target = "score_style", side = "below" },
-                content = { kind = "grid", items = {} },
+                kind = "settings",
+                id = "map_names",
+                title = L["副本简称自定义 (留空则使用默认)"],
+                items = {},
             },
         },
     }
@@ -312,35 +318,15 @@ local function EX_RegisterLayout()
     local maps = EXWIND_GetChallengeModeInstances()
     for index, meta in ipairs(maps) do
         local challengeModeID = tonumber(meta.challengeModeID) or 0
-        local column = (index - 1) % 4
-        local row = math.floor((index - 1) / 4)
         local shortName = EXWIND_GetLocalizedDefaultMapName(challengeModeID)
 
-        layout.cards[5].content.items[#layout.cards[5].content.items + 1] = {
+        layout.sections[5].items[#layout.sections[5].items + 1] = {
             key = tostring(challengeModeID),
             type = "input",
-            x = ({ 1, 51, 101, 151 })[column + 1],
-            y = 1 + (row * 14),
-            w = 46,
-            h = 6,
             label = string.format("%s (%d)", shortName, challengeModeID),
             parentKey = "mapNames",
             subKey = tostring(challengeModeID),
-            labelPos = "top",
         }
-    end
-
-    for _, cardIndex in ipairs({ 1, 5 }) do
-        local card = layout.cards[cardIndex]
-        local rows = {}
-        for _, item in ipairs(card.content.items) do
-            rows[#rows + 1] = {
-                key = item.key,
-                label = item.label,
-                presentation = item.type == "checkbox" and "switch" or nil,
-            }
-        end
-        card.settingsList = { preserveHeader = true, rows = rows }
     end
 
 

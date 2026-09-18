@@ -44,45 +44,40 @@ local function EX_RegisterLayout()
     local previewText = "\n|cffffd100" ..
     L["预览:"] .. "|r\n|cffaaaaff[" .. L["队伍"] .. "] [" .. playerColored .. "]: " .. out .. "|r"
 
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移。
-    -- 上方预览文本生成、key/type/items、重置按钮及施法事件订阅禁止修改；预览 description/header 不等于卡片容器。
+    -- [声明迁移边界：设置页] 仅把原设置控件与两段原说明改为 typed sections。
+    -- 上方预览文本生成、key/type、重置按钮及施法事件订阅禁止修改。
     local layout = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["喊话设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { key = "shoutTiming", type = "dropdown", x = 1, y = 1, w = 46, h = 6, label = L["喊话时机"], items = "施法开始,施法成功" },
-                    { key = "reset", type = "button", x = 51, y = 1, w = 46, h = 6, label = L["恢复默认喊话"] },
-                    { key = "teleportShoutText", type = "input", x = 1, y = 15, w = 200, h = 6, label = L["自定义喊话内容"] },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "shoutTiming", label = L["喊话时机"] },
-                        { key = "reset", label = L["恢复默认喊话"] },
-                        { key = "teleportShoutText", label = L["自定义喊话内容"] },
+                kind = "settings",
+                id = "common",
+                title = L["喊话设置"],
+                items = {
+                    {
+                        key = "shoutTiming", type = "select", label = L["喊话时机"],
+                        options = {
+                            { value = "施法开始", label = "施法开始" },
+                            { value = "施法成功", label = "施法成功" },
+                        },
                     },
+                    { key = "reset", type = "button", label = L["恢复默认喊话"] },
+                    { key = "teleportShoutText", type = "input", label = L["自定义喊话内容"] },
                 },
             },
             {
-                id = "preview", title = L["变量与预览"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "grid", items = {
-                    {
-                        key = "descInfo", type = "description", x = 1, y = 1, w = 200, h = 16,
-                        label = L["|cffffd100变量说明:|r\
+                kind = "settings",
+                id = "preview",
+                title = L["变量与预览"],
+                description = {
+                    key = "descInfo", type = "description",
+                    label = L["|cffffd100变量说明:|r\
   |cff00ff00%link|r  = 法术链接\
-  |cff00ff00%name|r = 副本名称"], labelSize = 18,
-                    },
-                    { key = "previewLabel", type = "description", x = 1, y = 19, w = 200, h = 15, label = previewText, labelSize = 18 },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "descInfo", informational = true },
-                        { key = "previewLabel", informational = true },
-                    },
+  |cff00ff00%name|r = 副本名称"],
+                },
+                items = {},
+                footerDescription = {
+                    key = "previewLabel", type = "description", label = previewText,
                 },
             },
         },

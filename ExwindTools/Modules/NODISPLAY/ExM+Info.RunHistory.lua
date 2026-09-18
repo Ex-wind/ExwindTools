@@ -36,44 +36,32 @@ local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXMYRUN_DEFAULTS)
 
 -- 2. Grid 布局
 local function EX_RegisterLayout()
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；打开按钮仍只负责进入自有窗口。
-    -- key/type、筛选/按钮绑定及历史记录排序禁止修改；header/divider 只是内容项，不等于卡片容器。
+    -- [声明迁移边界：设置页] 仅把原筛选与打开按钮改为 settings 声明；纯装饰 divider 不进入新合同。
+    -- key/type、筛选/按钮绑定及历史记录排序禁止修改。
     local layout = {
         version = 1,
-        settingsPageDescriptions = {
-            { card = "filters", key = "desc" },
-        },
-        cards = {
+        sections = {
             {
-                id = "filters", title = L["过滤设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { key = "desc", type = "description", x = 1, y = 1, w = 200, h = 6, label = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"] },
-                    { key = "filterThisWeek", type = "checkbox", x = 1, y = 15, w = 46, h = 6, label = L["只看本周记录"] },
-                    { key = "filterTimed", type = "checkbox", x = 51, y = 15, w = 46, h = 6, label = L["只看限时记录"] },
-                    { key = "size", type = "slider", x = 101, y = 15, w = 46, h = 6, label = L["显示字号"], min = 10, max = 30 },
-                    { key = "divider_1965", type = "divider", x = 1, y = 29, w = 200, h = 4, label = "新组件" },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "filterThisWeek", label = L["只看本周记录"], presentation = "switch" },
-                        { key = "filterTimed", label = L["只看限时记录"], presentation = "switch" },
-                        { key = "size", label = L["显示字号"] },
-                        { key = "divider_1965", fullWidth = true },
-                    },
+                kind = "settings",
+                id = "filters",
+                title = L["过滤设置"],
+                description = {
+                    key = "desc",
+                    type = "description",
+                    label = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"],
+                },
+                items = {
+                    { key = "filterThisWeek", type = "switch", label = L["只看本周记录"] },
+                    { key = "filterTimed", type = "switch", label = L["只看限时记录"] },
+                    { key = "size", type = "slider", label = L["显示字号"], min = 10, max = 30 },
                 },
             },
             {
-                id = "preview", title = L["记录预览"], collapsible = true,
-                placement = { target = "filters", side = "below" },
-                content = { kind = "grid", items = {
-                    { key = "open", type = "button", x = 1, y = 1, w = 46, h = 6, label = L["打开记录预览"] },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "open", label = L["打开记录预览"] },
-                    },
+                kind = "settings",
+                id = "preview",
+                title = L["记录预览"],
+                items = {
+                    { key = "open", type = "button", label = L["打开记录预览"] },
                 },
             },
         },

@@ -5,6 +5,7 @@ local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
 local EXState = ExwindTools.State
+local EXUI = ExwindTools.UI
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 -- 1. 识别 Key
@@ -247,7 +248,11 @@ function EXMRH.CreateStandaloneFrame()
     f:SetBackdropColor(unpack(EXWIND_THEME.Background))
     f:SetBackdropBorderColor(0, 0, 0, 0.8)
 
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    local closeBtn = EXUI:CreatePicButton(f, 24, 24,
+        "Interface\\Buttons\\UI-Panel-CloseButton-Up",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Down",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Highlight",
+        function() f:Hide() end, true)
     closeBtn:SetPoint("TOPRIGHT", -8, -8)
 
     tinsert(UISpecialFrames, "EXMRH_MainFrame")
@@ -259,16 +264,8 @@ function EXMRH.CreateStandaloneFrame()
     footer:SetBackdropColor(1, 1, 1, 0.04); footer:SetBackdropBorderColor(unpack(EXWIND_THEME.Border))
 
     local function CreateFootBtn(name, xOfs)
-        local btn = CreateFrame("Button", nil, footer, "BackdropTemplate")
+        local btn = EXUI:CreateButton(footer, 170, 32, name, nil, { compact = true })
         btn:SetSize(170, 32); btn:SetPoint("RIGHT", xOfs, 0)
-        btn:SetBackdrop(EXWIND_BACKDROP_ROUNDED)
-        btn:SetBackdropColor(1, 1, 1, 0.08); btn:SetBackdropBorderColor(unpack(EXWIND_THEME.Border))
-        local t = btn:CreateFontString(nil, "OVERLAY")
-        t:SetFont(MAIN_FONT, 13, "THINOUTLINE"); t:SetPoint("CENTER"); t:SetText(name); t:SetTextColor(unpack(
-            EXWIND_THEME
-            .TextMain))
-        btn:SetScript("OnEnter", function(self) self:SetBackdropColor(1, 1, 1, 0.15) end)
-        btn:SetScript("OnLeave", function(self) self:SetBackdropColor(1, 1, 1, 0.08) end)
         return btn
     end
 
@@ -369,11 +366,9 @@ function EXMRH.InitHeader()
 
     -- 3. 饰品框
     local function CreateTrinketFrame(xOfs)
-        local btn = CreateFrame("Button", nil, header, "BackdropTemplate")
+        local btn = EXUI:CreateButton(header, 142, 30, "", nil, { compact = true })
         --@@ 饰品位置
         btn:SetSize(142, 30); btn:SetPoint("TOPLEFT", infoStr, "BOTTOMLEFT", xOfs, -5)
-        btn:SetBackdrop(EXWIND_BACKDROP_ROUNDED)
-        btn:SetBackdropColor(0, 0, 0, 0.5); btn:SetBackdropBorderColor(unpack(EXWIND_THEME.Border))
 
         local ic = btn:CreateTexture(nil, "OVERLAY"); ic:SetSize(22, 22); ic:SetPoint("LEFT", 4, 0.5)
         ic:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- [标准内裁剪]

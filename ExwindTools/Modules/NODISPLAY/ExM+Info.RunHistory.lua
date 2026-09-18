@@ -204,21 +204,18 @@ function EXMYRUN:CreateMainFrame()
     f.Title:SetText(L["大秘境赛季记录"])
 
     -- 关闭按钮
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    local closeBtn = EXUI:CreatePicButton(f, 24, 24,
+        "Interface\\Buttons\\UI-Panel-CloseButton-Up",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Down",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Highlight",
+        function() f:Hide() end, true)
     closeBtn:SetSize(24, 24)
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -5, -5)
-    closeBtn:SetNormalTexture("Interface\\Buttons\\UI-Panel-CloseButton-Up")
-    closeBtn:SetPushedTexture("Interface\\Buttons\\UI-Panel-CloseButton-Down")
-    closeBtn:SetHighlightTexture("Interface\\Buttons\\UI-Panel-CloseButton-Highlight", "ADD")
-    closeBtn:SetScript("OnClick", function() f:Hide() end)
 
-    local configBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-    configBtn:SetSize(80, 22)
-    configBtn:SetPoint("TOPLEFT", 10, -10)
-    configBtn:SetText(L["设置"])
-    configBtn:SetScript("OnClick", function()
+    local configBtn = EXUI:CreateButton(f, 80, 22, L["设置"], function()
         if ExwindTools.UI then ExwindTools.UI:Toggle() end
-    end)
+    end, { compact = true })
+    configBtn:SetPoint("TOPLEFT", 10, -10)
 
     f.headers = {
         { key = "id", text = L["序号"], width = 50, justify = "CENTER" },
@@ -232,11 +229,11 @@ function EXMYRUN:CreateMainFrame()
     f.headerBtns = {}
 
     for _, col in ipairs(f.headers) do
-        local btn = CreateFrame("Button", nil, f)
+        local btn = EXUI:CreateButton(f, col.width, 20, col.text, nil, { compact = true })
         btn:SetPoint("TOPLEFT", f, "TOPLEFT", currentX, headerY)
         btn:SetSize(col.width, 20)
 
-        local text = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        local text = btn:GetFontString()
         text:SetAllPoints()
         text:SetJustifyH(col.justify)
         text:SetText(col.text)

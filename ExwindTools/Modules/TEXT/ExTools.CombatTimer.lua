@@ -81,50 +81,25 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及原生 Duration/刷新回调均属绑定或业务合同，禁止修改；复合控件整体引用，header 不等于容器。
     gui = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { h = 6, key = "enabled", label = L["启用计时器"], type = "checkbox", w = 46, x = 1, y = 1 },
-                    { h = 6, key = "resetOnBoss", label = L["首领重置"], type = "checkbox", w = 46, x = 51, y = 1 },
-                    { h = 6, key = "hideOutOfCombat", label = L["脱战隐藏"], type = "checkbox", w = 46, x = 101, y = 1 },
-                    { h = 6, key = "keepTimeOnLeaveCombat", label = L["脱战停表"], type = "checkbox", w = 46, x = 151, y = 1 },
-                    { h = 6, key = "leftText", label = L["前缀文字 (左)"], labelPos = "top", type = "input", w = 46, x = 1, y = 15 },
-                    { h = 6, key = "rightText", label = L["后缀文字 (右)"], labelPos = "top", type = "input", w = 46, x = 51, y = 15 },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "enabled", label = L["启用计时器"], presentation = "switch" },
-                        { key = "resetOnBoss", label = L["首领重置"], presentation = "switch" },
-                        { key = "hideOutOfCombat", label = L["脱战隐藏"], presentation = "switch" },
-                        { key = "keepTimeOnLeaveCombat", label = L["脱战停表"], presentation = "switch" },
-                        { key = "leftText", label = L["前缀文字 (左)"] },
-                        { key = "rightText", label = L["后缀文字 (右)"] },
-                    },
+                kind = "settings", id = "common", title = L["通用设置"],
+                items = {
+                    { key = "enabled", label = L["启用计时器"], type = "switch" },
+                    { key = "resetOnBoss", label = L["首领重置"], type = "switch" },
+                    { key = "hideOutOfCombat", label = L["脱战隐藏"], type = "switch" },
+                    { key = "keepTimeOnLeaveCombat", label = L["脱战停表"], type = "switch" },
+                    { key = "leftText", label = L["前缀文字 (左)"], type = "input" },
+                    { key = "rightText", label = L["后缀文字 (右)"], type = "input" },
                 },
             },
             {
-                id = "anchor", title = L["锚点设置"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "anchorGroup", parentKey = "font_text" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "anchorGroup", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "anchor", title = L["锚点设置"],
+                component = "anchorgroup", key = "anchorGroup", parentKey = "font_text",
             },
             {
-                id = "font_text", title = L["字体与整体位置"], collapsible = true,
-                placement = { target = "anchor", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_text" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_text", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "font_text", title = L["字体与整体位置"],
+                component = "fontgroup", key = "font_text",
             },
         },
     },

@@ -266,10 +266,10 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["模块通用设置"], collapsible = true,
-                content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = {
+                kind = "composite", id = "common", title = L["模块通用设置"],
+                component = "modulecommonsettings", key = "moduleCommon", opts = {
                     bindRoot = true,
                     presentation = "settings-list",
                     fields = {
@@ -281,29 +281,28 @@ local MODULE_SPEC = {
                         controlH = 6, controlW = 46, firstY = 0, logicalWidth = 200,
                         rowStep = 14, slotX = { 3, 53, 103, 153 },
                     },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "moduleCommon", fullWidth = true },
-                    },
                 },
             },
             {
-                id = "anchor", title = L["锚点设置"], collapsible = true,
-                placement = { target = "ignored_spells", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "anchor" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "anchor", fullWidth = true },
-                    },
+                kind = "settings", id = "ignored_spells", title = L["忽略法术"],
+                items = {
+                    { key = "ignoreSpellId", label = L["法术ID"], type = "input" },
+                    { key = "btn_addIgnore", label = L["添加/移除"], type = "button" },
+                    { key = "btn_showIgnore", label = L["显示列表"], type = "button" },
+                    { key = "btn_clearIgnore", label = L["清空列表"], type = "button" },
                 },
             },
             {
-                id = "layout", title = L["排列设置"], collapsible = true,
-                placement = { target = "anchor", side = "below" },
-                content = { kind = "composite", component = "widgetlayout", key = "layout", opts = {
+                kind = "custom", id = "ignored_spell_records", title = L["忽略法术列表"],
+                renderer = IGNORED_SPELLS_RENDERER, key = "ignoredSpellRecords",
+            },
+            {
+                kind = "composite", id = "anchor", title = L["锚点设置"],
+                component = "anchorgroup", key = "anchor",
+            },
+            {
+                kind = "composite", id = "layout", title = L["排列设置"],
+                component = "widgetlayout", key = "layout", opts = {
                     allowedDirections = {
                         "RIGHT",
                         "LEFT",
@@ -316,57 +315,15 @@ local MODULE_SPEC = {
                     includeMaxPerRow = false,
                     maxVisibleMax = 20,
                     maxVisibleMin = 1,
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "layout", fullWidth = true },
-                    },
                 },
             },
             {
-                id = "icon", title = L["图标本体"], collapsible = true,
-                placement = { target = "layout", side = "below" },
-                content = { kind = "composite", component = "icongroup", key = "icon" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "icon", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "icon", title = L["图标本体"],
+                component = "icongroup", key = "icon",
             },
             {
-                id = "font_time", title = L["倒数文字"], collapsible = true,
-                placement = { target = "icon", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_time" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_time", fullWidth = true },
-                    },
-                },
-            },
-            {
-                id = "ignored_spells", title = L["忽略法术"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "grid", items = {
-                    { h = 6, key = "ignoreSpellId", label = L["法术ID"], labelPos = "top", type = "input", w = 46, x = 1, y = 1 },
-                    { h = 6, key = "btn_addIgnore", label = L["添加/移除"], type = "button", w = 46, x = 51, y = 1 },
-                    { h = 6, key = "btn_showIgnore", label = L["显示列表"], type = "button", w = 46, x = 101, y = 1 },
-                    { h = 6, key = "btn_clearIgnore", label = L["清空列表"], type = "button", w = 46, x = 151, y = 1 },
-                    { h = 12, key = "ignoredSpellRecords", type = "custom", renderer = IGNORED_SPELLS_RENDERER,
-                        measure = true, w = 200, x = 1, y = 15 },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "ignoreSpellId", label = L["法术ID"] },
-                        { key = "btn_addIgnore", label = L["添加/移除"] },
-                        { key = "btn_showIgnore", label = L["显示列表"] },
-                        { key = "btn_clearIgnore", label = L["清空列表"] },
-                        { key = "ignoredSpellRecords", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "font_time", title = L["倒数文字"],
+                component = "fontgroup", key = "font_time",
             },
         },
     },

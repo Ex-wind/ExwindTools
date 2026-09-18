@@ -743,7 +743,11 @@ local function CreateMDTButtons()
             title:SetTextColor(1, 0.82, 0)
             panel.TitleText = title
 
-            local close = CreateFrame("Button", nil, panel, "UIPanelCloseButton")
+            local close = EXUI:CreatePicButton(panel, 24, 24,
+                "Interface\\Buttons\\UI-Panel-CloseButton-Up",
+                "Interface\\Buttons\\UI-Panel-CloseButton-Down",
+                "Interface\\Buttons\\UI-Panel-CloseButton-Highlight",
+                nil, true)
             close:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -2, -2)
             panel.CloseButton = close
 

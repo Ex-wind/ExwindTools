@@ -201,41 +201,25 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults、打断判定及计时条刷新合同禁止修改；复合控件必须整体引用，header 不等于容器。
     gui = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { h = 6, key = "enabled", label = L["启用"], type = "checkbox", w = 46, x = 1, y = 1 },
-                    { h = 6, key = "hideWhenNotInterruptible", label = L["|cffff080a隐藏不能打断的条 (隐藏钢条)|r"], type = "checkbox", w = 46, x = 51, y = 1 },
-                    { h = 6, key = "nonInterruptColor", label = L["无法打断颜色"], type = "color", w = 46, x = 101, y = 1 },
-                    { h = 6, key = "hideOnInterruptCD", label = L["打断CD时隐藏可断条"], type = "checkbox", w = 46, x = 151, y = 1 },
-                    { h = 6, key = "showInterruptCDThreshold", label = L["打断CD剩余几秒时显示(左边颜色)"], max = 10, min = 0, type = "slider", w = 46, x = 1, y = 15 },
-                    { h = 6, key = "interruptCDColor", label = L["打断CD时颜色"], type = "color", w = 46, x = 51, y = 15 },
-                    { h = 6, key = "muteSoundOnInterruptCD", label = L["打断CD时不播放音效"], type = "checkbox", w = 46, x = 101, y = 15 },
-                    { h = 6, key = "showInterruptMarkerLine", label = L["显示打断冷却标线"], type = "checkbox", w = 46, x = 151, y = 15 },
-                    { h = 6, key = "interruptMarkerColor", label = L["标线颜色"], type = "color", w = 46, x = 1, y = 29 },
-                    { h = 6, key = "interruptMarkerWidth", label = L["标线粗细"], max = 16, min = 1, step = 1, type = "slider", w = 46, x = 51, y = 29 },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "enabled", label = L["启用"], presentation = "switch" },
-                        { key = "hideWhenNotInterruptible", label = L["|cffff080a隐藏不能打断的条 (隐藏钢条)|r"], presentation = "switch" },
-                        { key = "nonInterruptColor", label = L["无法打断颜色"] },
-                        { key = "hideOnInterruptCD", label = L["打断CD时隐藏可断条"], presentation = "switch" },
-                        { key = "showInterruptCDThreshold", label = L["打断CD剩余几秒时显示(左边颜色)"] },
-                        { key = "interruptCDColor", label = L["打断CD时颜色"] },
-                        { key = "muteSoundOnInterruptCD", label = L["打断CD时不播放音效"], presentation = "switch" },
-                        { key = "showInterruptMarkerLine", label = L["显示打断冷却标线"], presentation = "switch" },
-                        { key = "interruptMarkerColor", label = L["标线颜色"] },
-                        { key = "interruptMarkerWidth", label = L["标线粗细"] },
-                    },
+                kind = "settings", id = "common", title = L["通用设置"],
+                items = {
+                    { key = "enabled", label = L["启用"], type = "switch" },
+                    { key = "hideWhenNotInterruptible", label = L["|cffff080a隐藏不能打断的条 (隐藏钢条)|r"], type = "switch" },
+                    { key = "nonInterruptColor", label = L["无法打断颜色"], type = "color" },
+                    { key = "hideOnInterruptCD", label = L["打断CD时隐藏可断条"], type = "switch" },
+                    { key = "showInterruptCDThreshold", label = L["打断CD剩余几秒时显示(左边颜色)"], min = 0, max = 10, type = "slider" },
+                    { key = "interruptCDColor", label = L["打断CD时颜色"], type = "color" },
+                    { key = "muteSoundOnInterruptCD", label = L["打断CD时不播放音效"], type = "switch" },
+                    { key = "showInterruptMarkerLine", label = L["显示打断冷却标线"], type = "switch" },
+                    { key = "interruptMarkerColor", label = L["标线颜色"], type = "color" },
+                    { key = "interruptMarkerWidth", label = L["标线粗细"], min = 1, max = 16, step = 1, type = "slider" },
                 },
             },
             {
-                id = "sound", title = L["提示音设置"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "composite", component = "soundgroup", key = "alert", opts = {
+                kind = "composite", id = "sound", title = L["提示音设置"],
+                component = "soundgroup", key = "alert", opts = {
                     secondaryCheckbox = {
                         key = "alertHostileOnly",
                         label = L["仅敌方单位"],
@@ -246,68 +230,27 @@ local MODULE_SPEC = {
                         "tts",
                     },
                     testButtonKey = "btn_testSound",
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "alert", fullWidth = true },
-                    },
                 },
             },
             {
-                id = "anchor", title = L["锚点设置"], collapsible = true,
-                placement = { target = "sound", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "anchor" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "anchor", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "anchor", title = L["锚点设置"],
+                component = "anchorgroup", key = "anchor",
             },
             {
-                id = "timer", title = L["计时条外观"], collapsible = true,
-                placement = { target = "anchor", side = "below" },
-                content = { kind = "composite", component = "timerbargroup", key = "timerGroup" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "timerGroup", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "timer", title = L["计时条外观"],
+                component = "timerbargroup", key = "timerGroup",
             },
             {
-                id = "font_spell", title = L["法术名称"], collapsible = true,
-                placement = { target = "timer", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_spell" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_spell", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "font_spell", title = L["法术名称"],
+                component = "fontgroup", key = "font_spell",
             },
             {
-                id = "font_target", title = L["目标名称"], collapsible = true,
-                placement = { target = "font_spell", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_target" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_target", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "font_target", title = L["目标名称"],
+                component = "fontgroup", key = "font_target",
             },
             {
-                id = "font_timer", title = L["时间"], collapsible = true,
-                placement = { target = "font_target", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_timer" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_timer", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "font_timer", title = L["时间"],
+                component = "fontgroup", key = "font_timer",
             },
         },
     },

@@ -495,12 +495,17 @@ function EXSP.CreateMainFrame()
 
     end
 
-    local close = CreateFrame("Button", nil, f, "UIPanelCloseButton"); close:SetPoint("TOPRIGHT", 0, 0)
+    local close = EXUI:CreatePicButton(f, 24, 24,
+        "Interface\\Buttons\\UI-Panel-CloseButton-Up",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Down",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Highlight",
+        function() f:Hide() end, true)
+    close:SetPoint("TOPRIGHT", 0, 0)
 
     -- 副本切换图标
     local dungeonIconMap = EXSP_BuildDungeonIconMap()
     for i, name in ipairs(EXSP.DungeonList) do
-        local tab = CreateFrame("Button", nil, f)
+        local tab = EXUI:CreateButton(f, 60, 60, "", nil, { compact = true })
         --@@ 副本图标尺寸 (60x60)
         tab:SetSize(60, 60); tab:SetPoint("TOPLEFT", 25 + (i - 1) * 75, -45)
         local tex = tab:CreateTexture(nil, "ARTWORK"); tex:SetAllPoints(); tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
@@ -529,7 +534,7 @@ function EXSP.CreateMainFrame()
     end
 
     -- 搜索框
-    local search = CreateFrame("EditBox", "EXSP_Search", f, "InputBoxTemplate")
+    local search = EXUI:CreateEditBox(f, L["搜索怪物..."], 275, 30, nil, {})
     --@@ 搜索框的宽度 (275)
     search:SetSize(275, 30); search:SetPoint("TOPLEFT", 20, -140); search:SetAutoFocus(false)
     search:SetText(L["搜索怪物..."]); search:SetTextInsets(10, 10, 0, 0)

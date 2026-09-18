@@ -129,19 +129,15 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
-        settingsPageDescriptions = {
-            { card = "description", key = "description" },
-        },
-        cards = {
+        description = L["血沸冷却更新时显示 3 秒倒数图标。"],
+        sections = {
             {
+                kind = "composite",
                 id = "common",
                 title = L["模块通用设置"],
-                collapsible = true,
-                content = {
-                    kind = "composite",
-                    component = "modulecommonsettings",
-                    key = "moduleCommon",
-                    opts = {
+                component = "modulecommonsettings",
+                key = "moduleCommon",
+                opts = {
                         bindRoot = true,
                         presentation = "settings-list",
                         fields = { { label = L["启用"], path = "enabled", presentation = "switch", type = "checkbox" } },
@@ -153,69 +149,28 @@ local MODULE_SPEC = {
                             rowStep = 14,
                             slotX = { 3, 53, 103, 153 },
                         },
-                    },
-                },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "moduleCommon", fullWidth = true },
-                    },
                 },
             },
             {
+                kind = "composite",
                 id = "anchor",
                 title = L["锚点设置"],
-                collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "anchor" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "anchor", fullWidth = true },
-                    },
-                },
+                component = "anchorgroup",
+                key = "anchor",
             },
             {
+                kind = "composite",
                 id = "icon",
                 title = L["DK血沸图标"],
-                collapsible = true,
-                placement = { target = "anchor", side = "below" },
-                content = { kind = "composite", component = "icongroup", key = "icon" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "icon", fullWidth = true },
-                    },
-                },
+                component = "icongroup",
+                key = "icon",
             },
             {
+                kind = "composite",
                 id = "font_time",
                 title = L["倒数文字"],
-                collapsible = true,
-                placement = { target = "icon", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_time" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_time", fullWidth = true },
-                    },
-                },
-            },
-            {
-                id = "description",
-                title = L["说明"],
-                collapsible = true,
-                placement = { target = "font_time", side = "below" },
-                content = {
-                    kind = "grid",
-                    items = {
-                        { h = 8, key = "description", label = L["血沸冷却更新时显示 3 秒倒数图标。"], type = "description", w = 200, x = 1, y = 1 },
-                    },
-                },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {},
-                },
+                component = "fontgroup",
+                key = "font_time",
             },
         },
     },

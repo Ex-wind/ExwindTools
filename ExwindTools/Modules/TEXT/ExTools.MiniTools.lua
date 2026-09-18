@@ -344,7 +344,11 @@ local function Init_BulkBuy()
     Frame:SetFrameStrata("DIALOG")
 
     -- 关闭按钮
-    Frame.CloseBtn = CreateFrame("Button", nil, Frame, "UIPanelCloseButton")
+    Frame.CloseBtn = EXUI:CreatePicButton(Frame, 24, 24,
+        "Interface\\Buttons\\UI-Panel-CloseButton-Up",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Down",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Highlight",
+        function() Frame:Hide() end, true)
     Frame.CloseBtn:SetPoint("TOPRIGHT", -5, -5)
 
     -- 标题
@@ -520,13 +524,10 @@ local function Init_BulkBuy()
     -- 快捷按钮
     Frame.QuickButtons = {}
     local function AddQuickBtn(label, val, x, y, width)
-        local btn = CreateFrame("Button", nil, Frame, "UIPanelButtonTemplate")
-        btn:SetSize(width or 60, 22)
-        btn:SetPoint("TOPLEFT", Frame.Input, "BOTTOMLEFT", x, y)
-        btn:SetText(label)
-        btn:SetScript("OnClick", function()
+        local btn = EXUI:CreateButton(Frame, width or 60, 22, label, function()
             Frame.Input:SetNumber(val); Frame.Input:HighlightText()
-        end)
+        end, { compact = true })
+        btn:SetPoint("TOPLEFT", Frame.Input, "BOTTOMLEFT", x, y)
         table.insert(Frame.QuickButtons, btn)
     end
     local y1, y2, w = -10, -40, 60
@@ -604,13 +605,10 @@ local function Init_ResetDamageMeter()
         dialog:Hide()
     end)
 
-    local cancelButton = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
-    cancelButton:SetSize(110, 26)
-    cancelButton:SetPoint("BOTTOM", dialog, "BOTTOM", 62, 24)
-    cancelButton:SetText(_G.NO)
-    cancelButton:SetScript("OnClick", function()
+    local cancelButton = EXUI:CreateButton(dialog, 110, 26, _G.NO, function()
         dialog:Hide()
-    end)
+    end, { compact = true })
+    cancelButton:SetPoint("BOTTOM", dialog, "BOTTOM", 62, 24)
 
     -- [关键修复] 记录初始真实状态
     -- 如果初始化时已经在副本里(lastInInstance=true)，那么 State 初始化同步带来的 false->true 变化将被忽略

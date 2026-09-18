@@ -107,10 +107,10 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["模块通用设置"], collapsible = true,
-                content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = {
+                kind = "composite", id = "common", title = L["模块通用设置"],
+                component = "modulecommonsettings", key = "moduleCommon", opts = {
                     bindRoot = true,
                     presentation = "settings-list",
                     fields = {
@@ -122,53 +122,19 @@ local MODULE_SPEC = {
                         controlH = 6, controlW = 46, firstY = 0, logicalWidth = 200,
                         rowStep = 14, slotX = { 3, 53, 103, 153 },
                     },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "moduleCommon", fullWidth = true },
-                    },
                 },
             },
             {
-                id = "anchor", title = L["锚点设置"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "anchor" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "anchor", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "anchor", title = L["锚点设置"],
+                component = "anchorgroup", key = "anchor",
             },
             {
-                id = "icon", title = L["治疗吸收图标样式"], collapsible = true,
-                placement = { target = "anchor", side = "below" },
-                content = { kind = "composite", component = "icongroup", key = "icon" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "icon", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "icon", title = L["治疗吸收图标样式"],
+                component = "icongroup", key = "icon",
             },
             {
-                id = "font_text", title = L["治疗吸收文字样式"], collapsible = true,
-                placement = { target = "icon", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_text" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_text", fullWidth = true },
-                    },
-                },
-            },
-        },
-        settingsGroups = {
-            {
-                id = "appearance",
-                title = L["外观"],
-                cards = { "icon", "font_text" },
+                kind = "composite", id = "font_text", title = L["治疗吸收文字样式"],
+                component = "fontgroup", key = "font_text",
             },
         },
     },

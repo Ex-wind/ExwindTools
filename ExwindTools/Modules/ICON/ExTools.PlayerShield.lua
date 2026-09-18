@@ -114,16 +114,14 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
-        cards = {
+        sections = {
             {
+                kind = "composite",
                 id = "common",
                 title = L["模块通用设置"],
-                collapsible = true,
-                content = {
-                    kind = "composite",
-                    component = "modulecommonsettings",
-                    key = "moduleCommon",
-                    opts = {
+                component = "modulecommonsettings",
+                key = "moduleCommon",
+                opts = {
                         bindRoot = true,
                         presentation = "settings-list",
                         fields = {
@@ -139,61 +137,28 @@ local MODULE_SPEC = {
                             rowStep = 14,
                             slotX = { 3, 53, 103, 153, },
                         },
-                    }
-                },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "moduleCommon", fullWidth = true },
-                    },
                 },
             },
             {
+                kind = "composite",
                 id = "anchor",
                 title = L["锚点设置"],
-                collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "anchor" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "anchor", fullWidth = true },
-                    },
-                },
+                component = "anchorgroup",
+                key = "anchor",
             },
             {
+                kind = "composite",
                 id = "icon",
                 title = L["护盾图标样式"],
-                collapsible = true,
-                placement = { target = "anchor", side = "below" },
-                content = { kind = "composite", component = "icongroup", key = "icon" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "icon", fullWidth = true },
-                    },
-                },
+                component = "icongroup",
+                key = "icon",
             },
             {
+                kind = "composite",
                 id = "font_text",
                 title = L["护盾文字样式"],
-                collapsible = true,
-                placement = { target = "icon", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_text" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_text", fullWidth = true },
-                    },
-                },
-            },
-        },
-        settingsGroups = {
-            {
-                id = "appearance",
-                title = L["外观"],
-                collapsible = false,
-                cards = { "icon", "font_text" },
+                component = "fontgroup",
+                key = "font_text",
             },
         },
     },

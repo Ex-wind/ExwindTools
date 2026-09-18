@@ -185,7 +185,11 @@ local function EnsureOverlayPickerFrame()
 
     RegisterEscCloseFrame("ExwindToolsSpellOverlayPickerFrame")
 
-    local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+    local close = EXUI:CreatePicButton(frame, 24, 24,
+        "Interface\\Buttons\\UI-Panel-CloseButton-Up",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Down",
+        "Interface\\Buttons\\UI-Panel-CloseButton-Highlight",
+        function() frame:Hide() end, true)
     close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -3)
 
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -202,7 +206,7 @@ local function EnsureOverlayPickerFrame()
     searchLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 18, -52)
     searchLabel:SetText(L["过滤ID"])
 
-    local searchBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+    local searchBox = EXUI:CreateEditBox(frame, "", 220, 24, nil, {})
     searchBox:SetSize(220, 24)
     searchBox:SetPoint("LEFT", searchLabel, "RIGHT", 8, 0)
     searchBox:SetAutoFocus(false)
@@ -229,13 +233,10 @@ local function EnsureOverlayPickerFrame()
     frame.content = content
     frame.buttons = {}
 
-    local closeBottom = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    closeBottom:SetSize(120, 24)
-    closeBottom:SetPoint("BOTTOM", frame, "BOTTOM", 0, 12)
-    closeBottom:SetText(L["关闭"])
-    closeBottom:SetScript("OnClick", function()
+    local closeBottom = EXUI:CreateButton(frame, 120, 24, L["关闭"], function()
         frame:Hide()
-    end)
+    end, { compact = true })
+    closeBottom:SetPoint("BOTTOM", frame, "BOTTOM", 0, 12)
     frame.closeBottom = closeBottom
 
     OverlayPickerFrame = frame

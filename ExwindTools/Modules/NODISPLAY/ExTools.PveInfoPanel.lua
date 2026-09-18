@@ -75,7 +75,7 @@ local function CreateSectionTitle(parent, text, yOfs)
 end
 
 local function CreateHeaderIcon(parent, texture, xOfs, labelText, clickFunc)
-    local btn = CreateFrame("Button", nil, parent)
+    local btn = EXUI:CreateButton(parent, 50, 50, "", clickFunc, { compact = true })
     btn:SetSize(50, 50)
     btn:SetPoint("CENTER", parent, "TOP", xOfs, -47)
 
@@ -101,7 +101,6 @@ local function CreateHeaderIcon(parent, texture, xOfs, labelText, clickFunc)
         self.icon:SetVertexColor(0.85, 0.85, 0.85)
         self:SetScale(1.0)
     end)
-    btn:SetScript("OnClick", clickFunc)
     return btn
 end
 
@@ -320,7 +319,11 @@ local function CreateMainFrame()
         title:SetTextColor(1, 0.82, 0)
         mainFrame.TitleText = title
 
-        local close = CreateFrame("Button", nil, mainFrame, "UIPanelCloseButton")
+        local close = EXUI:CreatePicButton(mainFrame, 24, 24,
+            "Interface\\Buttons\\UI-Panel-CloseButton-Up",
+            "Interface\\Buttons\\UI-Panel-CloseButton-Down",
+            "Interface\\Buttons\\UI-Panel-CloseButton-Highlight",
+            function() mainFrame:Hide() end, true)
         close:SetPoint("TOPRIGHT", mainFrame, "TOPRIGHT", -2, -2)
         mainFrame.CloseButton = close
 

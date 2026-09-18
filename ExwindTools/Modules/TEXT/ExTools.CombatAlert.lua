@@ -81,18 +81,10 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
-        settingsGroups = {
+        sections = {
             {
-                id = "general",
-                title = L["通用设置"],
-                collapsible = false,
-                cards = { "common", "messages" },
-            },
-        },
-        cards = {
-            {
-                id = "common", title = L["模块通用设置"], collapsible = true,
-                content = { kind = "composite", component = "modulecommonsettings", key = "moduleCommon", opts = {
+                kind = "composite", id = "common", title = L["模块通用设置"],
+                component = "modulecommonsettings", key = "moduleCommon", opts = {
                     bindRoot = true,
                     presentation = "settings-list",
                     fields = { { label = L["启用"], path = "enabled", presentation = "switch", type = "checkbox" } },
@@ -100,54 +92,24 @@ local MODULE_SPEC = {
                         controlH = 6, controlW = 46, firstY = 0, logicalWidth = 200,
                         rowStep = 14, slotX = { 3, 53, 103, 153 },
                     },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "moduleCommon", fullWidth = true },
-                    },
                 },
             },
             {
-                id = "anchor", title = L["锚点设置"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "anchor" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "anchor", fullWidth = true },
-                    },
+                kind = "settings", id = "messages", title = L["提示内容"],
+                items = {
+                    { key = "enterMessage", label = L["进入战斗文本"], type = "input" },
+                    { key = "leaveMessage", label = L["离开战斗文本"], type = "input" },
+                    { key = "enterColor", label = L["进入战斗颜色"], type = "color" },
+                    { key = "leaveColor", label = L["离开战斗颜色"], type = "color" },
                 },
             },
             {
-                id = "messages", title = L["提示内容"], collapsible = true,
-                placement = { target = "anchor", side = "below" },
-                content = { kind = "grid", items = {
-                    { h = 6, key = "enterMessage", label = L["进入战斗文本"], labelPos = "top", type = "input", w = 46, x = 1, y = 1 },
-                    { h = 6, key = "leaveMessage", label = L["离开战斗文本"], labelPos = "top", type = "input", w = 46, x = 51, y = 1 },
-                    { h = 6, key = "enterColor", label = L["进入战斗颜色"], type = "color", w = 46, x = 101, y = 1 },
-                    { h = 6, key = "leaveColor", label = L["离开战斗颜色"], type = "color", w = 46, x = 151, y = 1 },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "enterMessage", label = L["进入战斗文本"] },
-                        { key = "leaveMessage", label = L["离开战斗文本"] },
-                        { key = "enterColor", label = L["进入战斗颜色"] },
-                        { key = "leaveColor", label = L["离开战斗颜色"] },
-                    },
-                },
+                kind = "composite", id = "anchor", title = L["锚点设置"],
+                component = "anchorgroup", key = "anchor",
             },
             {
-                id = "font_text", title = L["文字样式"], collapsible = true,
-                placement = { target = "messages", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_text" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_text", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "font_text", title = L["文字样式"],
+                component = "fontgroup", key = "font_text",
             },
         },
     },

@@ -116,126 +116,52 @@ local MODULE_SPEC = {
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
     gui = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common",
-                title = L["通用设置"],
-                collapsible = true,
-                content = {
-                    kind = "grid",
-                    items = {
-                        { h = 6, key = "enabled", label = L["启用"], type = "checkbox", w = 46, x = 1, y = 1 },
-                        { h = 6, key = "spellID", label = L["法术 ID（优先）"], labelPos = "top", type = "input", w = 46, x = 51, y = 1 },
-                        { h = 6, key = "iconTexture", label = L["图标路径/ID"], labelPos = "top", type = "input", w = 46, x = 101, y = 1 },
-                    }
-                },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "enabled", label = L["启用"], presentation = "switch" },
-                        { key = "spellID", label = L["法术 ID（优先）"] },
-                        { key = "iconTexture", label = L["图标路径/ID"] },
-                    },
+                kind = "settings", id = "common", title = L["通用设置"],
+                items = {
+                    { key = "enabled", label = L["启用"], type = "switch" },
+                    { key = "spellID", label = L["法术 ID（优先）"], type = "input" },
+                    { key = "iconTexture", label = L["图标路径/ID"], type = "input" },
                 },
             },
             {
-                id = "anchor",
-                title = L["锚点设置"],
-                collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "anchor" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "anchor", fullWidth = true },
-                    },
+                kind = "composite", id = "anchor", title = L["锚点设置"],
+                component = "anchorgroup", key = "anchor",
+            },
+            {
+                kind = "composite", id = "icon", title = L["图标本体"],
+                component = "icongroup", key = "icon",
+            },
+            {
+                kind = "composite", id = "font_time", title = L["倒数文本"],
+                component = "fontgroup", key = "font_time",
+            },
+            {
+                kind = "settings", id = "sound", title = L["音效设置"],
+                items = {
+                    { key = "sound", label = L["内置音效"], type = "select", media = "sound" },
+                    { key = "soundChannel", label = L["输出频道"], type = "select", originalOptions = { { L["主音量"], "Master" }, { L["效果"], "SFX" }, { L["环境"], "Ambience" }, { L["音乐"], "Music" }, { L["对话"], "Dialog" } } },
+                    { key = "useCustomSound", label = L["使用自定义路径"], type = "switch" },
+                    { key = "randomSound", label = L["随机播放多条"], type = "switch" },
                 },
             },
             {
-                id = "icon",
-                title = L["图标本体"],
-                collapsible = true,
-                placement = { target = "anchor", side = "below" },
-                content = { kind = "composite", component = "icongroup", key = "icon" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "icon", fullWidth = true },
-                    },
+                kind = "settings", id = "custom_sounds", title = L["自定义音效路径（固定 6 条）"],
+                items = {
+                    { key = "customSound1", label = L["音效 1"], parentKey = "customSounds", subKey = "1", type = "input" },
+                    { key = "customSound2", label = L["音效 2"], parentKey = "customSounds", subKey = "2", type = "input" },
+                    { key = "customSound3", label = L["音效 3"], parentKey = "customSounds", subKey = "3", type = "input" },
+                    { key = "customSound4", label = L["音效 4"], parentKey = "customSounds", subKey = "4", type = "input" },
+                    { key = "customSound5", label = L["音效 5"], parentKey = "customSounds", subKey = "5", type = "input" },
+                    { key = "customSound6", label = L["音效 6"], parentKey = "customSounds", subKey = "6", type = "input" },
                 },
             },
             {
-                id = "font_time",
-                title = L["倒数文本"],
-                collapsible = true,
-                placement = { target = "icon", side = "below" },
-                content = { kind = "composite", component = "fontgroup", key = "font_time" },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "font_time", fullWidth = true },
-                    },
-                },
-            },
-            {
-                id = "sound",
-                title = L["音效设置"],
-                collapsible = true,
-                placement = { target = "font_time", side = "below" },
-                content = {
-                    kind = "grid",
-                    items = {
-                        { h = 6, key = "sound", label = L["内置音效"], labelPos = "top", labelSize = 20, type = "lsm_sound", w = 46, x = 1, y = 1 },
-                        { h = 6, items = { { L["主音量"], "Master" }, { L["效果"], "SFX" }, { L["环境"], "Ambience" }, { L["音乐"], "Music" }, { L["对话"], "Dialog" } }, key = "soundChannel", label = L["输出频道"], labelPos = "top", type = "dropdown", w = 46, x = 51, y = 1 },
-                        { h = 6, key = "useCustomSound", label = L["使用自定义路径"], type = "checkbox", w = 46, x = 101, y = 1 },
-                        { h = 6, key = "randomSound", label = L["随机播放多条"], type = "checkbox", w = 46, x = 151, y = 1 },
-                    }
-                },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "sound", label = L["内置音效"] },
-                        { key = "soundChannel", label = L["输出频道"] },
-                        { key = "useCustomSound", label = L["使用自定义路径"], presentation = "switch" },
-                        { key = "randomSound", label = L["随机播放多条"], presentation = "switch" },
-                    },
-                },
-            },
-            {
-                id = "custom_sounds",
-                title = L["自定义音效路径（固定 6 条）"],
-                collapsible = true,
-                placement = { target = "sound", side = "below" },
-                content = {
-                    kind = "grid",
-                    items = {
-                        { h = 6, key = "customSound1", label = L["音效 1"], labelPos = "left", parentKey = "customSounds", subKey = "1", type = "input", w = 196, x = 1, y = 1 },
-                        { h = 6, key = "customSound2", label = L["音效 2"], labelPos = "left", parentKey = "customSounds", subKey = "2", type = "input", w = 196, x = 1, y = 15 },
-                        { h = 6, key = "customSound3", label = L["音效 3"], labelPos = "left", parentKey = "customSounds", subKey = "3", type = "input", w = 196, x = 1, y = 29 },
-                        { h = 6, key = "customSound4", label = L["音效 4"], labelPos = "left", parentKey = "customSounds", subKey = "4", type = "input", w = 196, x = 1, y = 43 },
-                        { h = 6, key = "customSound5", label = L["音效 5"], labelPos = "left", parentKey = "customSounds", subKey = "5", type = "input", w = 196, x = 1, y = 57 },
-                        { h = 6, key = "customSound6", label = L["音效 6"], labelPos = "left", parentKey = "customSounds", subKey = "6", type = "input", w = 196, x = 1, y = 71 },
-                    }
-                },
-            },
-            {
-                id = "test",
-                title = L["测试操作"],
-                collapsible = true,
-                placement = { target = "custom_sounds", side = "below" },
-                content = {
-                    kind = "grid",
-                    items = {
-                        { h = 6, key = "btn_test", label = L["测试效果"], type = "button", w = 46, x = 1, y = 1 },
-                        { h = 6, key = "btn_stop", label = L["停止测试"], type = "button", w = 46, x = 51, y = 1 },
-                    }
-                },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "btn_test", fullWidth = true },
-                        { key = "btn_stop", fullWidth = true },
-                    },
+                kind = "settings", id = "test", title = L["测试操作"],
+                items = {
+                    { key = "btn_test", label = L["测试效果"], type = "button" },
+                    { key = "btn_stop", label = L["停止测试"], type = "button" },
                 },
             },
         },

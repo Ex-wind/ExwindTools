@@ -740,110 +740,66 @@ local function EX_RegisterLayout()
         x = ApplyLivePreview,
         y = ApplyLivePreview,
     }
-    -- [卡片迁移边界：设置页] 仅下列 layout 记录的 x/y/w/h 与卡片分组可迁移；背景组、行字体组和 anchorgroup 必须整体引用。
+    -- [普通 sections 迁移边界：设置页] 只迁移纯呈现分区；动态行路径与字体组继续引用同一原数据。
     -- rows.N 动态 path、行增删/排序、属性/职责/场景顺序与 TextList 刷新回调禁止修改；header/subheader 不等于卡片容器。
     local layout = {
         version = 1,
-        cards = {
+        sections = {
             {
-                id = "common", title = L["通用设置"], collapsible = true,
-                content = { kind = "grid", items = {
-                    { key = "showBg", type = "checkbox", x = 1, y = 1, w = 46, h = 6, label = L["显示背景"] },
-                    { key = "showBorder", type = "checkbox", x = 51, y = 1, w = 46, h = 6, label = L["显示边框"] },
-                    {
-                        key = "bgGroup", type = "TableGroup", x = 1, y = 15, w = 4, h = 4,
-                        label = L["--[[ Function ]]"], parentKey = "bgSettings",
-                        children = {
-                            { key = "texture", type = "lsm_background", x = 1, y = 15, w = 46, h = 6, label = L["背景材质"] },
-                            { key = "bgColor", type = "color", x = 51, y = 15, w = 46, h = 6, label = L["背景颜色"] },
-                            { key = "borderTexture", type = "lsm_border", x = 101, y = 15, w = 46, h = 6, label = L["边框材质"] },
-                            { key = "borderColor", type = "color", x = 151, y = 15, w = 46, h = 6, label = L["边框颜色"] },
-                            { key = "edgeSize", type = "slider", x = 1, y = 29, w = 46, h = 6, label = L["边框粗细"], min = 1, max = 32 },
-                            { key = "inset", type = "slider", x = 51, y = 29, w = 46, h = 6, label = L["边框内距"], min = 0, max = 16 },
-                            { key = "labelAlign", type = "dropdown", x = 101, y = 29, w = 46, h = 6, label = L["标签对齐"], items = "LEFT:左对齐,CENTER:居中,RIGHT:右对齐" },
-                            { key = "valueAlign", type = "dropdown", x = 151, y = 29, w = 46, h = 6, label = L["数值对齐"], items = "LEFT:左对齐,CENTER:居中,RIGHT:右对齐" },
-                            { key = "rowSpacing", type = "slider", x = 1, y = 43, w = 46, h = 6, label = L["行间距"], min = -10, max = 30 },
-                            { key = "labelX", type = "slider", x = 51, y = 43, w = 46, h = 6, label = L["标签全局X"], min = -100, max = 100 },
-                            { key = "valueX", type = "slider", x = 101, y = 43, w = 46, h = 6, label = L["数值全局X"], min = -100, max = 100 },
-                        },
-                    },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "showBg", label = L["显示背景"], presentation = "switch" },
-                        { key = "showBorder", label = L["显示边框"], presentation = "switch" },
-                        { key = "texture", label = L["背景材质"] },
-                        { key = "bgColor", label = L["背景颜色"] },
-                        { key = "borderTexture", label = L["边框材质"] },
-                        { key = "borderColor", label = L["边框颜色"] },
-                        { key = "edgeSize", label = L["边框粗细"] },
-                        { key = "inset", label = L["边框内距"] },
-                        { key = "labelAlign", label = L["标签对齐"] },
-                        { key = "valueAlign", label = L["数值对齐"] },
-                        { key = "rowSpacing", label = L["行间距"] },
-                        { key = "labelX", label = L["标签全局X"] },
-                        { key = "valueX", label = L["数值全局X"] },
-                    },
+                kind = "settings", id = "common", title = L["通用设置"],
+                items = {
+                    { key = "showBg", type = "switch", label = L["显示背景"] },
+                    { key = "showBorder", type = "switch", label = L["显示边框"] },
+                    { key = "texture", type = "select", media = "background", parentKey = "bgSettings", label = L["背景材质"] },
+                    { key = "bgColor", type = "color", parentKey = "bgSettings", label = L["背景颜色"] },
+                    { key = "borderTexture", type = "select", media = "border", parentKey = "bgSettings", label = L["边框材质"] },
+                    { key = "borderColor", type = "color", parentKey = "bgSettings", label = L["边框颜色"] },
+                    { key = "edgeSize", type = "slider", parentKey = "bgSettings", label = L["边框粗细"], min = 1, max = 32 },
+                    { key = "inset", type = "slider", parentKey = "bgSettings", label = L["边框内距"], min = 0, max = 16 },
+                    { key = "labelAlign", type = "select", parentKey = "bgSettings", label = L["标签对齐"], options = {
+                        { value = "LEFT", label = L["左对齐"] }, { value = "CENTER", label = L["居中"] }, { value = "RIGHT", label = L["右对齐"] },
+                    } },
+                    { key = "valueAlign", type = "select", parentKey = "bgSettings", label = L["数值对齐"], options = {
+                        { value = "LEFT", label = L["左对齐"] }, { value = "CENTER", label = L["居中"] }, { value = "RIGHT", label = L["右对齐"] },
+                    } },
+                    { key = "rowSpacing", type = "slider", parentKey = "bgSettings", label = L["行间距"], min = -10, max = 30 },
+                    { key = "labelX", type = "slider", parentKey = "bgSettings", label = L["标签全局X"], min = -100, max = 100 },
+                    { key = "valueX", type = "slider", parentKey = "bgSettings", label = L["数值全局X"], min = -100, max = 100 },
                 },
             },
             {
-                id = "rows", title = L["属性行管理"], collapsible = true,
-                placement = { target = "common", side = "below" },
-                content = { kind = "grid", items = {
-                    { key = "selectedRow", type = "dropdown", x = 1, y = 1, w = 46, h = 6, label = L["选择要编辑的行"], items = "func:ExwindTools.GetRowItems_PlayerStats" },
-                    { key = "btn_up", type = "button", x = 51, y = 1, w = 46, h = 6, label = L["↑"] },
-                    { key = "btn_down", type = "button", x = 101, y = 1, w = 46, h = 6, label = L["↓"] },
-                    { key = "btn_add", type = "button", x = 151, y = 1, w = 46, h = 6, label = L["新增"] },
-                    { key = "btn_delete", type = "button", x = 1, y = 15, w = 46, h = 6, label = L["删除"] },
-                    {
-                        key = "RowEditor", type = "TableGroup", x = 1, y = 29, w = 4, h = 4,
-                        label = L["--[[ Function ]]"], parentKey = "rows." .. sel,
-                        children = {
-                            { key = "enabled", type = "checkbox", x = 1, y = 29, w = 46, h = 6, label = L["启用此行"] },
-                            { key = "label", type = "input", x = 51, y = 29, w = 46, h = 6, label = L["名称"] },
-                            { key = "key", type = "dropdown", x = 101, y = 29, w = 46, h = 6, label = L["属性"], items = "func:ExwindTools.GetPlayerStatTree" },
-                            { key = "isPercent", type = "checkbox", x = 151, y = 29, w = 46, h = 6, label = L["%"] },
-                            { key = "format", type = "slider", x = 1, y = 43, w = 46, h = 6, label = L["小数"], min = 0, max = 3 },
-                            { key = "roles", type = "multiselect", x = 51, y = 43, w = 46, h = 6, label = L["显示职责"], items = "TANK,HEALER,DAMAGER" },
-                            { key = "scenes", type = "multiselect", x = 101, y = 43, w = 46, h = 6, label = L["显示场景"], items = "副本内,副本外" },
-                            { key = "syncFont", type = "checkbox", x = 151, y = 43, w = 46, h = 8, label = L["|cffff0501数值样式同步标题|r"], labelSize = 20 },
-                            { key = "fontLabel", type = "fontgroup", x = 1, y = 57, w = 200, h = 50, label = L["标签样式"], labelSize = 20, opts = { bodyOnly = true } },
-                            { key = "fontValue", type = "fontgroup", x = 1, y = 121, w = 200, h = 50, label = L["数值样式"], labelSize = 20, opts = { bodyOnly = true } },
-                        },
-                    },
-                } },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "selectedRow", label = L["选择要编辑的行"] },
-                        { key = "btn_up", fullWidth = true },
-                        { key = "btn_down", fullWidth = true },
-                        { key = "btn_add", fullWidth = true },
-                        { key = "btn_delete", fullWidth = true },
-                        { key = "enabled", label = L["启用此行"], presentation = "switch" },
-                        { key = "label", label = L["名称"] },
-                        { key = "key", label = L["属性"] },
-                        { key = "isPercent", label = L["%"], presentation = "switch" },
-                        { key = "format", label = L["小数"] },
-                        { key = "roles", label = L["显示职责"] },
-                        { key = "scenes", label = L["显示场景"] },
-                        { key = "syncFont", label = L["|cffff0501数值样式同步标题|r"], presentation = "switch" },
-                        { key = "fontLabel", fullWidth = true },
-                        { key = "fontValue", fullWidth = true },
-                    },
+                kind = "settings", id = "rows", title = L["属性行管理"],
+                items = {
+                    { key = "selectedRow", type = "select", label = L["选择要编辑的行"], optionsSource = "ExwindTools.GetRowItems_PlayerStats" },
+                    { key = "btn_up", type = "button", label = L["↑"] },
+                    { key = "btn_down", type = "button", label = L["↓"] },
+                    { key = "btn_add", type = "button", label = L["新增"] },
+                    { key = "btn_delete", type = "button", label = L["删除"] },
+                    { key = "enabled", type = "switch", parentKey = currentRowPath, label = L["启用此行"] },
+                    { key = "label", type = "input", parentKey = currentRowPath, label = L["名称"] },
+                    { key = "key", type = "select", parentKey = currentRowPath, label = L["属性"], optionsSource = "ExwindTools.GetPlayerStatTree" },
+                    { key = "isPercent", type = "switch", parentKey = currentRowPath, label = L["%"] },
+                    { key = "format", type = "slider", parentKey = currentRowPath, label = L["小数"], min = 0, max = 3 },
+                    { key = "roles", type = "select", multiple = true, parentKey = currentRowPath, label = L["显示职责"], options = {
+                        { value = "TANK", label = "TANK" }, { value = "HEALER", label = "HEALER" }, { value = "DAMAGER", label = "DAMAGER" },
+                    } },
+                    { key = "scenes", type = "select", multiple = true, parentKey = currentRowPath, label = L["显示场景"], options = {
+                        { value = "副本内", label = L["副本内"] }, { value = "副本外", label = L["副本外"] },
+                    } },
+                    { key = "syncFont", type = "switch", parentKey = currentRowPath, label = L["|cffff0501数值样式同步标题|r"] },
                 },
             },
             {
-                id = "anchor", title = L["锚点设置"], collapsible = true,
-                placement = { target = "rows", side = "below" },
-                content = { kind = "composite", component = "anchorgroup", key = "pos", opts = PLAYER_STATS_ANCHOR_OPTS },
-                settingsList = {
-                    preserveHeader = true,
-                    rows = {
-                        { key = "pos", fullWidth = true },
-                    },
-                },
+                kind = "composite", id = "fontLabel", title = L["标签样式"],
+                component = "fontgroup", key = "fontLabel", parentKey = currentRowPath, opts = { bodyOnly = true },
+            },
+            {
+                kind = "composite", id = "fontValue", title = L["数值样式"],
+                component = "fontgroup", key = "fontValue", parentKey = currentRowPath, opts = { bodyOnly = true },
+            },
+            {
+                kind = "composite", id = "anchor", title = L["锚点设置"],
+                component = "anchorgroup", key = "pos", opts = PLAYER_STATS_ANCHOR_OPTS,
             },
         },
     }

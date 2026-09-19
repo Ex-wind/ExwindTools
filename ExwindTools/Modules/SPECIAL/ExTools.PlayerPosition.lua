@@ -258,11 +258,11 @@ EX_DB.enabledSpecs = NormalizeEnabledSpecsConfig(EX_DB.enabledSpecs)
 -- =============================================================
 
 local TEXTURE_PATHS = {
-    SQUARE = "Interface\\AddOns\\ExwindTools\\Textures\\PlayerPosition\\Square.png",
-    CROSS = "Interface\\AddOns\\ExwindTools\\Textures\\PlayerPosition\\Cross.png",
-    CIRCLE = "Interface\\AddOns\\ExwindTools\\Textures\\PlayerPosition\\Circle.png",
-    RING = "Interface\\AddOns\\ExwindTools\\Textures\\PlayerPosition\\Ring.png",
-    DIAMOND = "Interface\\AddOns\\ExwindTools\\Textures\\PlayerPosition\\Diamond.png",
+    SQUARE = "Interface\\AddOns\\ExwindCore\\Textures\\Materials\\ExwindTools\\PlayerPosition\\Square.png",
+    CROSS = "Interface\\AddOns\\ExwindCore\\Textures\\Materials\\ExwindTools\\PlayerPosition\\Cross.png",
+    CIRCLE = "Interface\\AddOns\\ExwindCore\\Textures\\Materials\\ExwindTools\\PlayerPosition\\Circle.png",
+    RING = "Interface\\AddOns\\ExwindCore\\Textures\\Materials\\ExwindTools\\PlayerPosition\\Ring.png",
+    DIAMOND = "Interface\\AddOns\\ExwindCore\\Textures\\Materials\\ExwindTools\\PlayerPosition\\Diamond.png",
 }
 local anchorFrame, anchorController, runtimeCollection, worldCollection, panelPreview, panelDock
 local worldPreviewActive = false

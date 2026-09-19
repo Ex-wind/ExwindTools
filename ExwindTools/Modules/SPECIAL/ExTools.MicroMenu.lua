@@ -161,7 +161,7 @@ local BLIZZARD_ICON_IDS = {
     "cooldownmanager", "custom",
 }
 
-local ADDON_PATH = "Interface\\AddOns\\ExwindTools\\Textures\\Icons\\"
+local ADDON_PATH = "Interface\\AddOns\\ExwindCore\\Textures\\Icons\\ExwindTools\\"
 local ICON_THEMES = {
     {
         id = "blizzard",

@@ -492,7 +492,7 @@ function EXMRH.InitHeader()
     -- 6. 最右侧汇总卡片 (使用 Factory 池化)
     EXMRH.MaxKeyCard = ExwindFactory:Acquire("IconTextCard", header)
     EXMRH.MaxKeyCard:SetPoint("TOPRIGHT", -10, -5)
-    EXMRH.MaxKeyCard.icon:SetTexture([[Interface\AddOns\ExwindTools\Textures\EJ-UI\M1.png]])
+    EXMRH.MaxKeyCard.icon:SetTexture([[Interface\AddOns\ExwindCore\Textures\Images\ExwindTools\EJ-UI\M1.png]])
     EXMRH.MaxKeyCard.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- [标准内裁剪]
     EXMRH.MaxKeyCard.title:SetFont(MAIN_FONT, 15, "OUTLINE")
     EXMRH.MaxKeyCard.title:SetTextColor(0.76, 0.76, 0.76)
@@ -503,7 +503,7 @@ function EXMRH.InitHeader()
 
     EXMRH.TotalRunsCard = ExwindFactory:Acquire("IconTextCard", header)
     EXMRH.TotalRunsCard:SetPoint("TOPRIGHT", -10, -75)
-    EXMRH.TotalRunsCard.icon:SetTexture([[Interface\AddOns\ExwindTools\Textures\EJ-UI\M2.png]])
+    EXMRH.TotalRunsCard.icon:SetTexture([[Interface\AddOns\ExwindCore\Textures\Images\ExwindTools\EJ-UI\M2.png]])
     EXMRH.TotalRunsCard.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- [标准内裁剪]
     EXMRH.TotalRunsCard.title:SetFont(MAIN_FONT, 15, "OUTLINE")
     EXMRH.TotalRunsCard.title:SetTextColor(0.76, 0.76, 0.76)

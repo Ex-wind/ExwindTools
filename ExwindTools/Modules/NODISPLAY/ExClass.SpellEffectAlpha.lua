@@ -872,12 +872,12 @@ ExwindTools:ReportReady(EXWIND_MODULE_KEY)
 -- =============================================================
 -- 第六部分：Grid 布局
 -- =============================================================
-function EX_RegisterLayout()
-    local currentInfo = GetStatusText()
+local function MakeSpecLabel(icon, colorHex, specName)
+    return string.format("|T%d:16:16:0:0|t |cff%s%s|r", icon, colorHex, L[specName])
+end
 
-    local function MakeSpecLabel(icon, colorHex, specName)
-        return string.format("|T%d:16:16:0:0|t |cff%s%s|r", icon, colorHex, L[specName])
-    end
+local function EX_RegisterLegacyLayout()
+    local currentInfo = GetStatusText()
 
     -- [声明迁移边界：设置页] 控件只声明一次；专精滑杆紧凑行由 Core 按原 moduleKey/parentKey/key 语义呈现。
     -- 专精显示顺序、key/type/parentKey、slider 参数、测试按钮、CVar/overlay 回调及动态刷新禁止修改。
@@ -984,5 +984,221 @@ function EX_RegisterLayout()
     }
 
     ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+end
+
+local SPEC_GROUPS = {
+    plate = {
+        { class = "死亡骑士", specs = { { 250, 135770, "ff2628", "鲜血" }, { 251, 135773, "ff2628", "冰霜" }, { 252, 135775, "ff2628", "邪恶" } } },
+        { class = "战士", specs = { { 73, 132341, "c69b6d", "防护" }, { 71, 132355, "c69b6d", "武器" }, { 72, 132347, "c69b6d", "狂怒" } } },
+        { class = "圣骑士", specs = { { 66, 236264, "f48cba", "防护" }, { 70, 135873, "f48cba", "惩戒" }, { 65, 135920, "f48cba", "神圣" } } },
+    },
+    mail = {
+        { class = "猎人", specs = { { 255, 461113, "aad372", "生存" }, { 254, 236179, "aad372", "射击" }, { 253, 461112, "aad372", "野兽控制" } } },
+        { class = "萨满祭司", specs = { { 262, 136048, "0070dd", "元素" }, { 263, 237581, "0070dd", "增强" }, { 264, 136052, "0070dd", "恢复" } } },
+        { class = "唤魔师", specs = { { 1467, 4511811, "33937f", "湮灭" }, { 1473, 5198700, "33937f", "增辉" }, { 1468, 4511812, "33937f", "恩护" } } },
+    },
+    leather = {
+        { class = "恶魔猎手", specs = { { 581, 1247265, "a330c9", "复仇" }, { 577, 1247264, "a330c9", "浩劫" }, { 1480, 7455385, "a330c9", "噬灭" } } },
+        { class = "潜行者", specs = { { 260, 236286, "fff468", "狂徒" }, { 259, 236270, "fff468", "奇袭" }, { 261, 132320, "fff468", "敏锐" } } },
+        { class = "武僧", specs = { { 268, 608951, "00ff98", "酒仙" }, { 269, 608953, "00ff98", "踏风" }, { 270, 608952, "00ff98", "织雾" } } },
+        { class = "德鲁伊", specs = { { 104, 132276, "ff7c0a", "守护" }, { 103, 132115, "ff7c0a", "野性" }, { 102, 136096, "ff7c0a", "平衡" }, { 105, 136041, "ff7c0a", "恢复" } } },
+    },
+    cloth = {
+        { class = "法师", specs = { { 64, 135846, "3fc7eb", "冰霜" }, { 63, 135810, "3fc7eb", "火焰" }, { 62, 135932, "3fc7eb", "奥术" } } },
+        { class = "术士", specs = { { 267, 136186, "8788ee", "毁灭" }, { 265, 136145, "8788ee", "痛苦" }, { 266, 136172, "8788ee", "恶魔学识" } } },
+        { class = "牧师", specs = { { 256, 135940, "ffffff", "戒律" }, { 257, 237542, "ffffff", "神圣" }, { 258, 136207, "ffffff", "暗影" } } },
+    },
+}
+
+local function BuildSpecCard(id, title, source)
+    local cells = {
+        { id = id .. ".classCell", kind = "cell", children = {
+            { id = id .. ".className", kind = "text", textSource = "className" },
+        } },
+    }
+    for slot = 1, 4 do
+        cells[#cells + 1] = { id = id .. ".specCell" .. slot, kind = "cell", children = {
+            { id = id .. ".spec" .. slot, kind = "control", ref = "spec" .. slot,
+                controlType = "slider", visible = slot == 4 and "hasFourthSpec" or nil },
+        } }
+    end
+    return {
+        id = id, kind = "card", title = title, children = {
+            { id = id .. ".columns", kind = "columns",
+                columns = { { width = 104 }, { weight = 1 }, { weight = 1 }, { weight = 1 }, { weight = 1 } },
+                children = {
+                    { id = id .. ".rows", kind = "repeat", source = source,
+                        template = { id = id .. ".row", kind = "row", separator = true, children = cells } },
+                },
+            },
+        },
+    }
+end
+
+local function AdvancedSliderRow(id, left, right)
+    local function Cell(suffix, ref)
+        return { id = id .. "." .. suffix .. "Cell", kind = "cell", children = ref and {
+            { id = id .. "." .. suffix, kind = "control", ref = ref, controlType = "slider" },
+        } or {
+            { id = id .. "." .. suffix, kind = "text", text = "" },
+        } }
+    end
+    return { id = id, kind = "row", children = { Cell("left", left), Cell("right", right) } }
+end
+
+local function BuildV2Declaration()
+    return {
+        version = 2,
+        cards = {
+            {
+                id = "alpha.core", kind = "card", title = L["法术触发透明度 (SpellActivationOverlay)"], children = {
+                    { id = "alpha.status", kind = "hint", textSource = "status" },
+                    { id = "alpha.help", kind = "hint", text = L["根据当前专精自动调整屏幕中心法术触发特效的透明度。"] },
+                    { id = "alpha.coreRow", kind = "row", children = {
+                        { id = "alpha.enabled", kind = "control", ref = "enabled", controlType = "checkbox", width = 150 },
+                        { id = "alpha.globalDefault", kind = "control", ref = "globalDefault", controlType = "slider", weight = 1 },
+                    } },
+                },
+            },
+            BuildSpecCard("alpha.plate", L["板甲职业"], "plate"),
+            BuildSpecCard("alpha.mail", L["锁甲职业"], "mail"),
+            BuildSpecCard("alpha.leather", L["皮甲职业"], "leather"),
+            BuildSpecCard("alpha.cloth", L["布甲职业"], "cloth"),
+            {
+                id = "alpha.advanced", kind = "card", title = L["法术触发特效调整"], collapsible = true, children = {
+                    { id = "alpha.advancedWarning", kind = "hint",
+                        text = "|cffff173b" .. L["注意 : 选择的材质只是方便你调整测试预览而以 所有设置都是通用 "] .. "|r" },
+                    { id = "alpha.advancedEnabled", kind = "control", ref = "advancedEnabled", controlType = "checkbox" },
+                    { id = "alpha.testActions", kind = "row", children = {
+                        { id = "alpha.test", kind = "button", text = L["启用测试"], action = "test", presentation = "primary", width = 120 },
+                        { id = "alpha.testStop", kind = "button", text = L["停止测试"], action = "testStop", width = 120 },
+                    } },
+                    { id = "alpha.advancedColumns", kind = "columns", columns = { { weight = 1 }, { weight = 1 } }, children = {
+                        AdvancedSliderRow("alpha.scaleOffsets", "globalScale", "overlayScale"),
+                        AdvancedSliderRow("alpha.xyOffsets", "offsetX", "offsetY"),
+                        AdvancedSliderRow("alpha.spacing", "sideSpacing", "vertSpacing"),
+                        AdvancedSliderRow("alpha.pulse", "pulseMagnitude", "pulseSpeed"),
+                        AdvancedSliderRow("alpha.fades", "fadeSpeed", "fadeOutSpeed"),
+                    } },
+                    { id = "alpha.textureActions", kind = "row", children = {
+                        { id = "alpha.pickLR", kind = "button", text = L["选择左右材质(仅预览用)"], action = "pickLR", width = 220 },
+                        { id = "alpha.pickTB", kind = "button", text = L["选择上方测试材质(仅预览用)"], action = "pickTB", width = 220 },
+                    } },
+                },
+            },
+        },
+    }
+end
+
+local function CreateV2Owner()
+    local owner = { controls = {}, components = {}, actions = {}, predicates = {}, sources = {}, texts = {} }
+    local session
+    function owner:AttachSession(value) session = value end
+    local function RefreshPage() if session then session:Refresh() end end
+    local function ReleaseControl(widget)
+        if _G.ExwindGrid and _G.ExwindGrid.ReleaseWidgetInstance then
+            _G.ExwindGrid:ReleaseWidgetInstance(widget)
+        end
+    end
+    local function Commit(binding, value, phase)
+        if binding.read() == value and phase ~= "changing" then
+            RefreshPage()
+            return false
+        end
+        binding.write(value)
+        EXUI:NotifyModuleValueChanged(EXWIND_MODULE_KEY, binding.path,
+            phase == "changing" and "changing" or "committed")
+        if phase ~= "changing" then RefreshPage() end
+        return true
+    end
+    local function RootBinding(key)
+        return { path = key, read = function() return EX_DB[key] end,
+            write = function(value) EX_DB[key] = value end }
+    end
+    local function Checkbox(label, key)
+        return {
+            mount = function(host)
+                return EXUI:CreateCheckbox(host, label, EX_DB[key] == true, function(value)
+                    Commit(RootBinding(key), value == true, "committed")
+                end)
+            end,
+            update = function(widget) widget:SetChecked(EX_DB[key] == true) end,
+            release = ReleaseControl,
+        }
+    end
+    local function Slider(bindingFor, labelFor, minValue, maxValue, stepValue)
+        return {
+            mount = function(host, context)
+                local binding = bindingFor(context.scope)
+                return EXUI:CreateSlider(host, 180, labelFor(context.scope), minValue, maxValue,
+                    tonumber(binding.read()) or minValue, stepValue or 1, nil, {
+                        onLive = function(value) Commit(bindingFor(context.scope), value, "changing") end,
+                        onCommit = function(value) Commit(bindingFor(context.scope), value, "committed") end,
+                    })
+            end,
+            update = function(widget, context)
+                local binding = bindingFor(context.scope)
+                if widget.Title then widget.Title:SetText(labelFor(context.scope)) end
+                local value = tonumber(binding.read()) or minValue
+                if widget.SetEXUIValue then widget:SetEXUIValue(value, "silent") end
+            end,
+            release = ReleaseControl,
+        }
+    end
+
+    owner.controls.enabled = Checkbox(L["开启功能"], "enabled")
+    owner.controls.advancedEnabled = Checkbox(L["启用 |cffff173b(为了安全! 需重载后生效)|r"], "advancedEnabled")
+    owner.controls.globalDefault = Slider(function() return RootBinding("globalDefault") end,
+        function() return L["全局默认透明度 (%)"] end, 0, 100, 1)
+    for slot = 1, 4 do
+        local specSlot = slot
+        owner.controls["spec" .. specSlot] = Slider(function(scope)
+            local spec = scope.item.specs[specSlot]
+            if not spec then
+                return { path = "specs.__unused", read = function() return 0 end, write = function() end }
+            end
+            return { path = "specs." .. spec[1], read = function() return EX_DB.specs[spec[1]] end,
+                write = function(value) EX_DB.specs[spec[1]] = value end }
+        end, function(scope)
+            local spec = scope.item.specs[specSlot]
+            return spec and MakeSpecLabel(spec[2], spec[3], spec[4]) or ""
+        end, 0, 100, 1)
+    end
+    local advanced = {
+        globalScale = { L["整体缩放"], 0.4, 2.5, 0.05 },
+        overlayScale = { L["材质特效缩放"], 0.5, 3, 0.05 },
+        offsetX = { L["整体水平(Y) 偏移"], -500, 500, 1 },
+        offsetY = { L["整体垂直(X)偏移"], -500, 500, 1 },
+        sideSpacing = { L["左右间距调整"], -300, 300, 1 },
+        vertSpacing = { L["上下间距调整"], -300, 300, 1 },
+        pulseMagnitude = { L["呼吸动画幅度 (0禁用)"], 0, 300, 1 },
+        pulseSpeed = { L["呼吸动画速度"], 10, 500, 1 },
+        fadeSpeed = { L["触发时动画(淡入)速度"], 10, 500, 1 },
+        fadeOutSpeed = { L["结束时动画(淡出)速度"], 10, 500, 1 },
+    }
+    for key, info in pairs(advanced) do
+        local field, settings = key, info
+        owner.controls[field] = Slider(function() return RootBinding(field) end,
+            function() return settings[1] end, settings[2], settings[3], settings[4])
+    end
+    owner.sources.plate = function() return SPEC_GROUPS.plate end
+    owner.sources.mail = function() return SPEC_GROUPS.mail end
+    owner.sources.leather = function() return SPEC_GROUPS.leather end
+    owner.sources.cloth = function() return SPEC_GROUPS.cloth end
+    owner.texts.status = function() return GetStatusText() end
+    owner.texts.className = function(scope) return L[scope.item.class] end
+    owner.predicates.hasFourthSpec = function(scope) return scope.item.specs[4] ~= nil end
+    owner.actions.test = function() ExwindTools:UpdateState(EXWIND_MODULE_KEY .. ".ButtonClicked", { key = "btn_test", ts = GetTime() }) end
+    owner.actions.testStop = function() ExwindTools:UpdateState(EXWIND_MODULE_KEY .. ".ButtonClicked", { key = "btn_test_stop", ts = GetTime() }) end
+    owner.actions.pickLR = function() ExwindTools:UpdateState(EXWIND_MODULE_KEY .. ".ButtonClicked", { key = "btn_pick_lr_tex", ts = GetTime() }) end
+    owner.actions.pickTB = function() ExwindTools:UpdateState(EXWIND_MODULE_KEY .. ".ButtonClicked", { key = "btn_pick_tb_tex", ts = GetTime() }) end
+    return owner
+end
+
+local layoutRegistered = false
+function EX_RegisterLayout()
+    if layoutRegistered then return end
+    EXUI:RegisterModuleSettingsPageV2(EXWIND_MODULE_KEY, BuildV2Declaration(), CreateV2Owner)
+    layoutRegistered = true
 end
 EX_RegisterLayout()

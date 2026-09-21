@@ -625,6 +625,7 @@ local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY)
 if not EX_DB.rows or #EX_DB.rows == 0 then
     EX_DB.rows = GetDefaultRows()
 end
+local EXUI = ExwindTools.UI
 
 local ApplyPlayerStatsLiveVisual
 local anchorController, anchorFrame
@@ -723,13 +724,150 @@ ExwindTools.GetPlayerStatTree = function()
     }
 end
 
+local PLAYER_STATS_ROWS_TABLE = "playerstats_rows_table"
+
+local function ReleasePlayerStatsTableControl(control)
+    if not control then return end
+    if EXUI.RestoreSettingsListControl then EXUI:RestoreSettingsListControl(control) end
+    local factory = _G.ExwindFactory
+    if factory and control._isCompositeHost then
+        factory:ReleaseCompositeHost(control)
+    elseif factory then
+        factory:ReleaseGridWidget(control)
+    else
+        control:Hide()
+        control:SetParent(nil)
+    end
+end
+
+local function ClearPlayerStatsTableRows(controls)
+    for index = #controls.rows, 1, -1 do
+        local record = controls.rows[index]
+        ReleasePlayerStatsTableControl(record.edit)
+        ReleasePlayerStatsTableControl(record.syncFont)
+        ReleasePlayerStatsTableControl(record.stat)
+        ReleasePlayerStatsTableControl(record.name)
+        ReleasePlayerStatsTableControl(record.enabled)
+        controls.rows[index] = nil
+    end
+end
+
+local function CommitPlayerStatsRowValue(rowIndex, field, value)
+    local row = EX_DB.rows[rowIndex]
+    if type(row) ~= "table" or row[field] == value then return false end
+    return EXUI:CommitModuleValue({
+        moduleKey = EXWIND_MODULE_KEY,
+        path = ("rows.%d.%s"):format(rowIndex, field),
+        readValue = function() return row[field] end,
+        writeValue = function(nextValue)
+            if EX_DB.rows[rowIndex] == row then row[field] = nextValue end
+        end,
+    }, value)
+end
+
+local function SelectPlayerStatsRow(rowIndex)
+    if EX_DB.rows[rowIndex] == nil or EX_DB.selectedRow == rowIndex then return end
+    EXUI:CommitModuleValue({
+        moduleKey = EXWIND_MODULE_KEY,
+        path = "selectedRow",
+        readValue = function() return EX_DB.selectedRow end,
+        writeValue = function(nextValue) EX_DB.selectedRow = nextValue end,
+    }, rowIndex)
+end
+
+local RebuildPlayerStatsRowsTable
+
+RebuildPlayerStatsRowsTable = function(host, context)
+    local controls = host and host._exPlayerStatsRowsTable
+    if not controls then return end
+    context:ReleaseTablePresentation()
+    ClearPlayerStatsTableRows(controls)
+
+    local presentedRecords = {}
+    for index, row in ipairs(EX_DB.rows) do
+        local rowIndex = index
+        local record = {
+            enabled = EXUI:CreateCheckbox(host, "", row.enabled == true, function(checked)
+                CommitPlayerStatsRowValue(rowIndex, "enabled", checked == true)
+            end),
+            name = EXUI:CreateEditBox(host, tostring(row.label or ""), 1, 28, nil, {
+                onEditFocusLost = function(text)
+                    CommitPlayerStatsRowValue(rowIndex, "label", text or "")
+                end,
+            }),
+            stat = EXUI:CreateDropdown(host, 1, nil, ExwindTools.GetPlayerStatTree(), row.key, function(value)
+                CommitPlayerStatsRowValue(rowIndex, "key", value)
+            end),
+            syncFont = EXUI:CreateCheckbox(host, L["样式同步"], row.syncFont == true, function(checked)
+                CommitPlayerStatsRowValue(rowIndex, "syncFont", checked == true)
+            end),
+        }
+        record.edit = EXUI:CreateButton(host, 1, 28, L["选择"], function()
+            SelectPlayerStatsRow(rowIndex)
+        end, { variant = "secondary", compact = true })
+        controls.rows[#controls.rows + 1] = record
+        presentedRecords[#presentedRecords + 1] = {
+            cells = {
+                { widget = record.enabled, type = "switch" },
+                { widget = record.name, type = "input" },
+                { widget = record.stat, type = "select" },
+                { widget = record.syncFont, type = "switch" },
+                { widget = record.edit, type = "button" },
+            },
+        }
+    end
+
+    local add = EXUI:CreateButton(host, 1, 28, L["新增"], function()
+        ExwindTools:UpdateState(EXWIND_MODULE_KEY .. ".ButtonClicked", {
+            key = "btn_add",
+            ts = GetTime(),
+        })
+    end, { variant = "primary", compact = true })
+    controls.rows[#controls.rows + 1] = { edit = add }
+    context:SetTableControls({
+        add = {
+            cells = {
+                { text = "" },
+                { text = "" },
+                { text = "" },
+                { text = "" },
+                { widget = add, type = "button" },
+            },
+        },
+        records = presentedRecords,
+    })
+end
+
+local playerStatsGrid = ExwindTools.Grid
+if not playerStatsGrid then error("PlayerStats requires ExwindGrid", 2) end
+playerStatsGrid:RegisterTableControls(PLAYER_STATS_ROWS_TABLE, {
+    mount = function(host, context)
+        host._exPlayerStatsRowsTable = { rows = {} }
+        RebuildPlayerStatsRowsTable(host, context)
+    end,
+    update = function(host, context)
+        RebuildPlayerStatsRowsTable(host, context)
+    end,
+    release = function(host)
+        local controls = host._exPlayerStatsRowsTable
+        if controls then ClearPlayerStatsTableRows(controls) end
+        host._exPlayerStatsRowsTable = nil
+    end,
+})
+
 local function EX_RegisterLayout()
     local sel = tonumber(EX_DB.selectedRow) or 1
     if sel < 1 then sel = 1 end
     if sel > #EX_DB.rows then sel = #EX_DB.rows end
-    EX_DB.selectedRow = sel
 
     local currentRowPath = "rows." .. sel
+    local currentRow = EX_DB.rows[sel]
+    local currentRowName = currentRow and currentRow.label
+    if type(currentRowName) ~= "string" or currentRowName == "" then
+        currentRowName = L["属性行 "] .. sel
+    else
+        currentRowName = L[currentRowName] or currentRowName
+    end
     local function ApplyLivePreview(value, context)
         if ApplyPlayerStatsLiveVisual then
             ApplyPlayerStatsLiveVisual(value, context)
@@ -768,16 +906,23 @@ local function EX_RegisterLayout()
                 },
             },
             {
-                kind = "settings", id = "rows", title = L["属性行管理"],
+                kind = "table", id = "rows_table", title = L["属性行管理"],
+                key = "rows", controlFactory = PLAYER_STATS_ROWS_TABLE,
+                columns = {
+                    { title = L["启用此行"] },
+                    { title = L["名称"] },
+                    { title = L["属性"] },
+                    { title = L["数值样式"] },
+                    { title = L["选择"] },
+                },
+                supportsAdd = true,
+            },
+            {
+                kind = "settings", id = "rows", title = L["选择要编辑的行"] .. ": " .. sel .. ": " .. currentRowName,
                 items = {
-                    { key = "selectedRow", type = "select", label = L["选择要编辑的行"], optionsSource = "ExwindTools.GetRowItems_PlayerStats" },
                     { key = "btn_up", type = "button", label = L["↑"] },
                     { key = "btn_down", type = "button", label = L["↓"] },
-                    { key = "btn_add", type = "button", label = L["新增"] },
                     { key = "btn_delete", type = "button", label = L["删除"] },
-                    { key = "enabled", type = "switch", parentKey = currentRowPath, label = L["启用此行"] },
-                    { key = "label", type = "input", parentKey = currentRowPath, label = L["名称"] },
-                    { key = "key", type = "select", parentKey = currentRowPath, label = L["属性"], optionsSource = "ExwindTools.GetPlayerStatTree" },
                     { key = "isPercent", type = "switch", parentKey = currentRowPath, label = L["%"] },
                     { key = "format", type = "slider", parentKey = currentRowPath, label = L["小数"], min = 0, max = 3 },
                     { key = "roles", type = "select", multiple = true, parentKey = currentRowPath, label = L["显示职责"], options = {
@@ -786,7 +931,6 @@ local function EX_RegisterLayout()
                     { key = "scenes", type = "select", multiple = true, parentKey = currentRowPath, label = L["显示场景"], options = {
                         { value = "副本内", label = L["副本内"] }, { value = "副本外", label = L["副本外"] },
                     } },
-                    { key = "syncFont", type = "switch", parentKey = currentRowPath, label = L["|cffff0501数值样式同步标题|r"] },
                 },
             },
             {
@@ -817,7 +961,6 @@ EX_RegisterLayout()
 -- 唯一 Renderer：动态双列 TextList。Runtime / World / Panel 只切换 host，
 -- 使用同一个 BuildPresentation -> ApplyPresentation；Panel 不拥有任何局部输入。
 -- =============================================================
-local EXUI = ExwindTools.UI
 local runtimeList, worldList, panelPreview, panelDock
 local worldPreviewActive = false
 local watchedStateKeys = {}
@@ -1152,6 +1295,8 @@ end)
 ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY, function(info)
     if not info or not info.key then return end
     local selected = tonumber(EX_DB.selectedRow) or 1
+    if selected < 1 then selected = 1 end
+    if selected > #EX_DB.rows then selected = #EX_DB.rows end
     if info.key == "btn_up" and selected > 1 then
         EX_DB.rows[selected], EX_DB.rows[selected - 1] = EX_DB.rows[selected - 1], EX_DB.rows[selected]
         EX_DB.selectedRow = selected - 1

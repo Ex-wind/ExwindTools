@@ -48,7 +48,7 @@ local function MakeSpecLabel(icon, colorHex, specName)
     return string.format("|T%d:14:14:0:0|t |cff%s%s|r", icon, colorHex, L[specName])
 end
 
-local function EX_RegisterLayout()
+local function EX_RegisterLegacyLayout()
     -- [声明迁移边界：设置页] 控件只声明一次；专精紧凑行由 Core 按原 moduleKey/parentKey/key 语义呈现。
     -- AI/固定模式的 key、专精 parentKey 切换、专精业务顺序与 CVar 回调禁止修改。
     local liveStatus = { key = "live_status", type = "description", label = GetCurrentInfo() }
@@ -180,6 +180,190 @@ local function EX_RegisterLayout()
     }
 
     ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+end
+
+local SPEC_GROUPS = {
+    plate = {
+        { class = "死亡骑士", specs = { { 250, 135770, "C41E3A", "鲜血" }, { 251, 135773, "C41E3A", "冰霜" }, { 252, 135775, "C41E3A", "邪恶" } } },
+        { class = "战士", specs = { { 73, 132341, "C79C6E", "防护" }, { 71, 132355, "C79C6E", "武器" }, { 72, 132347, "C79C6E", "狂怒" } } },
+        { class = "圣骑士", specs = { { 66, 236264, "F48CBA", "防护" }, { 70, 135873, "F48CBA", "惩戒" }, { 65, 135920, "F48CBA", "神圣" } } },
+    },
+    mail = {
+        { class = "猎人", specs = { { 255, 461113, "ABD473", "生存" }, { 254, 236179, "ABD473", "射击" }, { 253, 461112, "ABD473", "野兽控制" } } },
+        { class = "萨满祭司", specs = { { 262, 136048, "0070DD", "元素" }, { 263, 237581, "0070DD", "增强" }, { 264, 136052, "0070DD", "恢复" } } },
+        { class = "唤魔师", specs = { { 1467, 4511811, "33937F", "湮灭" }, { 1473, 5198700, "33937F", "增辉" }, { 1468, 4511812, "33937F", "恩护" } } },
+    },
+    leather = {
+        { class = "恶魔猎手", specs = { { 581, 1247265, "A330C9", "复仇" }, { 577, 1247264, "A330C9", "浩劫" }, { 1480, 7455385, "A330C9", "噬灭" } } },
+        { class = "潜行者", specs = { { 260, 236286, "FFF468", "狂徒" }, { 259, 236270, "FFF468", "奇袭" }, { 261, 132320, "FFF468", "敏锐" } } },
+        { class = "武僧", specs = { { 268, 608951, "00FF98", "酒仙" }, { 269, 608953, "00FF98", "踏风" }, { 270, 608952, "00FF98", "织雾" } } },
+        { class = "德鲁伊", specs = { { 104, 132276, "FF7C0A", "守护" }, { 103, 132115, "FF7C0A", "野性" }, { 102, 136096, "FF7C0A", "平衡" }, { 105, 136041, "FF7C0A", "恢复" } } },
+    },
+    cloth = {
+        { class = "法师", specs = { { 64, 135846, "3FC7EB", "冰霜" }, { 63, 135810, "3FC7EB", "火焰" }, { 62, 135932, "3FC7EB", "奥术" } } },
+        { class = "术士", specs = { { 267, 136186, "8788EE", "毁灭" }, { 265, 136145, "8788EE", "痛苦" }, { 266, 136172, "8788EE", "恶魔学识" } } },
+        { class = "牧师", specs = { { 256, 135940, "FFFFFF", "戒律" }, { 257, 237542, "FFFFFF", "神圣" }, { 258, 136207, "FFFFFF", "暗影" } } },
+    },
+}
+
+local function BuildSpecCard(id, title, source)
+    local cells = {
+        { id = id .. ".classCell", kind = "cell", children = {
+            { id = id .. ".className", kind = "text", textSource = "className" },
+        } },
+    }
+    for slot = 1, 4 do
+        cells[#cells + 1] = { id = id .. ".specCell" .. slot, kind = "cell", children = {
+            { id = id .. ".spec" .. slot, kind = "control", ref = "spec" .. slot,
+                controlType = "input", visible = slot == 4 and "hasFourthSpec" or nil },
+        } }
+    end
+    return {
+        id = id, kind = "card", title = title, children = {
+            { id = id .. ".columns", kind = "columns",
+                columns = { { width = 104 }, { weight = 1 }, { weight = 1 }, { weight = 1 }, { weight = 1 } },
+                children = {
+                    { id = id .. ".rows", kind = "repeat", source = source,
+                        template = { id = id .. ".row", kind = "row", separator = true, children = cells } },
+                },
+            },
+        },
+    }
+end
+
+local function BuildV2Declaration()
+    return {
+        version = 2,
+        cards = {
+            {
+                id = "queue.core", kind = "card", title = L["全职业延迟容限 (SpellQueueWindow)"], children = {
+                    { id = "queue.status", kind = "hint", textSource = "status" },
+                    { id = "queue.help", kind = "hint", text = L["AI模式：容限 = 延迟 + 偏移。固定模式：容限 = 设定值。"] },
+                    { id = "queue.coreRow", kind = "row", children = {
+                        { id = "queue.enabled", kind = "control", ref = "enabled", controlType = "checkbox", width = 150 },
+                        { id = "queue.aiMode", kind = "control", ref = "aiMode", controlType = "checkbox", width = 210 },
+                        { id = "queue.global", kind = "control", ref = "global", controlType = "input", weight = 1 },
+                    } },
+                },
+            },
+            BuildSpecCard("queue.plate", L["板甲职业"], "plate"),
+            BuildSpecCard("queue.mail", L["锁甲职业"], "mail"),
+            BuildSpecCard("queue.leather", L["皮甲职业"], "leather"),
+            BuildSpecCard("queue.cloth", L["布甲职业"], "cloth"),
+        },
+    }
+end
+
+local function CreateV2Owner()
+    local owner = { controls = {}, components = {}, actions = {}, predicates = {}, sources = {}, texts = {} }
+    local session
+    function owner:AttachSession(value) session = value end
+    local function RefreshPage() if session then session:Refresh() end end
+    local function ReleaseControl(widget)
+        if _G.ExwindGrid and _G.ExwindGrid.ReleaseWidgetInstance then
+            _G.ExwindGrid:ReleaseWidgetInstance(widget)
+        end
+    end
+    local function Commit(binding, value)
+        if binding.read() == value then return false end
+        EXUI:CommitModuleValue({
+            moduleKey = EXWIND_MODULE_KEY,
+            path = binding.path,
+            readValue = binding.read,
+            writeValue = binding.write,
+        }, value)
+        RefreshPage()
+        return true
+    end
+    local function Checkbox(label, key)
+        return {
+            mount = function(host)
+                return EXUI:CreateCheckbox(host, label, EX_DB[key] == true, function(value)
+                    Commit({ path = key, read = function() return EX_DB[key] end,
+                        write = function(nextValue) EX_DB[key] = nextValue end }, value == true)
+                end)
+            end,
+            update = function(widget) widget:SetChecked(EX_DB[key] == true) end,
+            release = ReleaseControl,
+        }
+    end
+    local function Input(bindingFor, labelFor)
+        return {
+            mount = function(host, context)
+                local binding = bindingFor(context.scope)
+                local widget = EXUI:CreateEditBox(host, tostring(binding.read() or ""), 180, 28,
+                    labelFor(context.scope), {
+                        onEnter = function(text) Commit(bindingFor(context.scope), text or "") end,
+                        onEditFocusLost = function(text) Commit(bindingFor(context.scope), text or "") end,
+                    })
+                widget._exV2LabelInset = 20
+                return widget
+            end,
+            update = function(widget, context)
+                local binding = bindingFor(context.scope)
+                if widget.label then widget.label:SetText(labelFor(context.scope)) end
+                local editBox = widget.editBox or widget
+                local text = tostring(binding.read() or "")
+                if (not editBox.HasFocus or not editBox:HasFocus()) and editBox:GetText() ~= text then
+                    editBox:SetText(text)
+                end
+            end,
+            measure = function(widget, context, width)
+                widget:SetWidth(width)
+                return widget:GetHeight() + (widget._exV2LabelInset or 0)
+            end,
+            layout = function(widget, context, width, height)
+                local inset = widget._exV2LabelInset or 0
+                widget:ClearAllPoints()
+                widget:SetPoint("TOPLEFT", 0, -inset)
+                widget:SetSize(width, math.max(1, height - inset))
+            end,
+            release = ReleaseControl,
+        }
+    end
+
+    owner.controls.enabled = Checkbox(L["开启功能"], "enabled")
+    owner.controls.aiMode = Checkbox("|cff00ffff" .. L["启用 AI 智能模式"] .. "|r", "aiMode")
+    owner.controls.global = Input(function()
+        local key = EX_DB.aiMode and "globalOffset" or "globalFixed"
+        return { path = key, read = function() return EX_DB[key] end,
+            write = function(value) EX_DB[key] = value end }
+    end, function()
+        return EX_DB.aiMode and L["全局延迟偏移 |cff00ffff(AI)|r"] or L["全局默认延迟值 (固定)"]
+    end)
+    for slot = 1, 4 do
+        local specSlot = slot
+        owner.controls["spec" .. specSlot] = Input(function(scope)
+            local spec = scope.item.specs[specSlot]
+            if not spec then
+                return { path = "specs.__unused", read = function() return nil end, write = function() end }
+            end
+            local storageKey = EX_DB.aiMode and "specsAI" or "specs"
+            local storage = EX_DB[storageKey]
+            return { path = storageKey .. "." .. spec[1], read = function() return storage[spec[1]] end,
+                write = function(value) storage[spec[1]] = value end }
+        end, function(scope)
+            local spec = scope.item.specs[specSlot]
+            if not spec then return "" end
+            local prefix = EX_DB.aiMode and "|cff00ffff(AI)|r " or ""
+            return prefix .. MakeSpecLabel(spec[2], spec[3], spec[4])
+        end)
+    end
+    owner.sources.plate = function() return SPEC_GROUPS.plate end
+    owner.sources.mail = function() return SPEC_GROUPS.mail end
+    owner.sources.leather = function() return SPEC_GROUPS.leather end
+    owner.sources.cloth = function() return SPEC_GROUPS.cloth end
+    owner.texts.status = function() return GetCurrentInfo() end
+    owner.texts.className = function(scope) return L[scope.item.class] end
+    owner.predicates.hasFourthSpec = function(scope) return scope.item.specs[4] ~= nil end
+    return owner
+end
+
+local layoutRegistered = false
+local function EX_RegisterLayout()
+    if layoutRegistered then return end
+    EXUI:RegisterModuleSettingsPageV2(EXWIND_MODULE_KEY, BuildV2Declaration(), CreateV2Owner)
+    layoutRegistered = true
 end
 
 local function ApplySpellQueue()

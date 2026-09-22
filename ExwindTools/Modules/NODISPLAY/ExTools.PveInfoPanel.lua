@@ -3,6 +3,9 @@
 -- { Key = "ExTools.PveInfoPanel", Name = "PVE 扩展面板", Desc = "在副本查找器 (PVEFrame) 侧边显示额外信息挂架。", Category = 4 },
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
@@ -14,6 +17,9 @@ local EXWIND_MODULE_KEY = "ExTools.PveInfoPanel"
 -- =============================================================
 -- 第一部分：Grid 布局定义
 -- =============================================================
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function EX_RegisterLayout()
     -- [声明迁移边界：设置页] 仅把原设置控件改为唯一 settings 声明。
     -- key/type、PVE 附着字段与自有侧栏的内容顺序/按钮/显隐回调禁止修改。
@@ -43,6 +49,9 @@ EX_RegisterLayout()
 
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, { enabled = true, side = "RIGHT", offsetX = 2, offsetY = 0 })
 local mainFrame
 local FIXED_WIDTH = 260
@@ -52,6 +61,9 @@ local raiderIOHooked
 -- 第二部分：辅助组件 (勋章化 UI 部件)
 -- =============================================================
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function CreateSectionTitle(parent, text, yOfs)
     local container = CreateFrame("Frame", nil, parent)
     container:SetSize(FIXED_WIDTH - 15, 14)
@@ -166,6 +178,9 @@ local function UpdatePosition()
 end
 
 -- [联动 Hook] 确保当 Wind工具箱刷新它的面板时，我们也同步刷新位置
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 local function HookWindUI()
     local wt = _G.WindTools and _G.WindTools[1]
     if wt and wt.GetModule then
@@ -229,6 +244,9 @@ local function GetChallengeModeShortName(challengeModeID)
     return name or tostring(challengeModeID)
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function UpdateStats()
     if not mainFrame or not mainFrame:IsShown() then return end
 
@@ -459,6 +477,9 @@ local function RefreshActiveSurfaces()
     RefreshPanelDisplay()
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh — Runtime Subscriptions / 运行时订阅
+-- =========================================================
 EXUI:RegisterModuleValueController(EXWIND_MODULE_KEY, { RefreshActiveSurfaces = RefreshActiveSurfaces })
 
 ExwindTools:RegisterEvent("ITEM_CHANGED", EXWIND_MODULE_KEY, RefreshPanelDisplay)
@@ -472,5 +493,8 @@ ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", EXWIND_MODULE_KEY, function()
     end)
 end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 C_Timer.After(1, function() if EX_DB.enabled then CreateMainFrame() end end)
 ExwindTools:ReportReady(EXWIND_MODULE_KEY)

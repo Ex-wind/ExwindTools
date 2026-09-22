@@ -3,6 +3,9 @@
 -- { Key = "ExTools.PveKeystoneInfo", Name = "大米队友钥石", Desc = "在 PVEFrame 上显示玩家与队友钥石信息。", Category = 4 },
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
@@ -10,9 +13,13 @@ local EXUI = ExwindTools.UI
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 local EXWIND_MODULE_KEY = "ExTools.PveKeystoneInfo"
+
 local PartySync = ExwindTools.PartySync
 local LibOpenRaid = _G.LibStub and _G.LibStub("LibOpenRaid-1.0", true)
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EX_DEFAULTS = {
     enabled = false,
     offsetX = 156,
@@ -84,6 +91,9 @@ for _, instance in ipairs(EXDB.InstanceNoteInstanceSource) do
     end
 end
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function EX_RegisterLayout()
     -- [声明迁移边界：设置页] 仅把原设置控件改为 typed sections；三个 fontgroup 仍整体引用。
     -- key/type、PVE 附着字段、数据请求/刷新/显隐回调禁止修改。
@@ -126,6 +136,9 @@ EX_RegisterLayout()
 
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function NormalizePlayerName(name)
     if type(name) ~= "string" or name == "" then return nil end
     return _G.Ambiguate(name, "short")
@@ -384,6 +397,9 @@ local function HasRealPartyMembers()
     return false
 end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function UpdatePosition()
     if not infoFrame or not _G.PVEFrame then return end
 
@@ -649,6 +665,9 @@ ExwindTools:WatchState("AuraSecretsActive", EXWIND_MODULE_KEY, function()
     end
 end)
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:RegisterEvent("GROUP_ROSTER_UPDATE", EXWIND_MODULE_KEY, function()
     if infoFrame and infoFrame:IsShown() then
         RequestData()
@@ -682,6 +701,9 @@ ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", EXWIND_MODULE_KEY, function()
     end)
 end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 if _G.PVEFrame then
     HookPVE()
 else

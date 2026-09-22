@@ -3,6 +3,9 @@
 -- { Key = "ExTools.GossipID", Name = "对话ID显示", Desc = "显示对话 ID，并支持加入自动对话列表。", Category = 1 },
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
@@ -23,6 +26,9 @@ local strtrim = _G.strtrim or function(text)
     return text
 end
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EX_DEFAULTS = {
     enabled = true,
     showOptionID = false,
@@ -74,6 +80,9 @@ local INSTANCE_NAME_BY_ID = {
     [2993] = L["毒牙祭坛"],
 }
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function GetCurrentInstanceID()
     local id = ExwindTools.State and tonumber(ExwindTools.State.InstanceID)
     return id and id > 0 and id or nil
@@ -283,6 +292,9 @@ local function RefreshCurrentGossipFrameLater()
     end
 end
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function RefreshConfigUI()
     if ExwindTools.UI and ExwindTools.UI.RefreshContent then
         ExwindTools.UI:RefreshContent()
@@ -764,6 +776,9 @@ local function UpdateOptionActionButton(self, optionInfo)
     end
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 local function InstallOptionHook()
     if optionHookInstalled or type(_G.GossipOptionButtonMixin) ~= "table" then
         return
@@ -820,6 +835,9 @@ local function TryInstallHooks()
     return AreAllHooksInstalled()
 end
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 local driver = CreateFrame("Frame")
 driver:RegisterEvent("ADDON_LOADED")
 driver:RegisterEvent("PLAYER_LOGIN")

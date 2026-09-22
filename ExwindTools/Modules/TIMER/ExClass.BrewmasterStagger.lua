@@ -7,6 +7,9 @@
 -- =============================================================
 -- 运行时依赖与模块身份
 -- =============================================================
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 local EXUI, L = ExwindTools.UI, ExwindTools.L or setmetatable({}, { __index = function(_, key) return key end })
@@ -32,10 +35,16 @@ local TIMER_SCHEMA = ExwindTools.StandardTimerBar.NormalizeSchema({
 -- =============================================================
 -- 模块声明：唯一默认 DB、中央锚点、预览元素与设置页几何
 -- =============================================================
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller) return RefreshActiveSurfaces(controller) end,
     moduleKey = MODULE_KEY,
     kind = "timerbar",
+    -- =========================================================
+    -- 二、默认配置与配置访问 | Defaults and Configuration Access
+    -- =========================================================
     defaults = {
         root = {
             attachToCustom = false,
@@ -154,10 +163,16 @@ local MODULE_SPEC = {
     -- 中央 TimerBar owner 使用上方 TIMER_SCHEMA 解析标准控件。
     timerBar = { schema = TIMER_SCHEMA },
     -- 编辑预览：仅主文字可在条体内局部拖动。
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     preview = { positionGuiKeys = { "font_spell" }, elements = { ["core.spellName"] = { guiKey = "font_spell", movable = true, textRole = "spellName", tooltip = L["酒池文字样式"], position = { x = "font_spell.x", y = "font_spell.y" } } } },
     -- 设置页：所有控件均声明绝对 x/y/w/h，不使用流式布局。
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults、按钮语义及计时条刷新合同禁止修改；复合控件必须整体引用，header 不等于容器。
+    -- =========================================================
+    -- 三、GUI 声明 | GUI Declarations
+    -- =========================================================
     gui = {
         version = 1,
         sections = {
@@ -240,6 +255,9 @@ local LAYOUT = DB.layout
 -- 业务数据：阈值颜色
 -- 从模块 DB 读取各阶段颜色；未命中阶段时使用 timerGroup 基础条体颜色。
 -- =============================================================
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function GetColor(key) return DB[key .. "R"] or 1, DB[key .. "G"] or 1, DB[key .. "B"] or 1, DB[key .. "A"] or 1 end
 local function BarColor(percent)
     local best, color = -1, nil
@@ -282,6 +300,9 @@ end
 -- 将当前业务值、运行时颜色和非持久显示覆盖值交给中央标准 TimerBar。
 -- 不复制 DB，也不直接操作任何显示对象。
 -- =============================================================
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function BuildEntry(itemID, sample)
     local info = GetInfo(sample); local r, g, b, a = BarColor(info.percent)
     local labelOverrides = { justifyH = DB.textAlign or DB.font_spell.justifyH }
@@ -299,6 +320,9 @@ end
 -- 刷新分发
 -- 预览只在初始化、设置变更和用户操作时构建；Runtime 只在酒仙专精、模块启用且未被骑乘隐藏时提交。
 -- =============================================================
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function IsBrewmasterRuntimeActive()
     local state = ExwindTools.State or {}
     return DB.enabled and state.ClassID == 10 and state.SpecID == BREWMASTER_SPEC_ID
@@ -423,6 +447,9 @@ SyncRuntimeEventWatches()
 -- DB 变化、设置页按钮和角色状态负责同步运行时订阅；酒池高频事件只申请节流刷新。
 -- =============================================================
 -- 设置页专属按钮：重置主 Region 锚点位置。
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:WatchState(MODULE_KEY .. ".ButtonClicked", MODULE_KEY,
     function(info)
         if info and info.key == "btn_reset_pos" then
@@ -443,4 +470,7 @@ ExwindTools:RegisterEvent("TRAIT_CONFIG_UPDATED", MODULE_KEY, SyncRuntimeEventWa
 -- =============================================================
 -- 模块加载完成通知
 -- =============================================================
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 ExwindTools:ReportReady(MODULE_KEY)

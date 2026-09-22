@@ -1,6 +1,9 @@
 ﻿-- [[ 大秘境赛季记录 ]]
 -- { Key = "ExM+Info.RunHistory", Name = "大秘境赛季记录", Desc = "查看本赛季大秘境通关记录表格。", Category = 2 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
@@ -16,6 +19,9 @@ if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 local EXDB = _G.EXDB
 
 -- 3. 数据初始化
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXMYRUN_DEFAULTS = {
     size = 16,
     outline = "OUTLINE",
@@ -29,6 +35,9 @@ local EXMYRUN_DEFAULTS = {
 }
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXMYRUN_DEFAULTS)
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 -- =========================================================
 -- [v4.2] 注册与配置
 -- =========================================================
@@ -80,6 +89,9 @@ ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY,
     end
 end)
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 -- =========================================================
 -- 核心业务逻辑
 -- =========================================================
@@ -165,6 +177,9 @@ local function EXMYRUN_GetLevelColorHex(level)
     return colorMixin and colorMixin:GenerateHexColor() or "ffffffff"
 end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 -- 界面构建
 -- [卡片迁移边界：自定义渲染] 下列历史窗口、表头、滚动区和行池不是设置页 Grid；迁移设置卡片时禁止改其尺寸、排序、拖动与点击回调。
 function EXMYRUN:CreateMainFrame()
@@ -428,6 +443,9 @@ function EXMYRUN:ToggleWindow()
     end
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 -- 注册斜杠命令
 SLASH_EXMYRUN1 = "/emr"
 SLASH_EXMYRUN2 = "/exmythicrun"
@@ -442,5 +460,8 @@ end
 
 EXUI:RegisterModuleValueController(EXWIND_MODULE_KEY, { RefreshActiveSurfaces = RefreshActiveSurfaces })
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 -- 报告模块加载完成
 ExwindTools:ReportReady(EXWIND_MODULE_KEY)

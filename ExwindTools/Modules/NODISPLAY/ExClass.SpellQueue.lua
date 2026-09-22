@@ -3,6 +3,9 @@
 -- { Key = "ExTools.SpellQueue", Name = "全职业延迟容限", Desc = "根据当前专精自动调整输入延迟容限(SpellQueueWindow)。", Category = 5 },
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
@@ -22,6 +25,9 @@ if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 local EXDB = _G.EXDB
 if not EXDB then return end
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXWIND_DEFAULTS = {
     enabled = false,
     aiMode = false,
@@ -48,6 +54,9 @@ local function MakeSpecLabel(icon, colorHex, specName)
     return string.format("|T%d:14:14:0:0|t |cff%s%s|r", icon, colorHex, L[specName])
 end
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function EX_RegisterLegacyLayout()
     -- [声明迁移边界：设置页] 控件只声明一次；专精紧凑行由 Core 按原 moduleKey/parentKey/key 语义呈现。
     -- AI/固定模式的 key、专精 parentKey 切换、专精业务顺序与 CVar 回调禁止修改。
@@ -231,6 +240,9 @@ local function BuildSpecCard(id, title, source)
     }
 end
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations — V2 Page Adapters / V2 页面适配器
+-- =========================================================
 local function BuildV2Declaration()
     return {
         version = 2,
@@ -366,6 +378,9 @@ local function EX_RegisterLayout()
     layoutRegistered = true
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function ApplySpellQueue()
     if not EX_DB.enabled then return end
 
@@ -392,6 +407,9 @@ local function ApplySpellQueue()
     SetCVar("SpellQueueWindow", finalVal)
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 -- =============================================================
 -- 第四部分：事件与状态订阅
 -- =============================================================
@@ -426,6 +444,9 @@ ExwindTools:WatchState("SpecName", EXWIND_MODULE_KEY, OnIdentityChanged)
 -- =============================================================
 -- 第五部分：初始化与模块报告
 -- =============================================================
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 C_Timer.After(2, ApplySpellQueue)
 
 ExwindTools:ReportReady(EXWIND_MODULE_KEY)

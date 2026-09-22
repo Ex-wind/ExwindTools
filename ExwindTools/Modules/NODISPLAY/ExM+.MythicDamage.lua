@@ -1,6 +1,9 @@
 -- [[ 大秘境伤害计算模块 ]]
 -- { Key = "ExM+.MythicDamage", Name = "大秘境伤害计算", Desc = "根据层数计算法术实际伤害数值。", Category = 2 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
@@ -15,6 +18,9 @@ local EXWIND_MODULE_KEY = "ExM+.MythicDamage"
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 -- 3. 数据初始化
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXWIND_DEFAULTS = {
     mythicLevel = 10,
     useColoredNumbers = true,
@@ -25,6 +31,9 @@ local EXWIND_DEFAULTS = {
 }
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 -- =========================================================
 -- 核心业务逻辑 (需提前定义供 Layout 使用)
 -- =========================================================
@@ -111,6 +120,9 @@ function EXMD.ProcessDamageText(text, multiplier)
 end
 
 -- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
+-- =========================================================
 -- [v4.2] 注册与配置
 -- =========================================================
 
@@ -158,6 +170,9 @@ end
 -- 3. 立即注册
 EX_RegisterLayout()
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 local function RefreshActiveSurfaces()
     -- 当前 Grid 控件已经持有写入后的值；这里只重套已存在的法术手册面板。
     if _G.EXSP and _G.EXSP.LevelSlider then
@@ -176,5 +191,8 @@ ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY,
     end
 end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 -- 报告模块加载完成
 ExwindTools:ReportReady(EXWIND_MODULE_KEY)

@@ -2,6 +2,9 @@
 -- [[ 玩家角色定位标记 ]]
 -- EXUI 唯一 IconCollection Renderer：运行、世界编辑、设置页预览共用。
 -- =============================================================
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 local EXUI = ExwindTools.UI
@@ -13,6 +16,9 @@ local VIS_SHOW_IN_COMBAT = "show_in_combat"
 local VIS_SHOW_OUT_OF_COMBAT = "show_out_of_combat"
 local VIS_ONLY_IN_INSTANCE = "only_in_instance"
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local VISIBILITY_OPTIONS = {
     { value = VIS_SHOW_IN_COMBAT, label = L["战斗中显示"] },
     { value = VIS_SHOW_OUT_OF_COMBAT, label = L["战斗外显示"] },
@@ -171,6 +177,9 @@ end
 -- =============================================================
 -- 01. 页面：通用设置 → 整体锚点 → 图标本体 → 既有业务筛选
 -- =============================================================
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function EX_RegisterLayout()
     -- [声明迁移边界：设置页] 三个复合控件与原多选控件各只声明一次。
     -- key/type/opts、筛选字段、世界/运行/面板 Collection 与回调禁止修改。
@@ -264,6 +273,9 @@ local TEXTURE_PATHS = {
     RING = "Interface\\AddOns\\ExwindCore\\Textures\\Materials\\ExwindTools\\PlayerPosition\\Ring.png",
     DIAMOND = "Interface\\AddOns\\ExwindCore\\Textures\\Materials\\ExwindTools\\PlayerPosition\\Diamond.png",
 }
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local anchorFrame, anchorController, runtimeCollection, worldCollection, panelPreview, panelDock
 local worldPreviewActive = false
 local updater, updateElapsed = CreateFrame("Frame", nil, UIParent), 0
@@ -282,6 +294,9 @@ local function GetRangeSpell()
     return spec and spec.RangeSpell or nil
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function IsRuntimeVisible()
     local db, state = DB(), ExwindTools.State or {}
     if db.enabled ~= true then return false end
@@ -569,6 +584,9 @@ ExwindTools:RegisterModulePreview(EXWIND_MODULE_KEY, {
 -- 06. 既有业务 State 更新与提交回读（不改距离/显示判定）
 -- =============================================================
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 updater:Hide()
 updater:SetScript("OnUpdate", function(_, elapsed)
     updateElapsed = updateElapsed + elapsed
@@ -584,6 +602,9 @@ ExwindTools:WatchState("SpecID", EXWIND_MODULE_KEY, function() if not worldPrevi
 ExwindTools:RegisterEvent("PLAYER_TARGET_CHANGED", EXWIND_MODULE_KEY,
     function() if not worldPreviewActive then RenderRuntime() end end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 C_Timer.After(1, function()
     EnsureAnchor()
     RefreshVisuals()

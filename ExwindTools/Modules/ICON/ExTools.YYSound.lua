@@ -3,6 +3,9 @@
 -- 中央只管理已存在的 Collection、Anchor、Panel 和世界编辑宿主。
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 local EXUI = ExwindTools.UI
@@ -17,11 +20,17 @@ local LSM = LibStub("LibSharedMedia-3.0", true)
 
 -- 预设、DB 字段、锚点、预览交互和所有设置页坐标均由模块声明。
 -- 此表只含数据，绝不把模块函数或渲染实现传给中央。
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller) return RefreshActiveSurfaces(controller) end,
     moduleKey = MODULE_KEY,
     kind = "icon",
     version = 2,
+    -- =========================================================
+    -- 二、默认配置与配置访问 | Defaults and Configuration Access
+    -- =========================================================
     defaults = {
         font_time = {
             a = 1,
@@ -87,6 +96,9 @@ local MODULE_SPEC = {
             useCustomSound = false,
         },
     },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     anchor = {
         dbPath = "anchor",
         xKey = "x",
@@ -99,6 +111,9 @@ local MODULE_SPEC = {
         initialHeight = 59,
         clampedToScreen = true,
     },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     preview = {
         positionGuiKeys = { "font_time" },
         elements = {
@@ -114,6 +129,9 @@ local MODULE_SPEC = {
     },
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
+    -- =========================================================
+    -- 三、GUI 声明 | GUI Declarations
+    -- =========================================================
     gui = {
         version = 1,
         sections = {
@@ -184,6 +202,12 @@ local function ResolveDisplayIcon()
     return tonumber(db.iconTexture) or db.iconTexture or 132313
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function BuildPresentation(cooldown, isPreview)
     local db = DB
     local iconStyle = db.icon or {}
@@ -224,6 +248,9 @@ RefreshPreview()
 
 local effectTimer, lastSoundHandle
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function StopEffect()
     if lastSoundHandle then
         StopSound(lastSoundHandle)
@@ -303,6 +330,9 @@ local function CheckBloodlustDebuffTrigger()
     end
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:RegisterEvent("UNIT_AURA", MODULE_KEY, function(_, unit)
     if unit == "player" then C_Timer.After(.05, CheckBloodlustDebuffTrigger) end
 end)
@@ -319,4 +349,7 @@ ExwindTools:WatchState(MODULE_KEY .. ".ButtonClicked", MODULE_KEY, function(clic
     end
 end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 ExwindTools:ReportReady(MODULE_KEY)

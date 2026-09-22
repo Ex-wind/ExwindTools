@@ -1,4 +1,7 @@
 -- 噬灭变身计时纯业务模块；显示链唯一由通用中央 IconCollection 管理。
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 local EXUI = ExwindTools.UI
@@ -12,6 +15,9 @@ local OUT_OF_COMBAT_ICON_ID, SOUND_ALERT_COUNT = 1305156, 5
 local RefreshActiveSurfaces
 
 -- 模块声明所有预设及全部 GUI 固定坐标；中央仅消费该声明。
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller) return RefreshActiveSurfaces(controller) end,
     moduleKey = MODULE_KEY,
@@ -19,6 +25,9 @@ local MODULE_SPEC = {
     version = 2,
     features = { cooldown = true, timeText = true, stacksText = true },
     textSlots = { time = L["倒数文本"], stacks = L["层数文本（次数）"] },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     anchor = {
         dbPath = "icon",
         xKey = "x",
@@ -33,6 +42,9 @@ local MODULE_SPEC = {
         -- GUI 位于 icon 作用域；直接绑定该表，不能再额外创建 icon.anchor。
         bindRoot = true,
     },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     preview = {
         positionGuiKeys = { "font_time", "font_stacks" },
         elements = {
@@ -56,6 +68,9 @@ local MODULE_SPEC = {
         },
         sample = { icon = 7135881, stacks = "3", remaining = 12.3, duration = 30 },
     },
+    -- =========================================================
+    -- 二、默认配置与配置访问 | Defaults and Configuration Access
+    -- =========================================================
     defaults = {
         font_stacks = {
             a = 1,
@@ -182,6 +197,9 @@ local MODULE_SPEC = {
     },
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
+    -- =========================================================
+    -- 三、GUI 声明 | GUI Declarations
+    -- =========================================================
     gui = {
         version = 1,
         sections = {
@@ -249,6 +267,9 @@ if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end
 local transformActive, hasTimerValue, castCount = false, false, 0
 local runtimeDuration, runtimeDurationStartTime, runtimeDurationClock = nil, 0, nil
 local soundTriggered, soundAlertGeneration = {}, 0
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function IsEligible()
     local state = ExwindTools.State or {}; return state.ClassID == DEMON_HUNTER_CLASS_ID and
     state.SpecID == DEVOURER_SPEC_ID
@@ -295,6 +316,9 @@ local function MakeTextBounds(style)
 end
 
 -- 模块只提交标准 IconCollection presentation；中央不识别变身、次数或音效业务。
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function BuildEntry(itemID, icon, stacks, cooldown, isPreview)
     local db = DB
     local iconStyle = db.icon or {}
@@ -361,6 +385,9 @@ RefreshActiveSurfaces = function(controller)
         controller.runtimeEntries[1].presentation = BuildEntry("transform:runtime", GetTimerIcon(), stacks, cooldown, false).presentation
     end
 end
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function StopTimer()
     if runtimeDuration then
         runtimeDurationClock = C_DurationUtil.CreateManualClock(); runtimeDurationClock:SetTime(GetTime() -
@@ -385,6 +412,9 @@ local function SyncAura()
     if aura then if not transformActive then StartTimer() else PublishRuntime() end elseif transformActive then StopTimer() else
         PublishRuntime() end
 end
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:WatchState("ClassID", MODULE_KEY, SyncAura); ExwindTools:WatchState("SpecID", MODULE_KEY, SyncAura); ExwindTools
     :WatchState("InCombat", MODULE_KEY, PublishRuntime)
 ExwindTools:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", MODULE_KEY,
@@ -399,4 +429,7 @@ ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", MODULE_KEY,
 ExwindTools:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", MODULE_KEY,
     function(_, unit) if unit == "player" then SyncAura() end end)
 ExwindTools:RegisterEvent("TRAIT_CONFIG_UPDATED", MODULE_KEY, SyncAura)
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 ExwindTools:ReportReady(MODULE_KEY)

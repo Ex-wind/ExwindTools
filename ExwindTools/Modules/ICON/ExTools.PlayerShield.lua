@@ -1,6 +1,9 @@
 -- 玩家护盾量：模块声明自己的 DB / GUI / 锚点，业务只提交标准 Icon presentation。
 -- 中央不识别本模块名称、字段或业务规则。
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 
@@ -13,6 +16,9 @@ local ICON_HIDE_DELAY = 10
 local RefreshActiveSurfaces
 
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller) return RefreshActiveSurfaces(controller) end,
     moduleKey = MODULE_KEY,
@@ -20,6 +26,9 @@ local MODULE_SPEC = {
     version = 1,
     features = { icon = true, labelText = true, enabled = true },
     textSlots = { label = L["护盾文字样式"] },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     anchor = {
         dbPath = "$root",
         bindRoot = true,
@@ -33,6 +42,9 @@ local MODULE_SPEC = {
         initialHeight = 40,
         clampedToScreen = true,
     },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     preview = {
         positionGuiKeys = { "font_text" },
         elements = {
@@ -46,6 +58,9 @@ local MODULE_SPEC = {
             },
         },
     },
+    -- =========================================================
+    -- 二、默认配置与配置访问 | Defaults and Configuration Access
+    -- =========================================================
     defaults = {
         font_text = {
             a = 1,
@@ -112,6 +127,9 @@ local MODULE_SPEC = {
     },
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
+    -- =========================================================
+    -- 三、GUI 声明 | GUI Declarations
+    -- =========================================================
     gui = {
         version = 1,
         sections = {
@@ -178,6 +196,12 @@ local function MakeTextBounds(style)
     }
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function BuildEntry(itemID, icon, text)
     local db = DB
     local iconStyle = db.icon or {}
@@ -213,6 +237,9 @@ local C_Timer = _G.C_Timer
 local math_abs, math_floor, math_max = math.abs, math.floor, math.max
 local refreshTimer, iconHideTimer, lastAbsorbEventTime
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function IsSecretValue(value)
     return type(_G.issecretvalue) == "function" and _G.issecretvalue(value)
 end
@@ -317,11 +344,17 @@ local function MarkAbsorbEventActive()
     end
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", MODULE_KEY, function(_, unit)
     if unit == "player" then
         MarkAbsorbEventActive(); ScheduleRefresh()
     end
 end)
 ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", MODULE_KEY, ScheduleRefresh)
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 ScheduleRefresh()
 ExwindTools:ReportReady(MODULE_KEY)

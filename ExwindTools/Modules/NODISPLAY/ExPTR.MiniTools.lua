@@ -1,3 +1,6 @@
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
@@ -10,6 +13,9 @@ local EXWIND_MODULE_KEY = "ExPTR.MiniTools"
 -- 检查模块是否在引擎中注册且处于开启状态
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 -- 默认配置
 local EXWIND_DEFAULTS = {
     blockFeedback = true,
@@ -17,6 +23,9 @@ local EXWIND_DEFAULTS = {
 }
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 -- ========================================================================
 -- [布局注册] Grid 设置界面
 -- ========================================================================
@@ -43,6 +52,9 @@ end
 
 RegisterLayout()
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 -- ========================================================================
 -- 1. [BlockFeedback] 屏蔽PTR反馈
 -- ========================================================================
@@ -135,6 +147,9 @@ local function Init_AutoLearnProf()
         end
     end
 
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     -- [卡片迁移边界：自定义渲染] 下列按钮注入暴雪专业页面，不是设置页卡片；外部锚点、学习顺序、点击与显隐 hook 禁止修改。
     local function CreateLearnButton()
         local pFrame = _G.ProfessionsFrame
@@ -171,6 +186,9 @@ local function Init_AutoLearnProf()
         UpdateBtnVisibility()
     end
 
+    -- =========================================================
+    -- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+    -- =========================================================
     if _G.C_AddOns and _G.C_AddOns.IsAddOnLoaded("Blizzard_Professions") then
         CreateLearnButton()
     else
@@ -182,6 +200,9 @@ local function Init_AutoLearnProf()
     end
 end
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 -- ========================================================================
 -- 初始化
 -- ========================================================================

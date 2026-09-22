@@ -2,6 +2,9 @@
 -- [[ 位移技能CD提示 (No Move Skill Alert) ]]
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 -- 本模块的 Panel/World/Runtime 三宿主全部依赖 EXUI。加载顺序异常时必须整体
@@ -345,10 +348,16 @@ local EX_DEFAULTS = {
     evoker_fmt_augmentation    = "我没有闪 (%t)",
 }
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller) return RefreshActiveSurfaces(controller) end,
     moduleKey = MODULE_KEY,
     kind = "text",
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     anchor = {
         dbPath = "font_alert",
         xKey = "x",
@@ -363,15 +372,24 @@ local MODULE_SPEC = {
         -- GUI 位于 font_alert 作用域；直接绑定该表，不能再创建 font_alert.anchorGroup。
         bindRoot = true,
     },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     preview = {
         positionGuiKeys = {},
         elements = {
             ["nomoveskillalert.body"] = { guiKey = "font_alert", movable = false, tooltip = L["位移技能CD提示"] },
         },
     },
+    -- =========================================================
+    -- 二、默认配置与配置访问 | Defaults and Configuration Access
+    -- =========================================================
     defaults = { root = EX_DEFAULTS },
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- 下列声明的职业顺序、key/type/parentKey、DB path、anchor/preview/defaults 与回调均禁止修改；复合控件整体引用。
+    -- =========================================================
+    -- 三、GUI 声明 | GUI Declarations
+    -- =========================================================
     gui = {
         version = 1,
         sections = {
@@ -531,6 +549,12 @@ local function BodyBounds()
     return math.max(120, math.floor(size * 12)), math.max(32, math.floor(size + 20))
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function BuildPresentation(text, nativeRemainingDuration, nativeRemainingFormat)
     local width, height = BodyBounds()
     local halfWidth, halfHeight = width * 0.5, height * 0.5
@@ -612,6 +636,9 @@ end
 
 RefreshPreview()
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function GetCurrentSpecID()
     local specIndex = GetSpecialization and GetSpecialization()
     if not specIndex then return 0 end
@@ -821,6 +848,9 @@ end
 -- =============================================================
 -- 事件注册
 -- =============================================================
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", MODULE_KEY, function()
     C_Timer.After(1, RefreshActiveSkillData)
 end)
@@ -860,4 +890,7 @@ ExwindTools:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player", MODULE_KEY, 
 end)
 
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 ExwindTools:ReportReady(MODULE_KEY)

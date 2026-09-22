@@ -1,4 +1,7 @@
 -- 焦点施法：业务保留 Secret Duration/音效/打断状态，显示只提交纯 TimerBar presentation。
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 local EXUI, L, LSM = ExwindTools.UI, ExwindTools.L or setmetatable({}, { __index = function(_, key) return key end }),
@@ -18,12 +21,18 @@ local TIMER_SCHEMA = ExwindTools.StandardTimerBar.NormalizeSchema({
     textB = { key = "font_target", gridKey = "font_target", role = "targetName", label = L["目标名称"], optional = true },
     textC = { key = "font_timer", gridKey = "font_timer", role = "time", label = L["时间"] }
 })
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller, changedPath, phase)
         return RefreshActiveSurfaces(controller, changedPath, phase)
     end,
     moduleKey = MODULE_KEY,
     kind = "timerbar",
+    -- =========================================================
+    -- 二、默认配置与配置访问 | Defaults and Configuration Access
+    -- =========================================================
     defaults = {
         root = {
             alertChannel = "Master",
@@ -187,8 +196,14 @@ local MODULE_SPEC = {
             },
         },
     },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     anchor = { dbPath = "$root", bindRoot = true, xKey = "posX", yKey = "posY", defaultX = 23, defaultY = 272, attachEnabledKey = "attachToCustom", attachTargetKey = "customAttachTarget", initialWidth = 350, initialHeight = 50, clampedToScreen = true },
     timerBar = { schema = TIMER_SCHEMA },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     preview = {
         positionGuiKeys = { "font_spell", "font_target", "font_timer" },
         elements = {
@@ -199,6 +214,9 @@ local MODULE_SPEC = {
     },
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults、打断判定及计时条刷新合同禁止修改；复合控件必须整体引用，header 不等于容器。
+    -- =========================================================
+    -- 三、GUI 声明 | GUI Declarations
+    -- =========================================================
     gui = {
         version = 1,
         sections = {
@@ -261,6 +279,9 @@ local DB = ExwindTools:GetModuleDB(MODULE_KEY)
 ExwindTools.StandardTimerBar.EnsureDefaults(DB, TIMER_SCHEMA)
 local central = EXUI:RegisterTimerBarModule(MODULE_SPEC)
 local LAYOUT = DB.layout
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function GetColor(prefix)
     return DB[prefix .. "R"] or 1, DB[prefix .. "G"] or 1, DB[prefix .. "B"] or 1,
         DB[prefix .. "A"] or 1
@@ -301,6 +322,9 @@ end
 
 -- 面板和世界编辑模式没有实际的焦点/打断 Duration Object；这里只投影一条固定
 -- 的预览标线。运行时标线仍由下方的第二条原生 StatusBar 驱动。
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function BuildPreviewMarkerRegionElement()
     local width = math.max(1, tonumber(DB.interruptMarkerWidth) or 1)
     local height = math.max(1, tonumber(DB.timerGroup.height) or 1)
@@ -506,6 +530,9 @@ local function PlaySound(force)
     PlaySoundFile(sound, DB.alertChannel or "Master")
     return true
 end
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function OnSpell(event, unit)
     if unit and unit ~= "focus" then return end
     if DB.enabled and (event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START") then
@@ -520,6 +547,9 @@ if not ExwindTools:IsModuleEnabled(MODULE_KEY) then
     ExwindTools:ReportReady(MODULE_KEY); return
 end
 Refresh()
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:RegisterEvent("PLAYER_FOCUS_CHANGED", MODULE_KEY, Refresh)
 for _, event in ipairs({ "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_INTERRUPTED", "UNIT_SPELLCAST_CHANNEL_STOP", "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" }) do
     ExwindTools:RegisterEvent(event, MODULE_KEY, OnSpell)
@@ -527,4 +557,7 @@ end
 ExwindTools:WatchState("InterruptReady", MODULE_KEY, Refresh); ExwindTools:WatchState(MODULE_KEY .. ".ButtonClicked", MODULE_KEY,
     function(info) if info and info.key == "btn_testSound" then PlaySound(true) end end)
 ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", MODULE_KEY, function() C_Timer.After(1, Refresh) end)
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 ExwindTools:ReportReady(MODULE_KEY)

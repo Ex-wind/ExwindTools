@@ -1,11 +1,15 @@
 -- [[ 小工具箱 (MiniTools) ]]
 -- { Key = "ExTools.MiniTools", Name = "小工具箱", Desc = "汇集各种简单实用的功能 tweaks。", Category = 4 }
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools or not ExwindTools.UI then return end
 local EXUI = ExwindTools.UI
 local EXWIND_MODULE_KEY = "ExTools.MiniTools"
+
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 local MiniToolsRefreshCallbacks = {}
 local function RegisterMiniToolsRefresh(callback)
@@ -16,6 +20,9 @@ end
 local UIParent = _G.UIParent
 
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 -- ========================================================================
 -- 1. [ShowMapInfo] 地图ID + 鼠标坐标 + 玩家坐标
 -- ========================================================================
@@ -1557,6 +1564,9 @@ end
 -- ========================================================================
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXWIND_DEFAULTS = {
     --
     ShowMapInfo = true,
@@ -1619,6 +1629,9 @@ local EXWIND_DEFAULTS = {
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
 
 -- 初始化逻辑
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 local function SafeInit(func, name)
     local ok, err = pcall(func)
     if not ok then
@@ -1639,6 +1652,9 @@ if EX_DB.EJTooltip then SafeInit(Init_EJTooltip, "EJTooltip") end
 if EX_DB.MerchantExpansion then SafeInit(Init_MerchantExpansion, "MerchantExpansion") end
 SafeInit(Init_MacroEnhancement, "MacroEnhancement")
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 local function RefreshActiveSurfaces()
     for _, refresh in ipairs(MiniToolsRefreshCallbacks) do refresh() end
 end
@@ -1648,6 +1664,9 @@ EXUI:RegisterModuleValueController(EXWIND_MODULE_KEY, { RefreshActiveSurfaces = 
 -- ========================================================================
 -- Grid 布局
 -- ========================================================================
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function EX_RegisterLayout()
     -- [声明迁移边界：设置页] 仅把原多功能设置项改为 typed sections；fontgroup 仍整体引用。
     -- 各业务 key/type/顺序、商人/宏界面 hook、购买确认和战斗记录回调禁止修改。

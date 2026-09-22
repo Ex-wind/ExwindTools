@@ -1,6 +1,9 @@
 -- [[ 大米图标增强 ]]
 -- { Key = "ExM+Info.MythicIcon", Name = "大米图标增强", Desc = "在大秘境挑战面板图标上即时显示副本简称、最佳层数和评分。", Category = 2 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
@@ -15,6 +18,9 @@ if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 local EXDB = _G.EXDB
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function EXWIND_GetInstanceMetaByChallengeModeID(mapID)
     mapID = tonumber(mapID) or 0
     if mapID <= 0 or not EXDB then
@@ -98,6 +104,9 @@ local function EXWIND_GetBlizzMapName(mapID)
 end
 
 -- 3. 数据默认值
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXWIND_DEFAULTS = {
     displayOptions = {
         showBestLevel = true,
@@ -200,6 +209,9 @@ local function EXWIND_GetTeleportSpellID(mapID)
     return EXWIND_TeleportSpellMap[mapID]
 end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 -- [卡片迁移边界：自定义渲染] 下列 secure 传送点击层属于挑战面板运行时外部宿主，不是设置页卡片；创建、点击属性、战斗闸门及显隐合同禁止修改。
 local function EXWIND_GetTeleportClickLayer(frame)
     if not frame then return nil end
@@ -262,6 +274,9 @@ local function EXWIND_UpdateTeleportClickLayer(frame, mapID)
     layer:Show()
 end
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 -- =========================================================
 -- [v4.2] 注册与配置
 -- =========================================================
@@ -337,6 +352,9 @@ end
 -- 3. 立即注册
 EX_RegisterLayout()
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 -- =========================================================
 -- 核心业务逻辑实现
 -- =========================================================
@@ -571,6 +589,9 @@ end
 EXUI:RegisterModuleValueController(EXWIND_MODULE_KEY, { RefreshActiveSurfaces = RefreshActiveSurfaces })
 
 ------------------------------------------------------------
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 -- 事件与 Hook
 ------------------------------------------------------------
 local function EXWIND_RefreshBurst()
@@ -640,5 +661,8 @@ if type(_G.PVEFrame_ShowFrame) == "function" then
     end)
 end
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 -- 报告模块加载完成
 ExwindTools:ReportReady(EXWIND_MODULE_KEY)

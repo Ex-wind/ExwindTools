@@ -3,6 +3,9 @@
 -- { Key = "ExClass.SpellEffectAlpha", Name = "法术触发透明度", Desc = "根据当前专精自动调整法术触发（法术激活叠加）的透明度。", Category = 5 },
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
@@ -22,6 +25,9 @@ if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 local EXDB = _G.EXDB
 if not EXDB then return end
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXWIND_DEFAULTS = {
     enabled = true,
     globalDefault = 100,
@@ -88,6 +94,9 @@ local ADVANCED_RUNTIME_ENABLED = EX_DB.advancedEnabled ~= false
 -- =============================================================
 -- 第三部分：业务逻辑
 -- =============================================================
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function ApplyEffectAlpha()
     if not EX_DB.enabled then return end
 
@@ -143,6 +152,9 @@ local OVERLAY_IDS_LEFT_RIGHT = {
     1029138, 1029139, 1030393, 2888300, 7549744,
 }
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function RegisterEscCloseFrame(name)
     _G.UISpecialFrames = _G.UISpecialFrames or {}
     for i = 1, #_G.UISpecialFrames do
@@ -777,6 +789,9 @@ C_Timer.NewTicker(1, function(ticker)
     end
 end, 20)
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 
 -- =============================================================
 -- 第四部分：事件与状态订阅
@@ -858,6 +873,9 @@ ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY,
     end
 end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 -- =============================================================
 -- 第六部分：初始化与模块报告
 -- =============================================================
@@ -876,6 +894,9 @@ local function MakeSpecLabel(icon, colorHex, specName)
     return string.format("|T%d:16:16:0:0|t |cff%s%s|r", icon, colorHex, L[specName])
 end
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function EX_RegisterLegacyLayout()
     local currentInfo = GetStatusText()
 

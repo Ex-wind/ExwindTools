@@ -1,6 +1,9 @@
 -- [[ 自动购买 ]]
 -- { Key = "ExTools.AutoBuy", Name = "自动购买", Desc = "在商人处自动购买预设或自定义的物品（如钥石地图、消耗品等）。", Category = 4 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
@@ -14,6 +17,9 @@ local EXWIND_MODULE_KEY = "ExTools.AutoBuy"
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 -- 3. 数据默认值与 DB 初始化
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXWIND_DEFAULTS = {
     enabled = true,
     Items = {},       -- 存储 ID -> {enabled, quantity}
@@ -62,6 +68,9 @@ local PRESET_ITEMS = {
 
 
 -- 2. Grid 布局 (核心)
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function EX_RegisterLayout()
     -- [声明迁移边界：设置页] 预设/自定义物品顺序、itemID/key/parentKey/subKey、
     -- 增删按钮、原记录控件与购买逻辑禁止修改；唯一 table 只声明原控件及其顺序。
@@ -187,6 +196,9 @@ ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ItemConfigDelete", EXWIND_MODULE_K
     end
 end)
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function GetCount(id)
     local c = 0
     local maxBagIndex = 4
@@ -229,6 +241,9 @@ local function DoBuy(id, target)
     return false
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:RegisterEvent("MERCHANT_SHOW", EXWIND_MODULE_KEY, function()
     local boughtAnything = false
 

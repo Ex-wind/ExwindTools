@@ -1,6 +1,9 @@
 ﻿-- [[ 大秘境统计面板 (主界面) ]]
 -- { Key = "ExM+InfoMythicFrame", Name = "大秘境统计面板", Desc = "全屏沉浸式的大秘境战绩与称号线进度分析面板。", Category = 2 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
@@ -16,6 +19,9 @@ if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 -- 4. Grid 布局
 local function EX_RegisterLayout()
     -- [声明迁移边界：设置页] 仅把原入口按钮改为唯一 settings 声明。
@@ -46,11 +52,17 @@ ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY,
     end
 end)
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 -- 5. 数据初始化
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, {})
 
 
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 -- =========================================================
 -- [模块 0] Python 导出数据区 & 配置 (严禁修改逻辑)
 -- =========================================================
@@ -227,6 +239,9 @@ function EXMRH.CalculateRank(score)
     return "100.00", totalPop, 0, nil
 end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 -- =========================================================
 -- [模块 2] 主框架布局
 -- =========================================================
@@ -696,6 +711,9 @@ function EXMRH.InitRightPanel()
 end
 
 -- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
+-- =========================================================
 -- [模块 6] 更新逻辑 (动态职业染色)
 -- =========================================================
 local function FormatRank(n)
@@ -911,6 +929,9 @@ function EXMRH.UpdateAllData()
     end
 end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 function EXMRH.InitSubPanels()
     EXMRH.InitHeader(); EXMRH.InitStatTable(); EXMRH.InitRightPanel()
 end
@@ -955,6 +976,9 @@ local function EXMRH_HookChallenges()
     end
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 -- 事件监听
 local EXMRH_EventFrame = CreateFrame("Frame")
 EXMRH_EventFrame:RegisterEvent("ADDON_LOADED")
@@ -968,5 +992,8 @@ end)
 -- [Fix] 移除 PVEFrame Hook 和 盲目 Timer Hook，避免登陆 Taint
 -- 仅依赖 ADDON_LOADED 事件来 Hook ChallengesFrame
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 -- 报告模块加载完成
 ExwindTools:ReportReady(EXWIND_MODULE_KEY)

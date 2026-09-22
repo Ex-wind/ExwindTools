@@ -4,12 +4,16 @@
 -- 在目标 Debuff 存在时显示。禁止读取 AuraButton / Aura 数据，也不监听 UNIT_AURA。
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 
 local EXUI = ExwindTools.UI
 local L = ExwindTools.L or setmetatable({}, { __index = function(_, key) return key end })
 local MODULE_KEY = "ExTools.CombatMobDebuffGrid"
+
 local SPELL_LIST_RENDERER = MODULE_KEY .. ".SpellList"
 
 local MAX_NAMEPLATES = 40
@@ -23,6 +27,9 @@ local REFRESH_INTERVAL = 0.10
 local AURA_SLOT_KEY = "watched_debuff"
 local AURA_TEMPLATE = "ExToolsCombatMobDebuffGridAuraButtonTemplate"
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local SPEC_OPTION_DEFS = {
     { specID = 71, className = "战士", specName = "武器", colorHex = "C79C6E" },
     { specID = 72, className = "战士", specName = "狂怒", colorHex = "C79C6E" },
@@ -270,6 +277,9 @@ end
 
 local RebuildSpellRenderer
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 local spellDataEventFrame = CreateFrame("Frame")
 spellDataEventFrame:RegisterEvent("SPELL_DATA_LOAD_RESULT")
 spellDataEventFrame:SetScript("OnEvent", function(_, _, spellID, success)
@@ -485,6 +495,9 @@ local ANCHOR_OPTS = {
     onPickFrame = PickAnchor,
 }
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local COMMON_OPTS = {
     bindRoot = true,
     fields = {
@@ -535,6 +548,9 @@ ExwindTools:RegisterModuleLayout(MODULE_KEY, {
     },
 })
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local DEFAULTS = {
     root = {
         enabled = false,
@@ -667,6 +683,9 @@ EnsureAnchorController = function()
     return anchorController
 end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function EnsureGridCell(index)
     local cell = gridCells[index]
     if cell then
@@ -868,6 +887,9 @@ local function RenderGrid(units, spellIDs, spellIDSignature, sample, settings)
     end
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic — Runtime Grid Refresh / 运行网格刷新
+-- =========================================================
 RefreshRuntime = function(force)
     local db = GetDB()
     local settings = GetGridSettings(db)
@@ -940,6 +962,9 @@ EXUI:RegisterEditableModule({
     end,
 })
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh — Runtime Events / 运行时事件
+-- =========================================================
 refreshFrame = _G.CreateFrame("Frame")
 refreshFrame:SetScript("OnUpdate", function(_, elapsed)
     refreshElapsed = refreshElapsed + (tonumber(elapsed) or 0)
@@ -971,6 +996,9 @@ ExwindTools:WatchState("SpecID", MODULE_KEY, function()
     RefreshRuntime(true)
 end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 _G.C_Timer.After(0, function()
     EnsureAnchor()
     RefreshRuntime(true)

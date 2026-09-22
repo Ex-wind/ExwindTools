@@ -3,6 +3,9 @@
 -- 唯一 Renderer：BuildPresentation -> ApplyPresentation -> IconCollection。
 -- runtime 的频道动作由 Core runtimeAction 承担；world/panel 永不拥有项目输入。
 -- =============================================================
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI, L = ExwindTools.UI, ExwindTools.L or setmetatable({}, { __index = function(_, key) return key end })
@@ -10,6 +13,9 @@ local EXWIND_MODULE_KEY = "ExTools.ChatChannelBar"
 
 -- x/y 是频道栏唯一正式的世界锚点资料。面板样本永不读取它们；运行时与
 -- 世界编辑则由同一 AnchorController 读写，不能存在第二套实际位置。
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local DEFAULTS = {
     enabled = true,
     buttonPadding = 3,
@@ -174,6 +180,9 @@ local CHAT_CHANNEL_BAR_ANCHOR_OPTS = {
     onPickFrame = PickChatChannelBarAnchor,
 }
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function RegisterLayout()
     -- [声明迁移边界：设置页] 静态控件、频道记录与两个复合控件各只声明一次。
     -- CHANNELS 业务顺序、key/type/setKey、命令输入与预览/运行回调禁止修改。
@@ -260,6 +269,9 @@ local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY)
 local function DB() return EX_DB end
 local function Trim(value) return string.gsub(tostring(value or ""), "^%s*(.-)%s*$", "%1") end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local anchorFrame, anchorController, runtimeCollection, worldCollection, panelPreview, panelDock
 local worldPreviewActive = false
 EnsureAnchorController = function()
@@ -321,6 +333,9 @@ local function FindSlashHandler(slash)
     return nil
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function Execute(channel)
     local raw = Trim(DB()[channel.id .. "_channel"]); if raw == "" then raw = channel.command or "" end
     if channel.isWorld and raw ~= "" and not raw:match("^/") then
@@ -514,6 +529,9 @@ local function ReapplyExistingSurface(surface, presentation)
     ApplyPresentation(surface, presentation)
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 local function RefreshActiveSurfaces()
     -- X/Y Slider 已写入唯一 ModuleDB 后，必须把同一个 AnchorController 的
     -- 已存在锚点投影到新位置；只重套文字 Item 不会移动整个频道栏。
@@ -542,6 +560,9 @@ local function HandlePreviewIntent(intent)
     return true
 end
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 RegisterLayout()
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 EXUI:RegisterEditableModule({

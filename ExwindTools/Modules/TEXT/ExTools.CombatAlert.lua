@@ -3,6 +3,9 @@
 -- 业务只提交文字和状态颜色；中央唯一拥有 Anchor、Panel、World、Runtime。
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 
@@ -15,11 +18,17 @@ local LAYOUT_DEFAULTS = { direction = "DOWN", spacing = 0, maxVisible = 1 }
 local DISPLAY_WIDTH, DISPLAY_HEIGHT = 400, 100
 local RefreshActiveSurfaces
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller) return RefreshActiveSurfaces(controller) end,
     moduleKey = MODULE_KEY,
     kind = "text",
     version = 1,
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     anchor = {
         dbPath = "$root",
         xKey = "x",
@@ -33,6 +42,9 @@ local MODULE_SPEC = {
         clampedToScreen = true,
         bindRoot = true,
     },
+    -- =========================================================
+    -- 二、默认配置与配置访问 | Defaults and Configuration Access
+    -- =========================================================
     defaults = {
         font_text = {
             a = 1,
@@ -79,6 +91,9 @@ local MODULE_SPEC = {
     },
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
+    -- =========================================================
+    -- 三、GUI 声明 | GUI Declarations
+    -- =========================================================
     gui = {
         version = 1,
         sections = {
@@ -121,6 +136,12 @@ local central = EXUI:RegisterTextModule(MODULE_SPEC)
 local LAYOUT = DB.layout
 if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function ColorFor(kind)
     local prefix = kind == "enter" and "enterColor" or "leaveColor"
     return {
@@ -158,6 +179,9 @@ RefreshActiveSurfaces = function(controller)
     end
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function Play(kind)
     if DB.enabled ~= true then
         central:Clear()
@@ -171,7 +195,13 @@ local function Play(kind)
     }, true)
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:RegisterEvent("PLAYER_REGEN_DISABLED", MODULE_KEY, function() Play("enter") end)
 ExwindTools:RegisterEvent("PLAYER_REGEN_ENABLED", MODULE_KEY, function() Play("leave") end)
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 RefreshPreview()
 ExwindTools:ReportReady(MODULE_KEY)

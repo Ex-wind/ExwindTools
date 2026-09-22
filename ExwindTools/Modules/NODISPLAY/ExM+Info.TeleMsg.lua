@@ -1,6 +1,9 @@
 ﻿-- [[ 传送喊话模块 ]]
 -- { Key = "ExM+Info.TeleMsg", Name = "传送喊话", Desc = "在施放副本传送法术时自动在队伍频道喊话。", Category = 2 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
@@ -17,6 +20,9 @@ local EXDB = _G.EXDB
 if not EXDB then return end
 
 -- 3. 数据默认值
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXWIND_DEFAULTS = {
     teleportShoutText = "[无广告]正在施放%link , 准备传送到\"%name\"",
     shoutTiming = "施法成功", -- 喊话时机: 施法开始 / 施法成功
@@ -24,6 +30,9 @@ local EXWIND_DEFAULTS = {
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
 local DEFAULT_MSG = EXWIND_DEFAULTS.teleportShoutText
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 -- =========================================================
 -- [v4.2] 注册与配置
 -- =========================================================
@@ -90,6 +99,9 @@ end
 EX_RegisterLayout()
 
 -- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
+-- =========================================================
 -- 业务逻辑
 -- =========================================================
 
@@ -123,6 +135,9 @@ local function OnSpellSucceeded(event, unit, _, spellID)
     HandleSpellCast(unit, spellID)
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 -- 根据当前设置注册对应的事件，注销另一个
 local function UpdateTelemsgEvent()
     local timing = EX_DB.shoutTiming or EXWIND_DEFAULTS.shoutTiming
@@ -163,6 +178,9 @@ ExwindTools:WatchState("InInstance", EXWIND_MODULE_KEY, function(inInstance)
     end
 end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 -- 初始检查
 if not EXState.InInstance then
     UpdateTelemsgEvent()

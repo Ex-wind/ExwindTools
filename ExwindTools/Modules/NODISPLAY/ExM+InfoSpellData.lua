@@ -1,6 +1,9 @@
 -- [[ 大米法术百科数据库 (Spell Data) ]]
 -- { Key = "ExM+InfoSpellData", Name = "法术百科数据库", Desc = "存储全量的大米技能机制说明。作为 SpellInfo 的后端数据源。", Category = 2 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXState = ExwindTools.State
@@ -10,6 +13,9 @@ local EXWIND_MODULE_KEY = "ExM+InfoSpellData"
 
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 EXSP = EXSP or {}
 
 EXSP.DungeonAbbr = {
@@ -354,4 +360,7 @@ EXSP.Database = {
 
 EXSP.DungeonList = { "塞塔里斯神庙", "夺目谷", "密谋小径", "毒牙祭坛", "红玉新生法池", "纳洛拉克的洞穴", "虚空之痕竞技场", "诸王之眠" }
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 ExwindTools:ReportReady(EXWIND_MODULE_KEY)

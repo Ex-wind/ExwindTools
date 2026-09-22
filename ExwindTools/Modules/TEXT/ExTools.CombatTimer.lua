@@ -3,6 +3,9 @@
 -- 战斗时间业务模块；中央 Text owner 独占所有显示宿主。
 -- ==================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 
@@ -16,6 +19,9 @@ local running, combatStartTime, combatEndTime = false, 0, 0
 local RefreshActiveSurfaces
 
 -- EXUI_STANDARD_DECLARATION_BEGIN
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller, changedPath, phase)
         return RefreshActiveSurfaces(controller, changedPath,
@@ -24,6 +30,9 @@ local MODULE_SPEC = {
     moduleKey = MODULE_KEY,
     kind = "text",
     version = 1,
+    -- =========================================================
+    -- 二、默认配置与配置访问 | Defaults and Configuration Access
+    -- =========================================================
     defaults = {
         font_text = {
             a = 1,
@@ -55,6 +64,9 @@ local MODULE_SPEC = {
             rightText = "]",
         },
     },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     anchor = {
         -- font_text.x/y 是整体 Anchor 的唯一 DB 坐标，不是文字局部位置。
         dbPath = "font_text",
@@ -79,6 +91,9 @@ local MODULE_SPEC = {
     },
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults 及原生 Duration/刷新回调均属绑定或业务合同，禁止修改；复合控件整体引用，header 不等于容器。
+    -- =========================================================
+    -- 三、GUI 声明 | GUI Declarations
+    -- =========================================================
     gui = {
         version = 1,
         sections = {
@@ -112,6 +127,9 @@ local LAYOUT = DB.layout
 if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end
 -- EXUI_STANDARD_DECLARATION_END
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local TEXT_WIDTH, MIN_TEXT_HEIGHT = 200, 48
 
 local function Num(value, fallback) return tonumber(value) or fallback end
@@ -137,6 +155,9 @@ CLOCK_SECONDS_FORMATTER:SetBreakpoints({ {
     components = { { mod = 60, step = 1, rounding = Enum.NumericRuleFormatRounding.Down } },
 } })
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function BuildNativeClockOptions()
     local prefix, suffix = DB.leftText or "", DB.rightText or ""
     local zero = prefix .. "00:00" .. suffix
@@ -213,6 +234,9 @@ RefreshActiveSurfaces = function(controller, changedPath, phase)
     end
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 -- Existing combat timer business.
 local function StartTimer()
     if running then return end
@@ -229,6 +253,9 @@ local function ResetTimer()
     RefreshVisuals()
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:RegisterEvent("PLAYER_REGEN_DISABLED", MODULE_KEY, function()
     if DB.enabled then
         ResetTimer(); StartTimer()
@@ -246,5 +273,8 @@ ExwindTools:WatchState("IsBossEncounter", MODULE_KEY, function(isBoss)
         ResetTimer(); StartTimer()
     end
 end)
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 RefreshVisuals()
 ExwindTools:ReportReady(MODULE_KEY)

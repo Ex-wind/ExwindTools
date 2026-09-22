@@ -1,12 +1,16 @@
 -- [[ 玩家属性面板 ]]
 -- { Key = "ExTools.PlayerStats", Name = "玩家属性面板", Desc = "在屏幕上显示高度自定义的玩家属性（急速、全能、躲闪等）。", Category = 4 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXState = ExwindTools.State
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 local EXWIND_MODULE_KEY = "ExTools.PlayerStats"
+
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 local EXDB = _G.EXDB
@@ -69,6 +73,9 @@ local STAT_PERCENT_FORMATS = {
     [3] = "%.3f%%",
 }
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EX_DEFAULTS = {
     root = {
         bgSettings = {
@@ -652,6 +659,9 @@ local PLAYER_STATS_ANCHOR_OPTS = {
     onPickFrame = PickPlayerStatsAnchor,
 }
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local STAT_MAP = {
     ["无"] = "None",
     ["主属性"] = "PStat_Major",
@@ -724,6 +734,9 @@ ExwindTools.GetPlayerStatTree = function()
     }
 end
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations — Settings Table Renderer / 设置表格渲染器
+-- =========================================================
 local PLAYER_STATS_ROWS_TABLE = "playerstats_rows_table"
 
 local function ReleasePlayerStatsTableControl(control)
@@ -855,6 +868,9 @@ playerStatsGrid:RegisterTableControls(PLAYER_STATS_ROWS_TABLE, {
     end,
 })
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function EX_RegisterLayout()
     local sel = tonumber(EX_DB.selectedRow) or 1
     if sel < 1 then sel = 1 end
@@ -961,6 +977,9 @@ EX_RegisterLayout()
 -- 唯一 Renderer：动态双列 TextList。Runtime / World / Panel 只切换 host，
 -- 使用同一个 BuildPresentation -> ApplyPresentation；Panel 不拥有任何局部输入。
 -- =============================================================
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local runtimeList, worldList, panelPreview, panelDock
 local worldPreviewActive = false
 local watchedStateKeys = {}
@@ -1238,6 +1257,9 @@ end
 
 EXUI:RegisterModuleValueController(EXWIND_MODULE_KEY, { RefreshActiveSurfaces = RefreshActiveSurfaces })
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 SyncStateWatches = function()
     local wanted = {}
     for _, row in ipairs(BuildPresentation(false).rows) do

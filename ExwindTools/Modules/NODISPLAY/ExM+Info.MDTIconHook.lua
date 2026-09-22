@@ -1,6 +1,9 @@
 -- [[ MDT 法术图标替换 ]]
 -- { Key = "ExM+Info.MDTIconHook", Name = "MDT 法术图标替换", Desc = "将 MDT 地图中怪物头像替换为法术图标，并支持自动团队标记。", Category = 2 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 local EXDB = _G.EXDB
 if not ExwindTools then return end
@@ -12,6 +15,9 @@ local CUSTOM_ICONS_RENDERER = EXWIND_MODULE_KEY .. ".CustomIcons"
 local BLACKLIST_RENDERER = EXWIND_MODULE_KEY .. ".Blacklist"
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXWIND_DEFAULTS = {
     enabled = true,
     useSpellIconMode = false,
@@ -41,6 +47,9 @@ local RAID_MARKER_DROPDOWN_ITEMS = {
     { value = "8", label = "骷髅 (8)" },
 }
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local MDT_HOOK_INSTALLED = false
 local MDT_BUTTONS_CREATED = false
 local MDT_BUTTON_RETRY_PENDING = false
@@ -146,6 +155,9 @@ local function IsEliteEnemy(data)
     return baseLevel and level > baseLevel or false
 end
 
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local function ApplyCustomSettings()
     wipe(EX_DB.customNPCIcons)
     local rawMap = EX_DB.customIconsText or ""
@@ -165,6 +177,9 @@ local function ApplyCustomSettings()
     RefreshMDTMap(false)
 end
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local function GetRawTableColumns(kind)
     return {
         { title = kind == "custom" and L["NPC ID = 法术 ID"] or L["NPC ID"] },
@@ -436,6 +451,9 @@ RebuildRawTable = function(host, ctx, kind)
     })
 end
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local Grid = ExwindTools.Grid
 if not Grid then error("MDTIconHook requires ExwindGrid", 2) end
 
@@ -615,6 +633,9 @@ local function InitializeMDTVisuals()
     return true
 end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 -- [卡片迁移边界：外部UI] 下列视觉、位置、显隐、hook 与按钮 helper 均服务 MDT 自有窗口，不属于 ExwindTools 设置页；宿主锚点、按钮顺序、点击业务及显隐合同禁止修改。
 local function UpdateMDTButtonsVisual()
     local toggleBtn = _G.ExMDT_Btn_ToggleIcon
@@ -827,6 +848,9 @@ local function CreateMDTButtons()
     return true
 end
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 local function TryBootstrapMDT()
     InitializeMDTVisuals()
     CreateMDTButtons()
@@ -836,6 +860,9 @@ end
 TryBootstrapMDT()
 C_Timer.After(0.1, TryBootstrapMDT)
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:RegisterEvent("ADDON_LOADED", EXWIND_MODULE_KEY .. "_MDT", function(_, addonName)
     if addonName == "MythicDungeonTools" then
         C_Timer.After(0.2, function()
@@ -845,6 +872,9 @@ ExwindTools:RegisterEvent("ADDON_LOADED", EXWIND_MODULE_KEY .. "_MDT", function(
     end
 end)
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 local function RefreshActiveSurfaces()
     ELITE_LEVEL_BASE_CACHE = {}
     UpdateMDTButtonsVisual()

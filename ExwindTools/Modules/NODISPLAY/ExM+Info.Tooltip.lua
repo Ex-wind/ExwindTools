@@ -1,6 +1,9 @@
 ﻿-- [[ 大秘境信息增强 (提示) ]]
 -- { Key = "ExM+Info.Tooltip", Name = "大秘境信息增强", Desc = "在挑战面板图标上显示详细的最佳记录、队友信息及传送冷却。", Category = 2 },
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXState = ExwindTools.State
@@ -13,11 +16,17 @@ local EXWIND_MODULE_KEY = "ExM+Info.Tooltip"
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 
 -- 3. 数据初始化
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local EXWIND_DEFAULTS = {
     enabled = true,
 }
 local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXWIND_DEFAULTS)
 
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 -- =========================================================
 -- [v4.2] 注册与配置
 -- =========================================================
@@ -53,6 +62,9 @@ end
 -- 3. 立即注册
 EX_RegisterLayout()
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 -- 5. 业务逻辑实现 (变量前缀: EXMYTOOLTIP)
 local EXMYTOOLTIP = {}
 
@@ -282,6 +294,9 @@ function EXMYTOOLTIP.UpdateTooltip(self)
     GameTooltip:Show()
 end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 -- 挂钩挑战面板图标
 -- [卡片迁移边界：自定义渲染] 下列挑战图标 Tooltip hook 是运行时外部界面接入，不是设置页布局；目标图标顺序、传送冷却内容和事件/定时回调禁止修改。
 function EXMYTOOLTIP.HookDungeonIcons()
@@ -295,6 +310,9 @@ function EXMYTOOLTIP.HookDungeonIcons()
     end
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 -- 初始化监听
 EXMYTOOLTIP.Frame = CreateFrame("Frame")
 EXMYTOOLTIP.Frame:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE")
@@ -308,6 +326,9 @@ end
 -- 循环检查挂钩 (处理延迟加载的 UI 元素)
 C_Timer.NewTicker(5, function() EXMYTOOLTIP.HookDungeonIcons() end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 -- 初始延迟加载
 C_Timer.After(5, function()
     EXMYTOOLTIP.RequestData()

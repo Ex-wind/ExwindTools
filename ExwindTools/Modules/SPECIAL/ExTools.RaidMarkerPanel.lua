@@ -1,10 +1,14 @@
 -- =============================================================
 -- ExTools.RaidMarkerPanel.lua - 唯一 SecureActionPanelWidget Renderer
 -- =============================================================
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI, L = ExwindTools.UI, ExwindTools.L or setmetatable({}, { __index = function(_, k) return k end })
 local MODULE_KEY = "ExTools.RaidMarkerPanel"
+
 local C_Timer, UIParent = _G.C_Timer, _G.UIParent
 local CreateFrame = _G.CreateFrame
 local BINDINGS = { "left", "right", "shift-left", "shift-right", "ctrl-left", "ctrl-right" }
@@ -18,6 +22,9 @@ local ATTR = {
 }
 local BUTTON_SIZE, HOVER_SCALE = 28, 1.12
 local PANEL_FADE_OUT_DELAY, PANEL_FADE_DURATION = 2, .35
+-- =========================================================
+-- 二、默认配置与配置访问 | Defaults and Configuration Access
+-- =========================================================
 local DEFAULTS = {
             attachToCustom = false,
             bundleLayout = false,
@@ -57,6 +64,9 @@ local RAID_MARKER_PANEL_ANCHOR_OPTS = {
 }
 -- [声明迁移边界：设置页] 仅把原设置控件改为 settings 声明；anchorgroup 仍整体引用。
 -- key/value、绑定冲突规则、secure slot 顺序和 Panel/World/Runtime 回调禁止修改。
+-- =========================================================
+-- 三、GUI 声明 | GUI Declarations
+-- =========================================================
 local layout = {
     version = 1,
     sections = {
@@ -106,11 +116,17 @@ local layout = {
 }
 ExwindTools:RegisterModuleLayout(MODULE_KEY, layout)
 if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local runtimeRoot, anchor, runtimePanel, worldPanel, dockPanel, worldActive
 local refreshPending = false
 local HandleRuntimeHoverEnter, HandleRuntimeHoverLeave
 -- 战斗状态只读 ExwindState；本模块不再各自查询 InCombatLockdown。
 -- 所有安全按钮的重建/重锚定都由该状态闸门统一延后至离战。
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function IsCombatLocked()
     return ExwindTools.State and ExwindTools.State.InCombat == true
 end
@@ -225,6 +241,9 @@ local function SyncSurfaceGeometry(surface, list, valuesAreNormalized)
     return true
 end
 -- [卡片迁移边界：自定义渲染] 以下 SecureActionPanelWidget surface 同时服务 Runtime/World/Panel，不是设置页布局；slot 顺序、secure 属性与释放合同禁止修改。
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration — Surface Rendering / 表面渲染
+-- =========================================================
 local function Mount(parent, mode)
     local host = CreateFrame("Frame", nil, parent); host:EnableMouse(mode == "runtime"); local panel = EXUI
         :CreateSecureActionPanelWidget(host, mode)
@@ -424,6 +443,9 @@ local function ReapplyExistingSurface(surface, sample)
         return nil
     end)
 end
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 local function RefreshActiveSurfaces()
     if runtimeRoot and runtimeRoot.host then
         runtimeRoot.host:SetShown(DB.showPanel == true)
@@ -433,6 +455,9 @@ local function RefreshActiveSurfaces()
     ReapplyExistingSurface(runtimeRoot, false)
 end
 EXUI:RegisterModuleValueController(MODULE_KEY, { RefreshActiveSurfaces = RefreshActiveSurfaces })
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration — Preview and Edit Registration / 预览与编辑登记
+-- =========================================================
 EnsureAnchor(); ExwindTools:RegisterModulePreview(MODULE_KEY,
     {
         mount = ShowPanel,
@@ -456,6 +481,9 @@ EnsureAnchor(); ExwindTools:RegisterModulePreview(MODULE_KEY,
         local width, height = LayoutMetrics(); return { width = width * DB.scale, height = height * DB.scale, anchorOffsetX = 0, anchorOffsetY = 0 }
     end
 })
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh — Runtime Event Subscriptions / 运行时事件订阅
+-- =========================================================
 ExwindTools:WatchState(MODULE_KEY .. ".ButtonClicked", MODULE_KEY,
     function(info)
         if info and info.key == "btn_reset_pos" then
@@ -471,4 +499,7 @@ for _, e in ipairs({ "PLAYER_ENTERING_WORLD", "RAID_TARGET_UPDATE", "PLAYER_TARG
     ExwindTools:RegisterEvent(e, MODULE_KEY,
         function() Refresh() end)
 end
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 ExwindTools:ReportReady(MODULE_KEY); C_Timer.After(0, Refresh)

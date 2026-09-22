@@ -3,6 +3,9 @@
 -- 中央只拥有通用 Collection、Anchor、Panel 与 World 生命周期。
 -- =============================================================
 
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local ExwindTools = _G.ExwindTools
 if not ExwindTools or not ExwindTools.UI then return end
 local EXUI = ExwindTools.UI
@@ -141,6 +144,9 @@ end
 
 -- 所有预设、所有 Grid 几何以及全部可见元素的类型均在本模块声明。
 -- 中央只校验和消费声明，绝不保存施法序列的专属预设或生成坐标。
+-- =========================================================
+-- 一、模块标识与依赖引用 | Module Identity and Dependencies
+-- =========================================================
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller) return RefreshActiveSurfaces(controller) end,
     moduleKey = MODULE_KEY,
@@ -153,6 +159,9 @@ local MODULE_SPEC = {
         btn_showIgnore = "showIgnoredSpells",
         btn_clearIgnore = "clearIgnoredSpells",
     },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     anchor = {
         dbPath = "$root",
         xKey = "posX",
@@ -166,6 +175,9 @@ local MODULE_SPEC = {
         clampedToScreen = false,
         bindRoot = true,
     },
+    -- =========================================================
+    -- 二、默认配置与配置访问 | Defaults and Configuration Access
+    -- =========================================================
     defaults = {
         font_time = {
             a = 1,
@@ -244,6 +256,9 @@ local MODULE_SPEC = {
             squareAmount = 8,
         },
     },
+    -- =========================================================
+    -- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+    -- =========================================================
     preview = {
         positionGuiKeys = { "font_time" },
         elements = {
@@ -264,6 +279,9 @@ local MODULE_SPEC = {
     },
     -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
     -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
+    -- =========================================================
+    -- 三、GUI 声明 | GUI Declarations
+    -- =========================================================
     gui = {
         version = 1,
         sections = {
@@ -387,6 +405,9 @@ local function Number(value, fallback)
     return tonumber(value) or fallback
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function GetSpellInfo(spellID)
     local info = _G.C_Spell and _G.C_Spell.GetSpellInfo(spellID)
     return info and info.name or nil, info and info.iconID or nil
@@ -422,6 +443,9 @@ local function CreateDurationFromRecord(record)
     return duration
 end
 
+-- =========================================================
+-- 四、显示、预览与编辑接入 | Display, Preview and Edit Integration
+-- =========================================================
 local function BuildPresentation(record, isPreview)
     local icon = DB.icon or {}
     local width = math.max(16, Number(icon.width, 36))
@@ -515,6 +539,9 @@ local function AddCast(castID, spellID, startTime, endTime)
     PublishRecords()
 end
 
+-- =========================================================
+-- 五、业务状态与功能逻辑 | Business State and Logic
+-- =========================================================
 local function StartCast(castID)
     local cast = casts[castID]
     if not cast or cast.displayed then return end
@@ -591,6 +618,9 @@ local function StopTracking()
     eventFrame:UnregisterAllEvents()
 end
 
+-- =========================================================
+-- 六、事件订阅与配置刷新 | Events and Configuration Refresh
+-- =========================================================
 ExwindTools:WatchState(MODULE_KEY .. ".ButtonClicked", MODULE_KEY, function(message)
     local command = message and MODULE_SPEC.commands[message.key]
     if command == "toggleIgnoreSpell" then
@@ -620,4 +650,7 @@ ExwindTools:RegisterEvent("PLAYER_ENTERING_WORLD", MODULE_KEY, function()
     if DB.enabled then StartTracking() else StopTracking() end
 end)
 
+-- =========================================================
+-- 七、初始化与启动 | Initialization and Startup
+-- =========================================================
 ExwindTools:ReportReady(MODULE_KEY)

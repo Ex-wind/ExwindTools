@@ -7,7 +7,6 @@
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
-local EXState = ExwindTools.State
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 -- 1. 识别 Key
@@ -38,8 +37,7 @@ local DEFAULT_MSG = EXWIND_DEFAULTS.teleportShoutText
 -- =========================================================
 
 -- Grid 布局
-local function EX_RegisterLayout()
-    -- 1. 预计算预览字符串（逻辑在外部执行，layout只拿结果）
+local function BuildPreviewText()
     local fmt = EX_DB.teleportShoutText or DEFAULT_MSG
     local name = (EXDB.GetLocalizedInstanceNoteName and EXDB:GetLocalizedInstanceNoteName(658)) or L["萨隆矿坑"]
     local link = "|cff71d5ff|Hspell:444222|h[" .. name .. "]|h|r"
@@ -50,11 +48,11 @@ local function EX_RegisterLayout()
     local playerColored = "|c" ..
         ((color and color.GenerateHexColor) and color:GenerateHexColor() or "ffffff") .. UnitName("player") .. "|r"
 
-    local previewText = "\n|cffffd100" ..
-    L["预览:"] .. "|r\n|cffaaaaff[" .. L["队伍"] .. "] [" .. playerColored .. "]: " .. out .. "|r"
+    return "\n|cffffd100" ..
+        L["预览:"] .. "|r\n|cffaaaaff[" .. L["队伍"] .. "] [" .. playerColored .. "]: " .. out .. "|r"
+end
 
-    -- [声明迁移边界：设置页] 仅把原设置控件与两段原说明改为 typed sections。
-    -- 上方预览文本生成、key/type、重置按钮及施法事件订阅禁止修改。
+local function EX_RegisterLayout()
     local layout = {
         version = 1,
         sections = {
@@ -71,7 +69,8 @@ local function EX_RegisterLayout()
                         },
                     },
                     { key = "reset", type = "button", label = L["恢复默认喊话"] },
-                    { key = "teleportShoutText", type = "input", label = L["自定义喊话内容"] },
+                    { key = "teleportShoutText", type = "input", label = L["自定义喊话内容"],
+                        inputWidthPercent = 200 },
                 },
             },
             {
@@ -87,7 +86,7 @@ local function EX_RegisterLayout()
                 },
                 items = {},
                 footerDescription = {
-                    key = "previewLabel", type = "description", label = previewText, fontSize = 16,
+                    key = "previewLabel", type = "description", label = BuildPreviewText(), fontSize = 16,
                 },
             },
         },
@@ -98,6 +97,24 @@ end
 
 -- 3. 立即注册
 EX_RegisterLayout()
+
+local function GetVisibleSettingsSession()
+    if EXUI.CurrentPage ~= "ModuleSettings" or EXUI.CurrentModule ~= EXWIND_MODULE_KEY then return nil end
+    local page = EXUI.ActivePageFrame
+    return page and page._exCardSession or nil
+end
+
+local function RefreshVisibleText(resetInput)
+    local session = GetVisibleSettingsSession()
+    if not session then return end
+    if resetInput then
+        local input = session:GetWidget("common", "teleportShoutText")
+        if input then input:SetText(EX_DB.teleportShoutText or DEFAULT_MSG) end
+    end
+    local preview = session:GetWidget("preview", "previewLabel")
+    if preview and preview.text then preview.text:SetText(BuildPreviewText()) end
+    session:Relayout()
+end
 
 -- =========================================================
 -- 五、业务状态与功能逻辑 | Business State and Logic
@@ -157,35 +174,21 @@ ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY,
     if data.key == "reset" then
         EX_DB.teleportShoutText = DEFAULT_MSG
         EXUI:NotifyModuleValueChanged(EXWIND_MODULE_KEY, "teleportShoutText", "committed")
+        RefreshVisibleText(true)
     end
 end)
 
-local function RefreshActiveSurfaces()
-    -- 当前 Grid 控件已经持有写入后的值；这里只重套现有事件订阅。
-    if not EXState.InInstance then
-        UpdateTelemsgEvent()
-    end
+local function RefreshActiveSurfaces(_, changedPath)
+    UpdateTelemsgEvent()
+    if changedPath == "teleportShoutText" then RefreshVisibleText(false) end
 end
 
 EXUI:RegisterModuleValueController(EXWIND_MODULE_KEY, { RefreshActiveSurfaces = RefreshActiveSurfaces })
 
--- 智能生命周期：在副本外时监听，进本后自动注销
-ExwindTools:WatchState("InInstance", EXWIND_MODULE_KEY, function(inInstance)
-    if inInstance then
-        ExwindTools:UnregisterEvent("UNIT_SPELLCAST_START", EXWIND_MODULE_KEY)
-        ExwindTools:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED", EXWIND_MODULE_KEY)
-    else
-        UpdateTelemsgEvent()
-    end
-end)
-
 -- =========================================================
 -- 七、初始化与启动 | Initialization and Startup
 -- =========================================================
--- 初始检查
-if not EXState.InInstance then
-    UpdateTelemsgEvent()
-end
+UpdateTelemsgEvent()
 
 -- 报告模块加载完成
 ExwindTools:ReportReady(EXWIND_MODULE_KEY)

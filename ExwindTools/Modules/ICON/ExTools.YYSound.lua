@@ -15,10 +15,7 @@ local RUNTIME_ITEM_ID = "yysound:runtime"
 local PREVIEW_ITEM_ID = "yysound:preview"
 local CD_DURATION = 40
 local RefreshActiveSurfaces
-local CUSTOM_SOUND_PATH_GUIDE =
-    L["有效路径示例：Interface\\AddOns\\MySoundAddon\\Assets\\example.ogg（或 example.mp3；文件须已放入该插件目录）"]
-    .. "\n|cffff4444" .. L["路径必须以 Interface 开头；不要填 C:\\Program Files\\... 等本机绝对路径，否则游戏无法播放。"] .. "|r"
-    .. "\n" .. L["我们收过上百个相关问题，最终确认这个模块是正常的；如果自定义音效不能播放，一定是路径写错或音频格式有问题。"]
+local CUSTOM_SOUND_PATH_GUIDE = L["有效路径示例：Interface\\AddOns\\MySoundAddon\\Assets\\example.ogg"]
 
 local LSM = LibStub("LibSharedMedia-3.0", true)
 
@@ -169,7 +166,7 @@ local MODULE_SPEC = {
                 },
             },
             {
-                kind = "settings", id = "custom_sounds", title = L["自定义音效路径（固定 6 条）"],
+                kind = "settings", id = "custom_sounds", title = L["自定义音效路径"],
                 description = { key = "custom_sound_path_guide", type = "description", label = CUSTOM_SOUND_PATH_GUIDE, fontSize = 16 },
                 items = {
                     { key = "customSound1", label = L["音效 1"], parentKey = "customSounds", subKey = "1", type = "input", inputWidthPercent = 130 },
@@ -192,6 +189,42 @@ local MODULE_SPEC = {
 }
 ExwindTools:DeclareModuleSpecDefaults(MODULE_KEY, MODULE_SPEC.defaults)
 local DB = ExwindTools:GetModuleDB(MODULE_KEY)
+local CUSTOM_SOUNDS_SECTION_INDEX = 6
+local customSoundsDescription = MODULE_SPEC.gui.sections[CUSTOM_SOUNDS_SECTION_INDEX].description
+
+local function GetCustomSoundCount(sounds)
+    local count = 6
+    if type(sounds) == "table" then
+        for index in pairs(sounds) do
+            if type(index) == "number" and index > count and index % 1 == 0 then
+                count = index
+            end
+        end
+    end
+    return count
+end
+
+local function BuildCustomSoundsSection(count)
+    local items = {}
+    for index = 1, count do
+        items[#items + 1] = {
+            key = "customSound" .. index,
+            label = L["音效 " .. index],
+            parentKey = "customSounds",
+            subKey = tostring(index),
+            type = "input",
+            inputWidthPercent = 130,
+        }
+    end
+    items[#items + 1] = { key = "btn_add_custom_sound", label = L["添加音效"], type = "button" }
+    return {
+        kind = "settings", id = "custom_sounds", title = L["自定义音效路径"],
+        description = customSoundsDescription,
+        items = items,
+    }
+end
+
+MODULE_SPEC.gui.sections[CUSTOM_SOUNDS_SECTION_INDEX] = BuildCustomSoundsSection(GetCustomSoundCount(DB.customSounds))
 local central = EXUI:RegisterIconModule(MODULE_SPEC)
 local LAYOUT = DB.layout
 if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end
@@ -351,6 +384,17 @@ ExwindTools:WatchState(MODULE_KEY .. ".ButtonClicked", MODULE_KEY, function(clic
         PlayEffect()
     elseif click.key == "btn_stop" then
         StopEffect()
+    elseif click.key == "btn_add_custom_sound" then
+        if type(DB.customSounds) ~= "table" then return end
+        local nextIndex = GetCustomSoundCount(DB.customSounds) + 1
+        DB.customSounds[nextIndex] = ""
+        local section = BuildCustomSoundsSection(nextIndex)
+        central.spec.gui.sections[CUSTOM_SOUNDS_SECTION_INDEX] = section
+        local page = EXUI.ActivePageFrame
+        local session = page and _G.ExwindGrid and _G.ExwindGrid:GetMountedCardSession(page)
+        if session and session.context.moduleKey == MODULE_KEY then
+            session:ReplaceSettingsSection("custom_sounds", section)
+        end
     end
 end)
 

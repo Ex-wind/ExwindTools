@@ -1056,10 +1056,14 @@ local function BuildSpecCard(id, title, source)
     }
 end
 
-local function AdvancedSliderRow(id, label, ref)
-    return { id = id, kind = "row", separator = true, children = {
-        { id = id .. ".label", kind = "text", text = label, width = 220 },
-        { id = id .. ".control", kind = "control", ref = ref, controlType = "slider", weight = 1 },
+local function AdvancedSliderRow(id, label, ref, isLast)
+    return { id = id, kind = "row", separator = not isLast, children = {
+        { id = id .. ".labelCell", kind = "cell", children = {
+            { id = id .. ".label", kind = "text", text = label },
+        } },
+        { id = id .. ".controlCell", kind = "cell", children = {
+            { id = id .. ".control", kind = "control", ref = ref, controlType = "slider" },
+        } },
     } }
 end
 
@@ -1094,16 +1098,19 @@ local function BuildV2Declaration()
                         { id = "alpha.test", kind = "button", text = L["启用测试"], action = "test", presentation = "primary", width = 120 },
                         { id = "alpha.testStop", kind = "button", text = L["停止测试"], action = "testStop", width = 120 },
                     } },
-                    AdvancedSliderRow("alpha.globalScaleRow", L["整体缩放"], "globalScale"),
-                    AdvancedSliderRow("alpha.overlayScaleRow", L["材质特效缩放"], "overlayScale"),
-                    AdvancedSliderRow("alpha.offsetXRow", L["整体水平(Y) 偏移"], "offsetX"),
-                    AdvancedSliderRow("alpha.offsetYRow", L["整体垂直(X)偏移"], "offsetY"),
-                    AdvancedSliderRow("alpha.sideSpacingRow", L["左右间距调整"], "sideSpacing"),
-                    AdvancedSliderRow("alpha.vertSpacingRow", L["上下间距调整"], "vertSpacing"),
-                    AdvancedSliderRow("alpha.pulseMagnitudeRow", L["呼吸动画幅度 (0禁用)"], "pulseMagnitude"),
-                    AdvancedSliderRow("alpha.pulseSpeedRow", L["呼吸动画速度"], "pulseSpeed"),
-                    AdvancedSliderRow("alpha.fadeSpeedRow", L["触发时动画(淡入)速度"], "fadeSpeed"),
-                    AdvancedSliderRow("alpha.fadeOutSpeedRow", L["结束时动画(淡出)速度"], "fadeOutSpeed"),
+                    { id = "alpha.advancedSettings", kind = "columns",
+                        columns = { { weight = 3 }, { weight = 1 } }, children = {
+                            AdvancedSliderRow("alpha.globalScaleRow", L["整体缩放"], "globalScale"),
+                            AdvancedSliderRow("alpha.overlayScaleRow", L["材质特效缩放"], "overlayScale"),
+                            AdvancedSliderRow("alpha.offsetXRow", L["整体水平(Y) 偏移"], "offsetX"),
+                            AdvancedSliderRow("alpha.offsetYRow", L["整体垂直(X)偏移"], "offsetY"),
+                            AdvancedSliderRow("alpha.sideSpacingRow", L["左右间距调整"], "sideSpacing"),
+                            AdvancedSliderRow("alpha.vertSpacingRow", L["上下间距调整"], "vertSpacing"),
+                            AdvancedSliderRow("alpha.pulseMagnitudeRow", L["呼吸动画幅度 (0禁用)"], "pulseMagnitude"),
+                            AdvancedSliderRow("alpha.pulseSpeedRow", L["呼吸动画速度"], "pulseSpeed"),
+                            AdvancedSliderRow("alpha.fadeSpeedRow", L["触发时动画(淡入)速度"], "fadeSpeed"),
+                            AdvancedSliderRow("alpha.fadeOutSpeedRow", L["结束时动画(淡出)速度"], "fadeOutSpeed", true),
+                        } },
                     { id = "alpha.textureActions", kind = "row", children = {
                         { id = "alpha.pickLR", kind = "button", text = L["选择左右材质(仅预览用)"], action = "pickLR", width = 220 },
                         { id = "alpha.pickTB", kind = "button", text = L["选择上方测试材质(仅预览用)"], action = "pickTB", width = 220 },

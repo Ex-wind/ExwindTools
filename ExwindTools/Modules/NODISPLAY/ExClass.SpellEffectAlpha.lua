@@ -1056,15 +1056,11 @@ local function BuildSpecCard(id, title, source)
     }
 end
 
-local function AdvancedSliderRow(id, left, right)
-    local function Cell(suffix, ref)
-        return { id = id .. "." .. suffix .. "Cell", kind = "cell", children = ref and {
-            { id = id .. "." .. suffix, kind = "control", ref = ref, controlType = "slider" },
-        } or {
-            { id = id .. "." .. suffix, kind = "text", text = "" },
-        } }
-    end
-    return { id = id, kind = "row", children = { Cell("left", left), Cell("right", right) } }
+local function AdvancedSliderRow(id, label, ref)
+    return { id = id, kind = "row", separator = true, children = {
+        { id = id .. ".label", kind = "text", text = label, width = 220 },
+        { id = id .. ".control", kind = "control", ref = ref, controlType = "slider", weight = 1 },
+    } }
 end
 
 local function BuildV2Declaration()
@@ -1089,18 +1085,25 @@ local function BuildV2Declaration()
                 id = "alpha.advanced", kind = "card", title = L["法术触发特效调整"], collapsible = true, children = {
                     { id = "alpha.advancedWarning", kind = "hint",
                         text = "|cffff173b" .. L["注意 : 选择的材质只是方便你调整测试预览而以 所有设置都是通用 "] .. "|r" },
-                    { id = "alpha.advancedEnabled", kind = "control", ref = "advancedEnabled", controlType = "checkbox" },
+                    { id = "alpha.advancedEnabledRow", kind = "row", separator = true, children = {
+                        { id = "alpha.advancedEnabledLabel", kind = "text",
+                            text = L["启用 |cffff173b(为了安全! 需重载后生效)|r"], width = 220 },
+                        { id = "alpha.advancedEnabled", kind = "control", ref = "advancedEnabled", controlType = "checkbox", weight = 1 },
+                    } },
                     { id = "alpha.testActions", kind = "row", children = {
                         { id = "alpha.test", kind = "button", text = L["启用测试"], action = "test", presentation = "primary", width = 120 },
                         { id = "alpha.testStop", kind = "button", text = L["停止测试"], action = "testStop", width = 120 },
                     } },
-                    { id = "alpha.advancedColumns", kind = "columns", columns = { { weight = 1 }, { weight = 1 } }, children = {
-                        AdvancedSliderRow("alpha.scaleOffsets", "globalScale", "overlayScale"),
-                        AdvancedSliderRow("alpha.xyOffsets", "offsetX", "offsetY"),
-                        AdvancedSliderRow("alpha.spacing", "sideSpacing", "vertSpacing"),
-                        AdvancedSliderRow("alpha.pulse", "pulseMagnitude", "pulseSpeed"),
-                        AdvancedSliderRow("alpha.fades", "fadeSpeed", "fadeOutSpeed"),
-                    } },
+                    AdvancedSliderRow("alpha.globalScaleRow", L["整体缩放"], "globalScale"),
+                    AdvancedSliderRow("alpha.overlayScaleRow", L["材质特效缩放"], "overlayScale"),
+                    AdvancedSliderRow("alpha.offsetXRow", L["整体水平(Y) 偏移"], "offsetX"),
+                    AdvancedSliderRow("alpha.offsetYRow", L["整体垂直(X)偏移"], "offsetY"),
+                    AdvancedSliderRow("alpha.sideSpacingRow", L["左右间距调整"], "sideSpacing"),
+                    AdvancedSliderRow("alpha.vertSpacingRow", L["上下间距调整"], "vertSpacing"),
+                    AdvancedSliderRow("alpha.pulseMagnitudeRow", L["呼吸动画幅度 (0禁用)"], "pulseMagnitude"),
+                    AdvancedSliderRow("alpha.pulseSpeedRow", L["呼吸动画速度"], "pulseSpeed"),
+                    AdvancedSliderRow("alpha.fadeSpeedRow", L["触发时动画(淡入)速度"], "fadeSpeed"),
+                    AdvancedSliderRow("alpha.fadeOutSpeedRow", L["结束时动画(淡出)速度"], "fadeOutSpeed"),
                     { id = "alpha.textureActions", kind = "row", children = {
                         { id = "alpha.pickLR", kind = "button", text = L["选择左右材质(仅预览用)"], action = "pickLR", width = 220 },
                         { id = "alpha.pickTB", kind = "button", text = L["选择上方测试材质(仅预览用)"], action = "pickTB", width = 220 },
@@ -1151,7 +1154,7 @@ local function CreateV2Owner()
         return {
             mount = function(host, context)
                 local binding = bindingFor(context.scope)
-                return EXUI:CreateSlider(host, 180, labelFor(context.scope), minValue, maxValue,
+                return EXUI:CreateSlider(host, 180, labelFor and labelFor(context.scope) or "", minValue, maxValue,
                     tonumber(binding.read()) or minValue, stepValue or 1, nil, {
                         onLive = function(value) Commit(bindingFor(context.scope), value, "changing") end,
                         onCommit = function(value) Commit(bindingFor(context.scope), value, "committed") end,
@@ -1159,7 +1162,7 @@ local function CreateV2Owner()
             end,
             update = function(widget, context)
                 local binding = bindingFor(context.scope)
-                if widget.Title then widget.Title:SetText(labelFor(context.scope)) end
+                if widget.Title then widget.Title:SetText(labelFor and labelFor(context.scope) or "") end
                 local value = tonumber(binding.read()) or minValue
                 if widget.SetEXUIValue then widget:SetEXUIValue(value, "silent") end
             end,
@@ -1168,7 +1171,7 @@ local function CreateV2Owner()
     end
 
     owner.controls.enabled = Checkbox(L["开启功能"], "enabled")
-    owner.controls.advancedEnabled = Checkbox(L["启用 |cffff173b(为了安全! 需重载后生效)|r"], "advancedEnabled")
+    owner.controls.advancedEnabled = Checkbox("", "advancedEnabled")
     owner.controls.globalDefault = Slider(function() return RootBinding("globalDefault") end,
         function() return L["全局默认透明度 (%)"] end, 0, 100, 1)
     for slot = 1, 4 do
@@ -1186,21 +1189,21 @@ local function CreateV2Owner()
         end, 0, 100, 1)
     end
     local advanced = {
-        globalScale = { L["整体缩放"], 0.4, 2.5, 0.05 },
-        overlayScale = { L["材质特效缩放"], 0.5, 3, 0.05 },
-        offsetX = { L["整体水平(Y) 偏移"], -500, 500, 1 },
-        offsetY = { L["整体垂直(X)偏移"], -500, 500, 1 },
-        sideSpacing = { L["左右间距调整"], -300, 300, 1 },
-        vertSpacing = { L["上下间距调整"], -300, 300, 1 },
-        pulseMagnitude = { L["呼吸动画幅度 (0禁用)"], 0, 300, 1 },
-        pulseSpeed = { L["呼吸动画速度"], 10, 500, 1 },
-        fadeSpeed = { L["触发时动画(淡入)速度"], 10, 500, 1 },
-        fadeOutSpeed = { L["结束时动画(淡出)速度"], 10, 500, 1 },
+        globalScale = { 0.4, 2.5, 0.05 },
+        overlayScale = { 0.5, 3, 0.05 },
+        offsetX = { -500, 500, 1 },
+        offsetY = { -500, 500, 1 },
+        sideSpacing = { -300, 300, 1 },
+        vertSpacing = { -300, 300, 1 },
+        pulseMagnitude = { 0, 300, 1 },
+        pulseSpeed = { 10, 500, 1 },
+        fadeSpeed = { 10, 500, 1 },
+        fadeOutSpeed = { 10, 500, 1 },
     }
     for key, info in pairs(advanced) do
         local field, settings = key, info
         owner.controls[field] = Slider(function() return RootBinding(field) end,
-            function() return settings[1] end, settings[2], settings[3], settings[4])
+            nil, settings[1], settings[2], settings[3])
     end
     owner.sources.plate = function() return SPEC_GROUPS.plate end
     owner.sources.mail = function() return SPEC_GROUPS.mail end

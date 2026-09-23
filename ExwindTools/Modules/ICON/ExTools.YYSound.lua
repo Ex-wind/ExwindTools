@@ -15,6 +15,10 @@ local RUNTIME_ITEM_ID = "yysound:runtime"
 local PREVIEW_ITEM_ID = "yysound:preview"
 local CD_DURATION = 40
 local RefreshActiveSurfaces
+local CUSTOM_SOUND_PATH_GUIDE =
+    L["有效路径示例：Interface\\AddOns\\MySoundAddon\\Assets\\example.ogg（或 example.mp3；文件须已放入该插件目录）"]
+    .. "\n|cffff4444" .. L["路径必须以 Interface 开头；不要填 C:\\Program Files\\... 等本机绝对路径，否则游戏无法播放。"] .. "|r"
+    .. "\n" .. L["我们收过上百个相关问题，最终确认这个模块是正常的；如果自定义音效不能播放，一定是路径写错或音频格式有问题。"]
 
 local LSM = LibStub("LibSharedMedia-3.0", true)
 
@@ -166,13 +170,14 @@ local MODULE_SPEC = {
             },
             {
                 kind = "settings", id = "custom_sounds", title = L["自定义音效路径（固定 6 条）"],
+                description = { key = "custom_sound_path_guide", type = "description", label = CUSTOM_SOUND_PATH_GUIDE, fontSize = 16 },
                 items = {
-                    { key = "customSound1", label = L["音效 1"], parentKey = "customSounds", subKey = "1", type = "input" },
-                    { key = "customSound2", label = L["音效 2"], parentKey = "customSounds", subKey = "2", type = "input" },
-                    { key = "customSound3", label = L["音效 3"], parentKey = "customSounds", subKey = "3", type = "input" },
-                    { key = "customSound4", label = L["音效 4"], parentKey = "customSounds", subKey = "4", type = "input" },
-                    { key = "customSound5", label = L["音效 5"], parentKey = "customSounds", subKey = "5", type = "input" },
-                    { key = "customSound6", label = L["音效 6"], parentKey = "customSounds", subKey = "6", type = "input" },
+                    { key = "customSound1", label = L["音效 1"], parentKey = "customSounds", subKey = "1", type = "input", inputWidthPercent = 130 },
+                    { key = "customSound2", label = L["音效 2"], parentKey = "customSounds", subKey = "2", type = "input", inputWidthPercent = 130 },
+                    { key = "customSound3", label = L["音效 3"], parentKey = "customSounds", subKey = "3", type = "input", inputWidthPercent = 130 },
+                    { key = "customSound4", label = L["音效 4"], parentKey = "customSounds", subKey = "4", type = "input", inputWidthPercent = 130 },
+                    { key = "customSound5", label = L["音效 5"], parentKey = "customSounds", subKey = "5", type = "input", inputWidthPercent = 130 },
+                    { key = "customSound6", label = L["音效 6"], parentKey = "customSounds", subKey = "6", type = "input", inputWidthPercent = 130 },
                 },
             },
             {

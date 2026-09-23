@@ -80,13 +80,14 @@ local function EX_RegisterLayout()
                 title = L["变量与预览"],
                 description = {
                     key = "descInfo", type = "description",
+                    fontSize = 16,
                     label = L["|cffffd100变量说明:|r\
   |cff00ff00%link|r  = 法术链接\
   |cff00ff00%name|r = 副本名称"],
                 },
                 items = {},
                 footerDescription = {
-                    key = "previewLabel", type = "description", label = previewText,
+                    key = "previewLabel", type = "description", label = previewText, fontSize = 16,
                 },
             },
         },

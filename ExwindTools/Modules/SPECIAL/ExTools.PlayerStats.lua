@@ -738,6 +738,12 @@ end
 -- 三、GUI 声明 | GUI Declarations — Settings Table Renderer / 设置表格渲染器
 -- =========================================================
 local PLAYER_STATS_ROWS_TABLE = "playerstats_rows_table"
+local PLAYER_STATS_ROW_ACTIONS = "PlayerStatsRowActions"
+local playerStatsFactory = _G.ExwindFactory
+if not playerStatsFactory then error("PlayerStats requires ExwindFactory", 2) end
+if not playerStatsFactory.Pools[PLAYER_STATS_ROW_ACTIONS] then
+    playerStatsFactory:InitCompositePool(PLAYER_STATS_ROW_ACTIONS)
+end
 
 local function ReleasePlayerStatsTableControl(control)
     if not control then return end
@@ -756,11 +762,19 @@ end
 local function ClearPlayerStatsTableRows(controls)
     for index = #controls.rows, 1, -1 do
         local record = controls.rows[index]
-        ReleasePlayerStatsTableControl(record.edit)
+        if record.actions then
+            record.actions:SetScript("OnSizeChanged", nil)
+            for _, button in ipairs(record.actionButtons or {}) do
+                ReleasePlayerStatsTableControl(button)
+            end
+            ReleasePlayerStatsTableControl(record.actions)
+        end
+        ReleasePlayerStatsTableControl(record.percent)
         ReleasePlayerStatsTableControl(record.syncFont)
         ReleasePlayerStatsTableControl(record.stat)
         ReleasePlayerStatsTableControl(record.name)
         ReleasePlayerStatsTableControl(record.enabled)
+        ReleasePlayerStatsTableControl(record.add)
         controls.rows[index] = nil
     end
 end
@@ -788,6 +802,51 @@ local function SelectPlayerStatsRow(rowIndex)
     }, rowIndex)
 end
 
+local function ClickPlayerStatsRowAction(rowIndex, key)
+    if not EX_DB.rows[rowIndex] then return end
+    SelectPlayerStatsRow(rowIndex)
+    ExwindTools:UpdateState(EXWIND_MODULE_KEY .. ".ButtonClicked", {
+        key = key,
+        ts = GetTime(),
+    })
+end
+
+local function CreatePlayerStatsRowActions(host, rowIndex, rowCount)
+    local actions = playerStatsFactory:AcquireCompositeHost(PLAYER_STATS_ROW_ACTIONS, host)
+    actions:SetSize(1, 60)
+    actions:EnableMouse(false)
+    local buttons = {
+        EXUI:CreateButton(actions, 28, 28, L["选择"], function()
+            SelectPlayerStatsRow(rowIndex)
+        end, { variant = "secondary", compact = true }),
+        EXUI:CreateButton(actions, 28, 28, L["↑"], function()
+            ClickPlayerStatsRowAction(rowIndex, "btn_up")
+        end, { variant = "secondary", compact = true }),
+        EXUI:CreateButton(actions, 28, 28, L["↓"], function()
+            ClickPlayerStatsRowAction(rowIndex, "btn_down")
+        end, { variant = "secondary", compact = true }),
+        EXUI:CreateButton(actions, 28, 28, L["删除"], function()
+            ClickPlayerStatsRowAction(rowIndex, "btn_delete")
+        end, { variant = "danger", compact = true }),
+    }
+    if rowIndex == 1 then buttons[2]:Disable() end
+    if rowIndex == rowCount then buttons[3]:Disable() end
+    if rowCount == 1 then buttons[4]:Disable() end
+    local function LayoutActions(_, width)
+        local gap = 4
+        local buttonWidth = math.max(24, (width - gap) / 2)
+        for index, button in ipairs(buttons) do
+            button:SetWidth(buttonWidth)
+            button:ClearAllPoints()
+            button:SetPoint("TOPLEFT", actions, "TOPLEFT",
+                ((index - 1) % 2) * (buttonWidth + gap), -math.floor((index - 1) / 2) * 32)
+        end
+    end
+    actions:SetScript("OnSizeChanged", LayoutActions)
+    LayoutActions(actions, actions:GetWidth())
+    return actions, buttons
+end
+
 local RebuildPlayerStatsRowsTable
 
 RebuildPlayerStatsRowsTable = function(host, context)
@@ -811,13 +870,14 @@ RebuildPlayerStatsRowsTable = function(host, context)
             stat = EXUI:CreateDropdown(host, 1, nil, ExwindTools.GetPlayerStatTree(), row.key, function(value)
                 CommitPlayerStatsRowValue(rowIndex, "key", value)
             end),
-            syncFont = EXUI:CreateCheckbox(host, L["样式同步"], row.syncFont == true, function(checked)
+            syncFont = EXUI:CreateCheckbox(host, L["数值字体跟随名称"], row.syncFont == true, function(checked)
                 CommitPlayerStatsRowValue(rowIndex, "syncFont", checked == true)
             end),
+            percent = EXUI:CreateCheckbox(host, L["百分比"], row.isPercent == true, function(checked)
+                CommitPlayerStatsRowValue(rowIndex, "isPercent", checked == true)
+            end),
         }
-        record.edit = EXUI:CreateButton(host, 1, 28, L["选择"], function()
-            SelectPlayerStatsRow(rowIndex)
-        end, { variant = "secondary", compact = true })
+        record.actions, record.actionButtons = CreatePlayerStatsRowActions(host, rowIndex, #EX_DB.rows)
         controls.rows[#controls.rows + 1] = record
         presentedRecords[#presentedRecords + 1] = {
             cells = {
@@ -825,7 +885,8 @@ RebuildPlayerStatsRowsTable = function(host, context)
                 { widget = record.name, type = "input" },
                 { widget = record.stat, type = "select" },
                 { widget = record.syncFont, type = "switch" },
-                { widget = record.edit, type = "button" },
+                { widget = record.percent, type = "switch" },
+                { widget = record.actions },
             },
         }
     end
@@ -836,10 +897,11 @@ RebuildPlayerStatsRowsTable = function(host, context)
             ts = GetTime(),
         })
     end, { variant = "primary", compact = true })
-    controls.rows[#controls.rows + 1] = { edit = add }
+    controls.rows[#controls.rows + 1] = { add = add }
     context:SetTableControls({
         add = {
             cells = {
+                { text = "" },
                 { text = "" },
                 { text = "" },
                 { text = "" },
@@ -928,18 +990,15 @@ local function EX_RegisterLayout()
                     { title = L["启用此行"] },
                     { title = L["名称"] },
                     { title = L["属性"] },
-                    { title = L["数值样式"] },
-                    { title = L["选择"] },
+                    { title = L["数值字体跟随名称"] },
+                    { title = L["百分比"] },
+                    { title = L["选择"] .. " / " .. L["删除"] },
                 },
                 supportsAdd = true,
             },
             {
                 kind = "settings", id = "rows", title = L["选择要编辑的行"] .. ": " .. sel .. ": " .. currentRowName,
                 items = {
-                    { key = "btn_up", type = "button", label = L["↑"] },
-                    { key = "btn_down", type = "button", label = L["↓"] },
-                    { key = "btn_delete", type = "button", label = L["删除"] },
-                    { key = "isPercent", type = "switch", parentKey = currentRowPath, label = L["%"] },
                     { key = "format", type = "slider", parentKey = currentRowPath, label = L["小数"], min = 0, max = 3 },
                     { key = "roles", type = "select", multiple = true, parentKey = currentRowPath, label = L["显示职责"], options = {
                         { value = "TANK", label = "TANK" }, { value = "HEALER", label = "HEALER" }, { value = "DAMAGER", label = "DAMAGER" },

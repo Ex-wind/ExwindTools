@@ -18,9 +18,7 @@ local LAYOUT_DEFAULTS = { direction = "DOWN", spacing = 0, maxVisible = 1 }
 local DISPLAY_WIDTH, DISPLAY_HEIGHT = 400, 100
 local RefreshActiveSurfaces
 
--- =========================================================
--- 一、模块标识与依赖引用 | Module Identity and Dependencies
--- =========================================================
+
 local MODULE_SPEC = {
     RefreshActiveSurfaces = function(controller) return RefreshActiveSurfaces(controller) end,
     moduleKey = MODULE_KEY,
@@ -89,8 +87,7 @@ local MODULE_SPEC = {
             ["core.text"] = { guiKey = "font_text", movable = false, tooltip = L["战斗提示文字"] },
         },
     },
-    -- [卡片迁移边界：设置页] 仅可按统一规范调整下列 gui.static/gui.fields 的 x/y/w/h 与卡片分组。
-    -- key/type/opts、DB path、anchor/preview/defaults 及刷新回调均属绑定或业务合同，禁止修改；复合控件必须整体引用，header 本身不等于卡片容器。
+
     -- =========================================================
     -- 三、GUI 声明 | GUI Declarations
     -- =========================================================
@@ -98,19 +95,29 @@ local MODULE_SPEC = {
         version = 1,
         sections = {
             {
-                kind = "composite", id = "common", title = L["模块通用设置"],
-                component = "modulecommonsettings", key = "moduleCommon", opts = {
+                kind = "composite",
+                id = "common",
+                title = L["模块通用设置"],
+                component = "modulecommonsettings",
+                key = "moduleCommon",
+                opts = {
                     bindRoot = true,
                     presentation = "settings-list",
                     fields = { { label = L["启用"], path = "enabled", presentation = "switch", type = "checkbox" } },
                     fixedLayout = {
-                        controlH = 6, controlW = 46, firstY = 0, logicalWidth = 200,
-                        rowStep = 14, slotX = { 3, 53, 103, 153 },
+                        controlH = 6,
+                        controlW = 46,
+                        firstY = 0,
+                        logicalWidth = 200,
+                        rowStep = 14,
+                        slotX = { 3, 53, 103, 153 },
                     },
                 },
             },
             {
-                kind = "settings", id = "messages", title = L["提示内容"],
+                kind = "settings",
+                id = "messages",
+                title = L["提示内容"],
                 items = {
                     { key = "enterMessage", label = L["进入战斗文本"], type = "input" },
                     { key = "leaveMessage", label = L["离开战斗文本"], type = "input" },
@@ -119,12 +126,18 @@ local MODULE_SPEC = {
                 },
             },
             {
-                kind = "composite", id = "anchor", title = L["锚点设置"],
-                component = "anchorgroup", key = "anchor",
+                kind = "composite",
+                id = "anchor",
+                title = L["锚点设置"],
+                component = "anchorgroup",
+                key = "anchor",
             },
             {
-                kind = "composite", id = "font_text", title = L["文字样式"],
-                component = "fontgroup", key = "font_text",
+                kind = "composite",
+                id = "font_text",
+                title = L["文字样式"],
+                component = "fontgroup",
+                key = "font_text",
             },
         },
     },

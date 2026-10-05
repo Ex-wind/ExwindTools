@@ -354,7 +354,7 @@ local function Execute(channel)
             local ok = pcall(handler, args or "")
             if ok then return end
         end
-        if _G.UIErrorsFrame then _G.UIErrorsFrame:AddMessage("命令未注册或不能由插件直接执行", 1, .2, .2) end
+        if _G.UIErrorsFrame then _G.UIErrorsFrame:AddMessage(L["命令未注册或不能由插件直接执行"], 1, .2, .2) end
         return
     end
     if _G.ChatFrame_OpenChat then _G.ChatFrame_OpenChat(raw .. " ") end
@@ -458,7 +458,6 @@ local function ApplyPresentation(collection, p)
 end
 local function RenderPanelPresentation(p)
     if not panelPreview then return end
-    if panelDock then panelDock:SetBackdropColor(0.5804, 0.6471, 0.9882, 1) end
     local entries = {}
     for _, entry in ipairs(p.entries) do
         entries[#entries + 1] = { itemID = "channel-" .. entry.channel.id, presentation = BuildItem(entry, p) }
@@ -584,7 +583,6 @@ ExwindTools:RegisterModulePreview(EXWIND_MODULE_KEY,
     {
         mount = function(dock)
             if panelPreview then panelPreview:Release() end; panelDock = dock
-            panelDock:SetBackdropColor(0.5804, 0.6471, 0.9882, 1)
             panelPreview = EXUI:CreateIconPanelPreview(dock,
                 EXWIND_MODULE_KEY, { onIntent = HandlePreviewIntent }); RenderPanelPresentation(BuildPresentation(true))
         end,

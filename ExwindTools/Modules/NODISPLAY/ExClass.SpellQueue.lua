@@ -9,6 +9,7 @@
 local ExwindTools = _G.ExwindTools
 if not ExwindTools then return end
 local EXUI = ExwindTools.UI
+local GM = ExwindTools.GUIMetrics
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 local EXState = ExwindTools.State
 
@@ -216,12 +217,14 @@ local SPEC_GROUPS = {
 }
 
 local function BuildSpecCard(id, title, source)
+    local columns = { { width = 104 } }
     local cells = {
         { id = id .. ".classCell", kind = "cell", children = {
             { id = id .. ".className", kind = "text", textSource = "className" },
         } },
     }
-    for slot = 1, 4 do
+    for slot = 1, source == "leather" and 4 or 3 do
+        columns[#columns + 1] = { weight = 1 }
         cells[#cells + 1] = { id = id .. ".specCell" .. slot, kind = "cell", children = {
             { id = id .. ".spec" .. slot, kind = "control", ref = "spec" .. slot,
                 controlType = "input", visible = slot == 4 and "hasFourthSpec" or nil },
@@ -230,7 +233,7 @@ local function BuildSpecCard(id, title, source)
     return {
         id = id, kind = "card", title = title, children = {
             { id = id .. ".columns", kind = "columns",
-                columns = { { width = 104 }, { weight = 1 }, { weight = 1 }, { weight = 1 }, { weight = 1 } },
+                columns = columns,
                 children = {
                     { id = id .. ".rows", kind = "repeat", source = source,
                         template = { id = id .. ".row", kind = "row", separator = true, children = cells } },
@@ -303,12 +306,12 @@ local function CreateV2Owner()
         return {
             mount = function(host, context)
                 local binding = bindingFor(context.scope)
-                local widget = EXUI:CreateEditBox(host, tostring(binding.read() or ""), 180, 28,
+                local widget = EXUI:CreateEditBox(host, tostring(binding.read() or ""), 180, GM.size.inputHeight,
                     labelFor(context.scope), {
+                        labelPos = "left",
                         onEnter = function(text) Commit(bindingFor(context.scope), text or "") end,
                         onEditFocusLost = function(text) Commit(bindingFor(context.scope), text or "") end,
                     })
-                widget._exV2LabelInset = 20
                 return widget
             end,
             update = function(widget, context)
@@ -321,14 +324,25 @@ local function CreateV2Owner()
                 end
             end,
             measure = function(widget, context, width)
-                widget:SetWidth(width)
-                return widget:GetHeight() + (widget._exV2LabelInset or 0)
+                local gap = GM.space.settingsV2Gap
+                local labelWidth = math.min(math.ceil(widget.label:GetUnboundedStringWidth()),
+                    math.max(1, width - GM.size.sliderInputWidth - gap))
+                widget.label:SetWidth(labelWidth)
+                widget.label:SetWordWrap(true)
+                widget._exV2LabelWidth = labelWidth
+                return math.max(GM.size.inputHeight, math.ceil(widget.label:GetStringHeight()))
             end,
             layout = function(widget, context, width, height)
-                local inset = widget._exV2LabelInset or 0
+                local gap = GM.space.settingsV2Gap
+                local labelWidth = widget._exV2LabelWidth or 0
                 widget:ClearAllPoints()
-                widget:SetPoint("TOPLEFT", 0, -inset)
-                widget:SetSize(width, math.max(1, height - inset))
+                widget:SetPoint("TOPRIGHT", widget:GetParent(), "TOPRIGHT", 0,
+                    -(height - GM.size.inputHeight) / 2)
+                widget:SetSize(math.max(1, width - labelWidth - gap), GM.size.inputHeight)
+                widget.label:ClearAllPoints()
+                widget.label:SetPoint("RIGHT", widget, "LEFT", -gap, 0)
+                widget.label:SetJustifyH("LEFT")
+                widget.label:SetWidth(labelWidth)
             end,
             release = ReleaseControl,
         }

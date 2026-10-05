@@ -1,4 +1,4 @@
-﻿-- [[ 传送喊话模块 ]]
+-- [[ 传送喊话模块 ]]
 -- { Key = "ExM+Info.TeleMsg", Name = "传送喊话", Desc = "在施放副本传送法术时自动在队伍频道喊话。", Category = 2 },
 
 -- =========================================================
@@ -52,6 +52,19 @@ local function BuildPreviewText()
         L["预览:"] .. "|r\n|cffaaaaff[" .. L["队伍"] .. "] [" .. playerColored .. "]: " .. out .. "|r"
 end
 
+local function BuildPreviewSection()
+    return {
+        kind = "table", id = "preview", title = L["变量与预览"],
+        columns = { { title = "" } }, supportsAdd = false,
+        records = {
+            { cells = { { text = L["|cffffd100变量说明:|r\
+  |cff00ff00%link|r  = 法术链接\
+  |cff00ff00%name|r = 副本名称"] } } },
+            { cells = { { text = BuildPreviewText() } } },
+        },
+    }
+end
+
 local function EX_RegisterLayout()
     local layout = {
         version = 1,
@@ -64,8 +77,8 @@ local function EX_RegisterLayout()
                     {
                         key = "shoutTiming", type = "select", label = L["喊话时机"],
                         options = {
-                            { value = "施法开始", label = "施法开始" },
-                            { value = "施法成功", label = "施法成功" },
+                            { value = "施法开始", label = L["施法开始"] },
+                            { value = "施法成功", label = L["施法成功"] },
                         },
                     },
                     { key = "reset", type = "button", label = L["恢复默认喊话"] },
@@ -73,22 +86,7 @@ local function EX_RegisterLayout()
                         inputWidthPercent = 200 },
                 },
             },
-            {
-                kind = "settings",
-                id = "preview",
-                title = L["变量与预览"],
-                description = {
-                    key = "descInfo", type = "description",
-                    fontSize = 16,
-                    label = L["|cffffd100变量说明:|r\
-  |cff00ff00%link|r  = 法术链接\
-  |cff00ff00%name|r = 副本名称"],
-                },
-                items = {},
-                footerDescription = {
-                    key = "previewLabel", type = "description", label = BuildPreviewText(), fontSize = 16,
-                },
-            },
+            BuildPreviewSection(),
         },
     }
 
@@ -111,9 +109,7 @@ local function RefreshVisibleText(resetInput)
         local input = session:GetWidget("common", "teleportShoutText")
         if input then input:SetText(EX_DB.teleportShoutText or DEFAULT_MSG) end
     end
-    local preview = session:GetWidget("preview", "previewLabel")
-    if preview and preview.text then preview.text:SetText(BuildPreviewText()) end
-    session:Relayout()
+    session:ReplaceSettingsSection("preview", BuildPreviewSection())
 end
 
 -- =========================================================

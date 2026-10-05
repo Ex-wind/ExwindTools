@@ -331,6 +331,7 @@ local function Init_BulkBuy()
         end
 
         local ok = ApplyBulkBuyBackdrop(Frame)
+        EXUI:ApplyDialogStyle(Frame, Frame.Title)
         bulkBuySkinApplied = ok == true
         return bulkBuySkinApplied
     end
@@ -432,18 +433,6 @@ local function Init_BulkBuy()
         Frame:Show()
     end
 
-    -- 确认框
-    StaticPopupDialogs["EXWIND_BULK_BUY_CONFIRM"] = {
-        text = L["此次购买将花费 %s\n确认购买 %s 吗？"],
-        button1 = YES,
-        button2 = NO,
-        OnAccept = function(self) self.data.callback() end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-        preferredIndex = 3,
-    }
-
     local function BuyBatch(index, remaining, callback)
         if remaining <= 0 then
             if callback then callback() end
@@ -503,7 +492,17 @@ local function Init_BulkBuy()
                 local priceStr = GetMoneyString(totalCopper, true)
                 local itemLink = GetMerchantItemLink(currentIndex) or L["物品"]
                 local descStr = string.format(L["%d 个 %s"], amount, itemLink)
-                StaticPopup_Show("EXWIND_BULK_BUY_CONFIRM", priceStr, descStr, { callback = ExecuteBuy })
+                EXUI:ShowDialog({
+                    sourceAddon = "ExwindTools", sourceModule = L["批量购买"],
+                    id = "EXWIND_BULK_BUY_CONFIRM",
+                    text = string.format(L["此次购买将花费 %s\n确认购买 %s 吗？"], priceStr, descStr),
+                    buttons = {
+                        { id = "cancel", text = NO, variant = "secondary" },
+                        { id = "confirm", text = YES, variant = "primary", onClick = ExecuteBuy },
+                    },
+                    cancelButton = "cancel",
+                    defaultButton = "confirm",
+                })
                 return
             end
         end
@@ -521,11 +520,9 @@ local function Init_BulkBuy()
         end
     end)
 
-    Frame.BuyBtn = CreateFrame("Button", nil, Frame, "UIPanelButtonTemplate")
-    Frame.BuyBtn:SetSize(160, 40)
+    Frame.BuyBtn = EXUI:CreateButton(Frame, 160, 40, L["购买"], DoBuyCheck,
+        { variant = "primary", compact = true })
     Frame.BuyBtn:SetPoint("BOTTOM", 0, 92)
-    Frame.BuyBtn:SetText(L["购买"])
-    Frame.BuyBtn:SetScript("OnClick", DoBuyCheck)
     Frame.Input:SetScript("OnEnterPressed", DoBuyCheck)
 
     -- 快捷按钮
@@ -571,37 +568,7 @@ end
 -- 6. [ResetDMG] 进本重置伤害统计
 -- ========================================================================
 local function Init_ResetDamageMeter()
-    -- 不使用 StaticPopup：它是暴雪共享的全局弹窗系统。进本状态回调中向其中
-    -- 插入插件弹窗，可能使同一时段的受保护 UI（例如公会权限页）继承污染上下文。
-    local dialog = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-    dialog:SetSize(360, 150)
-    dialog:SetPoint("CENTER", UIParent, "CENTER", 0, 120)
-    dialog:SetFrameStrata("DIALOG")
-    dialog:EnableMouse(true)
-    dialog:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\Buttons\\WHITE8X8",
-        tile = true,
-        tileSize = 32,
-        edgeSize = 1,
-        insets = { left = 0, right = 0, top = 0, bottom = 0 },
-    })
-    dialog:SetBackdropColor(0, 0, 0, 0.95)
-    dialog:SetBackdropBorderColor(0, 0, 0, 1)
-    dialog:Hide()
-
-    local message = dialog:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-    message:SetPoint("TOPLEFT", 28, -30)
-    message:SetPoint("TOPRIGHT", -28, -30)
-    message:SetJustifyH("CENTER")
-    message:SetWordWrap(true)
-    message:SetText(L["检测到进入副本，是否重置伤害统计数据？"])
-
-    local acceptButton = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
-    acceptButton:SetSize(110, 26)
-    acceptButton:SetPoint("BOTTOM", dialog, "BOTTOM", -62, 24)
-    acceptButton:SetText(_G.YES)
-    acceptButton:SetScript("OnClick", function()
+    local function ConfirmReset()
         local CDM = _G.C_DamageMeter
         if CDM and CDM.ResetAllCombatSessions then
             CDM.ResetAllCombatSessions()
@@ -609,13 +576,7 @@ local function Init_ResetDamageMeter()
         else
             print("|cffff0000[ExwindTools] " .. L["错误: C_DamageMeter.ResetAllCombatSessions API 不存在"] .. "|r")
         end
-        dialog:Hide()
-    end)
-
-    local cancelButton = EXUI:CreateButton(dialog, 110, 26, _G.NO, function()
-        dialog:Hide()
-    end, { compact = true })
-    cancelButton:SetPoint("BOTTOM", dialog, "BOTTOM", 62, 24)
+    end
 
     -- [关键修复] 记录初始真实状态
     -- 如果初始化时已经在副本里(lastInInstance=true)，那么 State 初始化同步带来的 false->true 变化将被忽略
@@ -624,9 +585,19 @@ local function Init_ResetDamageMeter()
     ExwindTools:WatchState("InInstance", "ExTools_Mini_ResetDMG", function(inInstance)
         -- 仅当真正从野外(last=false)变为副本(curr=true)时触发
         if inInstance and lastInInstance == false then
-            dialog:Show()
+            EXUI:ShowDialog({
+                sourceAddon = "ExwindTools", sourceModule = L["伤害统计"],
+                id = "EXTOOLS_RESET_DAMAGE_METER",
+                text = L["检测到进入副本，是否重置伤害统计数据？"],
+                danger = true,
+                buttons = {
+                    { id = "cancel", text = _G.NO, variant = "secondary" },
+                    { id = "confirm", text = _G.YES, variant = "dangerSolid", onClick = ConfirmReset },
+                },
+                cancelButton = "cancel",
+            })
         elseif not inInstance then
-            dialog:Hide()
+            EXUI:HideDialog("EXTOOLS_RESET_DAMAGE_METER")
         end
         lastInInstance = inInstance
     end)
@@ -1681,11 +1652,11 @@ local function EX_RegisterLayout()
                     {
                         key = "MapInfoAnchor", type = "select", label = L["显示位置"],
                         options = {
-                            { value = "左下", label = "左下" },
-                            { value = "左上", label = "左上" },
-                            { value = "右下", label = "右下" },
-                            { value = "右上", label = "右上" },
-                            { value = "中下", label = "中下" },
+                            { value = "左下", label = L["左下"] },
+                            { value = "左上", label = L["左上"] },
+                            { value = "右下", label = L["右下"] },
+                            { value = "右上", label = L["右上"] },
+                            { value = "中下", label = L["中下"] },
                         },
                     },
                 },
@@ -1714,20 +1685,20 @@ local function EX_RegisterLayout()
                     {
                         label = L["|cffffd1005人地下城|r"],
                         controls = {
-                            { key = "ACL_DungeonFollower", type = "switch", label = L["追随者"] },
-                            { key = "ACL_DungeonNormal", type = "switch", label = L["普通"] },
-                            { key = "ACL_DungeonHeroic", type = "switch", label = L["英雄"] },
-                            { key = "ACL_DungeonMythic", type = "switch", label = L["史诗"] },
-                            { key = "ACL_DungeonChallenge", type = "switch", label = L["大秘境"] },
+                            { key = "ACL_DungeonFollower", type = "switch", label = L["追随者"], presentation = "card" },
+                            { key = "ACL_DungeonNormal", type = "switch", label = L["普通"], presentation = "card" },
+                            { key = "ACL_DungeonHeroic", type = "switch", label = L["英雄"], presentation = "card" },
+                            { key = "ACL_DungeonMythic", type = "switch", label = L["史诗"], presentation = "card" },
+                            { key = "ACL_DungeonChallenge", type = "switch", label = L["大秘境"], presentation = "card" },
                         },
                     },
                     {
                         label = L["|cffffd100团队副本|r"],
                         controls = {
-                            { key = "ACL_RaidLFR", type = "switch", label = L["随机"] },
-                            { key = "ACL_RaidNormal", type = "switch", label = L["普通"] },
-                            { key = "ACL_RaidHeroic", type = "switch", label = L["英雄"] },
-                            { key = "ACL_RaidMythic", type = "switch", label = L["史诗"] },
+                            { key = "ACL_RaidLFR", type = "switch", label = L["随机"], presentation = "card" },
+                            { key = "ACL_RaidNormal", type = "switch", label = L["普通"], presentation = "card" },
+                            { key = "ACL_RaidHeroic", type = "switch", label = L["英雄"], presentation = "card" },
+                            { key = "ACL_RaidMythic", type = "switch", label = L["史诗"], presentation = "card" },
                         },
                     },
                 },

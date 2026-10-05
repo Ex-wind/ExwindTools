@@ -350,7 +350,9 @@ local function ClearSpellRendererRows(controls)
     for index = #controls.rows, 1, -1 do
         local record = controls.rows[index]
         if record.idControlIsEditBox then
-            record.idControl:SetScript("OnEditFocusLost", nil)
+            -- OnEditFocusLost 槽位上有 Core 的焦点画器，走 ClearControlScript
+            -- 清槽位时一并丢掉安装记录，下一次借用才会重装画器。
+            EXUI:ClearControlScript(record.idControl, "OnEditFocusLost")
             record.idControl:SetScript("OnEnterPressed", nil)
         end
         ReleaseSpellRendererControl(record.action)
@@ -430,7 +432,8 @@ RebuildSpellRenderer = function(host, ctx)
             local function Commit(self)
                 committedText = CommitSpellEntry(entry, committedText, self:GetText(), record)
             end
-            record.idControl:SetScript("OnEditFocusLost", function(self)
+            -- 焦点画器就在这个槽位上，用 HookScript 把提交逻辑叠加上去。
+            record.idControl:HookScript("OnEditFocusLost", function(self)
                 if self._exSkipLostCommit then self._exSkipLostCommit = nil return end
                 Commit(self)
             end)

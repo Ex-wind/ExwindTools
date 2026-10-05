@@ -388,15 +388,8 @@ local function RenderCollection(collection, itemID, sample, interactive)
     return true
 end
 
-local function ApplyPreviewDockColor()
-    if panelDock and type(panelDock.SetBackdropColor) == "function" then
-        panelDock:SetBackdropColor(0.5804, 0.6471, 0.9882, 1)
-    end
-end
-
 local function RenderPanelSample()
     if not panelPreview then return end
-    ApplyPreviewDockColor()
     panelPreview:Render({ { itemID = PANEL_ITEM_ID, presentation = BuildPresentation(true, true) } }, SINGLE_ICON_LAYOUT)
     if panelDock then
         local _, height = panelPreview:GetBounds()
@@ -567,7 +560,6 @@ ExwindTools:RegisterModulePreview(EXWIND_MODULE_KEY, {
     mount = function(dock)
         if panelPreview then panelPreview:Release() end
         panelDock = dock
-        ApplyPreviewDockColor()
         panelPreview = EXUI:CreateIconPanelPreview(dock, EXWIND_MODULE_KEY, { onIntent = HandlePreviewIntent })
         RenderPanelSample()
     end,

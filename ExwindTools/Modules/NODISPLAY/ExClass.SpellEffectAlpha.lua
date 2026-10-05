@@ -208,6 +208,7 @@ local function EnsureOverlayPickerFrame()
     title:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -14)
     title:SetText(L["法术触发贴图选择器"])
     frame.title = title
+    EXUI:ApplyDialogStyle(frame, title)
 
     local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
@@ -1032,12 +1033,14 @@ local SPEC_GROUPS = {
 }
 
 local function BuildSpecCard(id, title, source)
+    local columns = { { width = 104 } }
     local cells = {
         { id = id .. ".classCell", kind = "cell", children = {
             { id = id .. ".className", kind = "text", textSource = "className" },
         } },
     }
-    for slot = 1, 4 do
+    for slot = 1, source == "leather" and 4 or 3 do
+        columns[#columns + 1] = { weight = 1 }
         cells[#cells + 1] = { id = id .. ".specCell" .. slot, kind = "cell", children = {
             { id = id .. ".spec" .. slot, kind = "control", ref = "spec" .. slot,
                 controlType = "slider", visible = slot == 4 and "hasFourthSpec" or nil },
@@ -1046,7 +1049,7 @@ local function BuildSpecCard(id, title, source)
     return {
         id = id, kind = "card", title = title, children = {
             { id = id .. ".columns", kind = "columns",
-                columns = { { width = 104 }, { weight = 1 }, { weight = 1 }, { weight = 1 }, { weight = 1 } },
+                columns = columns,
                 children = {
                     { id = id .. ".rows", kind = "repeat", source = source,
                         template = { id = id .. ".row", kind = "row", separator = true, children = cells } },
@@ -1163,6 +1166,7 @@ local function CreateV2Owner()
                 local binding = bindingFor(context.scope)
                 return EXUI:CreateSlider(host, 180, labelFor and labelFor(context.scope) or "", minValue, maxValue,
                     tonumber(binding.read()) or minValue, stepValue or 1, nil, {
+                        numberInputPosition = labelFor and "title" or nil,
                         onLive = function(value) Commit(bindingFor(context.scope), value, "changing") end,
                         onCommit = function(value) Commit(bindingFor(context.scope), value, "committed") end,
                     })
@@ -1172,6 +1176,10 @@ local function CreateV2Owner()
                 if widget.Title then widget.Title:SetText(labelFor and labelFor(context.scope) or "") end
                 local value = tonumber(binding.read()) or minValue
                 if widget.SetEXUIValue then widget:SetEXUIValue(value, "silent") end
+            end,
+            measure = function(widget, context, width)
+                widget:SetWidth(width)
+                return widget:GetHeight()
             end,
             release = ReleaseControl,
         }

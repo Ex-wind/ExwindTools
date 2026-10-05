@@ -209,7 +209,7 @@ local function BuildCustomSoundsSection(count)
     for index = 1, count do
         items[#items + 1] = {
             key = "customSound" .. index,
-            label = L["音效 " .. index],
+            label = string.format(L["音效 %d"], index),
             parentKey = "customSounds",
             subKey = tostring(index),
             type = "input",

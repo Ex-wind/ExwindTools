@@ -427,12 +427,14 @@ function EXSP.CreateMainFrame()
         sub:SetFont(EXSP.CurrentFont, 12, "OUTLINE"); sub:SetPoint("TOP", tab, "BOTTOM", 0, -2)
         sub:SetWidth(72); sub:SetJustifyH("CENTER"); sub:SetWordWrap(true); sub:SetText(tab.localizedName); tab.text =
         sub
-        tab:SetScript("OnEnter", function(self)
+        -- OnEnter/OnLeave 这两个槽位上有 Core 的悬停画器（HookScript 接的链）；
+        -- SetScript 会把整条链一起清掉，所以 tooltip 也用 HookScript 叠加上去。
+        tab:HookScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
             GameTooltip:SetText(self.localizedName or name, 1, 0.82, 0)
             GameTooltip:Show()
         end)
-        tab:SetScript("OnLeave", function()
+        tab:HookScript("OnLeave", function()
             GameTooltip:Hide()
         end)
         tab:SetScript("OnClick",

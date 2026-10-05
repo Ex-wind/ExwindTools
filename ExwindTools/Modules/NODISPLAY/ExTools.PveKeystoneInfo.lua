@@ -179,8 +179,10 @@ local function GetOpenRaidKeystone(unit)
     end
 
     local keyLevel = tonumber(keystoneInfo.level) or 0
-    local keyMapID = tonumber(keystoneInfo.challengeMapID) or tonumber(keystoneInfo.mythicPlusMapID) or
-    tonumber(keystoneInfo.mapID) or 0
+    local keyMapID = tonumber(keystoneInfo.challengeMapID) or 0
+    if keyMapID <= 0 then
+        keyMapID = tonumber(keystoneInfo.mythicPlusMapID) or 0
+    end
     return keyLevel, keyMapID, keyLevel > 0 and keyMapID > 0
 end
 
@@ -456,17 +458,21 @@ local function UpdateDisplay()
         ownLevel = previewData.player.keyLevel
         ownMapID = previewData.player.keyMapID
     else
-        if PartySync and not IsAuraSecretsActive() then
-            ownLevel, ownMapID = PartySync:GetKeystone("player")
-        end
+        if not IsAuraSecretsActive() then
+            if PartySync then
+                ownLevel, ownMapID = PartySync:GetKeystone("player")
+            end
 
-        if not HasResolvedKeystoneData(ownLevel, ownMapID) then
-            ownMapID = _G.C_MythicPlus.GetOwnedKeystoneChallengeMapID()
-            ownLevel = _G.C_MythicPlus.GetOwnedKeystoneLevel()
-        end
+            if not HasResolvedKeystoneData(ownLevel, ownMapID) then
+                ownMapID = _G.C_MythicPlus.GetOwnedKeystoneChallengeMapID() or 0
+                ownLevel = _G.C_MythicPlus.GetOwnedKeystoneLevel() or 0
+            end
 
-        if HasResolvedKeystoneData(ownLevel, ownMapID) then
-            StoreKeystoneSnapshot("player", ownLevel, ownMapID)
+            if HasResolvedKeystoneData(ownLevel, ownMapID) then
+                StoreKeystoneSnapshot("player", ownLevel, ownMapID)
+            else
+                lastKnownKeystones.player = nil
+            end
         else
             local ownSnapshot = GetKeystoneSnapshot("player")
             if ownSnapshot then
@@ -501,14 +507,18 @@ local function UpdateDisplay()
                 local member = PartySync and PartySync:GetMember(unit)
                 if PartySync and not auraSecretsActive then
                     keyLevel, keyMapID = PartySync:GetKeystone(unit)
-                    knownKeyState = member and (member.keyTS or 0) > 0 or false
+                    knownKeyState = member and member.sourceKey ~= nil or false
                 end
 
-                if knownKeyState and HasResolvedKeystoneData(keyLevel, keyMapID) then
-                    StoreKeystoneSnapshot(cacheKey, keyLevel, keyMapID)
+                if knownKeyState then
+                    if HasResolvedKeystoneData(keyLevel, keyMapID) then
+                        StoreKeystoneSnapshot(cacheKey, keyLevel, keyMapID)
+                    elseif cacheKey and keyLevel == 0 and keyMapID == 0 then
+                        lastKnownKeystones.party[cacheKey] = nil
+                    end
                 end
 
-                if not HasResolvedKeystoneData(keyLevel, keyMapID) then
+                if not knownKeyState and not HasResolvedKeystoneData(keyLevel, keyMapID) then
                     local openRaidLevel, openRaidMapID, openRaidKnown = GetOpenRaidKeystone(unit)
                     if openRaidKnown then
                         keyLevel = openRaidLevel
@@ -518,7 +528,7 @@ local function UpdateDisplay()
                     end
                 end
 
-                if not HasResolvedKeystoneData(keyLevel, keyMapID) then
+                if not knownKeyState and not HasResolvedKeystoneData(keyLevel, keyMapID) then
                     local snapshot = GetKeystoneSnapshot(cacheKey)
                     if snapshot then
                         keyLevel = snapshot.keyLevel

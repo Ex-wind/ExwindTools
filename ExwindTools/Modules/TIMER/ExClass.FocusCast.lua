@@ -224,6 +224,7 @@ local MODULE_SPEC = {
                 kind = "settings", id = "common", title = L["通用设置"],
                 items = {
                     { key = "enabled", label = L["启用"], type = "switch" },
+                    { key = "alertHostileOnly", label = L["仅敌方单位"], type = "switch" },
                     { key = "hideWhenNotInterruptible", label = L["|cffff080a隐藏不能打断的条 (隐藏钢条)|r"], type = "switch" },
                     { key = "nonInterruptColor", label = L["无法打断颜色"], type = "color" },
                     { key = "hideOnInterruptCD", label = L["打断CD时隐藏可断条"], type = "switch" },
@@ -238,10 +239,6 @@ local MODULE_SPEC = {
             {
                 kind = "composite", id = "sound", title = L["提示音设置"],
                 component = "soundgroup", key = "alert", opts = {
-                    secondaryCheckbox = {
-                        key = "alertHostileOnly",
-                        label = L["仅敌方单位"],
-                    },
                     sources = {
                         "lsm",
                         "file",

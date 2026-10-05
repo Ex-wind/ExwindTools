@@ -633,6 +633,7 @@ if not EX_DB.rows or #EX_DB.rows == 0 then
     EX_DB.rows = GetDefaultRows()
 end
 local EXUI = ExwindTools.UI
+local GM = ExwindTools.GUIMetrics
 
 local ApplyPlayerStatsLiveVisual
 local anchorController, anchorFrame
@@ -813,19 +814,19 @@ end
 
 local function CreatePlayerStatsRowActions(host, rowIndex, rowCount)
     local actions = playerStatsFactory:AcquireCompositeHost(PLAYER_STATS_ROW_ACTIONS, host)
-    actions:SetSize(1, 60)
+    actions:SetSize(1, GM.size.buttonHeight * 2 + 4)
     actions:EnableMouse(false)
     local buttons = {
-        EXUI:CreateButton(actions, 28, 28, L["选择"], function()
+        EXUI:CreateButton(actions, GM.size.buttonHeight, GM.size.buttonHeight, L["选择"], function()
             SelectPlayerStatsRow(rowIndex)
         end, { variant = "secondary", compact = true }),
-        EXUI:CreateButton(actions, 28, 28, L["↑"], function()
+        EXUI:CreateButton(actions, GM.size.buttonHeight, GM.size.buttonHeight, L["↑"], function()
             ClickPlayerStatsRowAction(rowIndex, "btn_up")
         end, { variant = "secondary", compact = true }),
-        EXUI:CreateButton(actions, 28, 28, L["↓"], function()
+        EXUI:CreateButton(actions, GM.size.buttonHeight, GM.size.buttonHeight, L["↓"], function()
             ClickPlayerStatsRowAction(rowIndex, "btn_down")
         end, { variant = "secondary", compact = true }),
-        EXUI:CreateButton(actions, 28, 28, L["删除"], function()
+        EXUI:CreateButton(actions, GM.size.buttonHeight, GM.size.buttonHeight, L["删除"], function()
             ClickPlayerStatsRowAction(rowIndex, "btn_delete")
         end, { variant = "danger", compact = true }),
     }
@@ -836,10 +837,11 @@ local function CreatePlayerStatsRowActions(host, rowIndex, rowCount)
         local gap = 4
         local buttonWidth = math.max(24, (width - gap) / 2)
         for index, button in ipairs(buttons) do
+            local position = ({ 1, 3, 4, 2 })[index]
             button:SetWidth(buttonWidth)
             button:ClearAllPoints()
             button:SetPoint("TOPLEFT", actions, "TOPLEFT",
-                ((index - 1) % 2) * (buttonWidth + gap), -math.floor((index - 1) / 2) * 32)
+                ((position - 1) % 2) * (buttonWidth + gap), -math.floor((position - 1) / 2) * (GM.size.buttonHeight + gap))
         end
     end
     actions:SetScript("OnSizeChanged", LayoutActions)
@@ -862,7 +864,7 @@ RebuildPlayerStatsRowsTable = function(host, context)
             enabled = EXUI:CreateCheckbox(host, "", row.enabled == true, function(checked)
                 CommitPlayerStatsRowValue(rowIndex, "enabled", checked == true)
             end),
-            name = EXUI:CreateEditBox(host, tostring(row.label or ""), 1, 28, nil, {
+            name = EXUI:CreateEditBox(host, tostring(row.label or ""), 1, GM.size.inputHeight, nil, {
                 onEditFocusLost = function(text)
                     CommitPlayerStatsRowValue(rowIndex, "label", text or "")
                 end,
@@ -886,12 +888,12 @@ RebuildPlayerStatsRowsTable = function(host, context)
                 { widget = record.stat, type = "select" },
                 { widget = record.syncFont, type = "switch" },
                 { widget = record.percent, type = "switch" },
-                { widget = record.actions },
+                { widget = record.actions, type = "actions" },
             },
         }
     end
 
-    local add = EXUI:CreateButton(host, 1, 28, L["新增"], function()
+    local add = EXUI:CreateButton(host, 1, GM.size.buttonHeight, L["新增"], function()
         ExwindTools:UpdateState(EXWIND_MODULE_KEY .. ".ButtonClicked", {
             key = "btn_add",
             ts = GetTime(),
@@ -1196,7 +1198,6 @@ end
 
 local function RefreshPanelPreview()
     if panelPreview then
-        if panelDock then panelDock:SetBackdropColor(0.5804, 0.6471, 0.9882, 1) end
         local bounds = ApplyPresentation(panelPreview, BuildPresentation(true), "CENTER", panelDock)
         if panelDock then
             panelDock:SetHeight(math.max(220, bounds.height + 28))
@@ -1218,7 +1219,6 @@ end
 local function ShowPanelPreview(dock)
     if panelPreview then panelPreview:Release() end
     panelDock = dock
-    panelDock:SetBackdropColor(0.5804, 0.6471, 0.9882, 1)
     panelPreview = EXUI:CreateTextList(dock, "panel", EXWIND_MODULE_KEY, { onIntent = HandlePanelPreviewIntent })
     RefreshPanelPreview()
 end

@@ -17,6 +17,7 @@ local HIGHLIGHT_SPELL_ID = 1265968
 local USE_SPELL_ID = 1265982
 local ICON_SPELL_ID = 50842
 local USE_LOCKOUT_SECONDS = 3
+local HIGHLIGHT_TIMEOUT_SECONDS = 15
 local SHOW_CONFIRM_SECONDS = .1
 local RUNTIME_ITEM_ID = "dk-blood-boil-smart:runtime"
 local RefreshActiveSurfaces
@@ -204,11 +205,12 @@ if not ExwindTools:IsModuleEnabled(MODULE_KEY) then return end
 -- 1265968 开启高亮资格；1265982 取消资格并启动 3 秒抑制。
 -- useGeneration 保证连续使用时，只有最后一次使用对应的延迟回调可以解除抑制。
 -- showGeneration 保证短暂满足条件的旧显示确认不会在稍后错误显示图标。
+-- highlightGeneration 保证资格开启 15 秒内没有被使用时自动取消显示，只有当次资格对应的超时回调能生效。
 -- =========================================================
 -- 五、业务状态与功能逻辑 | Business State and Logic
 -- =========================================================
 local highlightActive, useLockoutActive, displayActive = false, false, false
-local useGeneration, showGeneration = 0, 0
+local useGeneration, showGeneration, highlightGeneration = 0, 0, 0
 
 local function IsEligible()
     return ExwindTools.State and ExwindTools.State.ClassID == DEATH_KNIGHT_CLASS_ID
@@ -277,6 +279,7 @@ RefreshPreview()
 -- =========================================================
 local function ClearRuntimeState()
     useGeneration, showGeneration = useGeneration + 1, showGeneration + 1
+    highlightGeneration = highlightGeneration + 1
     highlightActive, useLockoutActive, displayActive = false, false, false
     central:Clear()
 end
@@ -316,8 +319,17 @@ local function SetHighlightActive()
         return
     end
 
+    if highlightActive then return end
+
     highlightActive = true
+    highlightGeneration = highlightGeneration + 1
+    local generation = highlightGeneration
     ReconcileRuntime()
+    C_Timer.After(HIGHLIGHT_TIMEOUT_SECONDS, function()
+        if highlightGeneration ~= generation or not highlightActive then return end
+        highlightActive = false
+        ReconcileRuntime()
+    end)
 end
 
 local function StartUseLockout()
@@ -327,6 +339,7 @@ local function StartUseLockout()
     end
 
     highlightActive = false
+    highlightGeneration = highlightGeneration + 1
     useLockoutActive = true
     useGeneration = useGeneration + 1
     local generation = useGeneration

@@ -1018,6 +1018,7 @@ local function IconPicker_Refresh()
     end
     frame.titleText:SetText(L["选择图案"] ..
         "  [" .. BuildSelectedSlotTitle(IconPicker.targetSide, IconPicker.targetIndex) .. "]")
+    EXUI:ApplyDialogStyle(frame, frame.titleText)
 
     if not frame.scrollText then
         frame.scrollText = frame:CreateFontString(nil, "OVERLAY")
@@ -1686,7 +1687,6 @@ end
 
 local function ShowPanel(dock)
     ReleasePanel()
-    dock:SetBackdropColor(0.5804, 0.6471, 0.9882, 1)
     panelSurface = CreateSurface(dock, "panel", { onIntent = HandlePanelIntent })
     ApplySurface(panelSurface, BuildPresentation(true))
 end
@@ -1742,7 +1742,6 @@ local function RefreshVisuals()
         RenderRuntime()
     end
     if panelSurface then
-        if panelSurface.dock then panelSurface.dock:SetBackdropColor(0.5804, 0.6471, 0.9882, 1) end
         ApplySurface(panelSurface, BuildPresentation(true))
     end
     SyncTicker()
@@ -1768,7 +1767,6 @@ ExwindTools:RegisterModulePreview(EXWIND_MODULE_KEY, {
     mount = ShowPanel,
     update = function()
         if panelSurface then
-            if panelSurface.dock then panelSurface.dock:SetBackdropColor(0.5804, 0.6471, 0.9882, 1) end
             ApplySurface(panelSurface, BuildPresentation(true))
         end
     end,

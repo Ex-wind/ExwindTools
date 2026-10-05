@@ -9,6 +9,7 @@ local EXDB = _G.EXDB
 if not ExwindTools then return end
 local EXState = ExwindTools.State
 local EXUI = ExwindTools.UI
+local GUI_FONT = ExwindTools.GUIMetrics.font.mythicStats
 local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = function(_, key) return key end })
 
 -- 1. 识别 Key
@@ -297,7 +298,7 @@ function EXMRH.CreateStandaloneFrame()
     EXMRH.BtnStats = CreateFootBtn(L["统计分析 (未开启)"], -10)
 
     local versionText = footer:CreateFontString(nil, "OVERLAY")
-    versionText:SetFont(MAIN_FONT, 14, "THINOUTLINE"); versionText:SetPoint("LEFT", 20, 0); versionText:SetTextColor(
+    versionText:SetFont(MAIN_FONT, GUI_FONT.small, "THINOUTLINE"); versionText:SetPoint("LEFT", 20, 0); versionText:SetTextColor(
         unpack(
             EXWIND_THEME.TextSub))
     -- 全服玩家人口数简写W
@@ -355,7 +356,7 @@ function EXMRH.InitHeader()
     EXMRH.IlvlFrame = ilvlFrame
 
     local ilvlStr = ilvlFrame:CreateFontString(nil, "OVERLAY")
-    ilvlStr:SetFont(MAIN_FONT, 16, "THINOUTLINE"); ilvlStr:SetPoint("CENTER", 0, 0); ilvlStr:SetTextColor(1, 1, 1)
+    ilvlStr:SetFont(MAIN_FONT, GUI_FONT.column, "THINOUTLINE"); ilvlStr:SetPoint("CENTER", 0, 0); ilvlStr:SetTextColor(1, 1, 1)
     EXMRH.IlvlDisplay = ilvlStr
     --=======================================================================================
     ----------------------------------------玩家名称模块--------------------------------------
@@ -370,13 +371,13 @@ function EXMRH.InitHeader()
     -- 角色名称
     local nameStr = header:CreateFontString(nil, "OVERLAY")
     --@@ 玩家姓名
-    nameStr:SetFont(MAIN_FONT, 44, "THINOUTLINE"); nameStr:SetPoint("LEFT", specIcon, "RIGHT", 5, -8)
+    nameStr:SetFont(MAIN_FONT, GUI_FONT.playerName, "THINOUTLINE"); nameStr:SetPoint("LEFT", specIcon, "RIGHT", 5, -8)
     EXMRH.NameStr = nameStr
 
     -- 天赋信息
     local infoStr = header:CreateFontString(nil, "OVERLAY")
     --@@ 天赋文字
-    infoStr:SetFont(MAIN_FONT, 18, "THINOUTLINE"); infoStr:SetPoint("TOPLEFT", specIcon, "BOTTOMLEFT", 0, -8)
+    infoStr:SetFont(MAIN_FONT, GUI_FONT.heading, "THINOUTLINE"); infoStr:SetPoint("TOPLEFT", specIcon, "BOTTOMLEFT", 0, -8)
     infoStr:SetTextColor(unpack(EXWIND_THEME.TextMain)); EXMRH.PlayerInfoDisplay = infoStr
 
     -- 3. 饰品框
@@ -388,16 +389,18 @@ function EXMRH.InitHeader()
         local ic = btn:CreateTexture(nil, "OVERLAY"); ic:SetSize(22, 22); ic:SetPoint("LEFT", 4, 0.5)
         ic:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- [标准内裁剪]
         local tx = btn:CreateFontString(nil, "OVERLAY")
-        tx:SetFont(MAIN_FONT, 14, "THINOUTLINE"); tx:SetPoint("LEFT", ic, "RIGHT", 3, 0)
+        tx:SetFont(MAIN_FONT, GUI_FONT.small, "THINOUTLINE"); tx:SetPoint("LEFT", ic, "RIGHT", 3, 0)
         tx:SetWidth(120); tx:SetJustifyH("LEFT"); tx:SetWordWrap(false)
 
-        btn:SetScript("OnEnter",
+        -- OnEnter/OnLeave 槽位上有 Core 的悬停画器（HookScript 接的链），
+        -- SetScript 会把整条链清掉；tooltip 用 HookScript 与画器共存。
+        btn:HookScript("OnEnter",
             function(self)
                 if self.itemID then
                     GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetHyperlink(self.itemID); GameTooltip:Show()
                 end
             end)
-        btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        btn:HookScript("OnLeave", function() GameTooltip:Hide() end)
         return btn, ic, tx
     end
     EXMRH.T1, EXMRH.T1I, EXMRH.T1T = CreateTrinketFrame(-2); EXMRH.T1.slotID = 13
@@ -411,21 +414,21 @@ function EXMRH.InitHeader()
 
     local sLabel = scoreGroup:CreateFontString(nil, "OVERLAY")
     --@@ 赛季评分字体
-    sLabel:SetFont(MAIN_FONT, 18, "THINOUTLINE"); sLabel:SetPoint("TOPLEFT", 0, 23); sLabel:SetTextColor(unpack(
+    sLabel:SetFont(MAIN_FONT, GUI_FONT.heading, "THINOUTLINE"); sLabel:SetPoint("TOPLEFT", 0, 23); sLabel:SetTextColor(unpack(
         EXWIND_THEME
         .TextSub)); sLabel:SetText(L["赛 季 评 分"])
     --@@ 分数字体
     EXMRH.ScoreText = scoreGroup:CreateFontString(nil, "OVERLAY")
-    EXMRH.ScoreText:SetFont(MAIN_FONT, 72, "THICKOUTLINE"); EXMRH.ScoreText:SetPoint("TOPLEFT", sLabel, "BOTTOMLEFT", 18,
+    EXMRH.ScoreText:SetFont(MAIN_FONT, GUI_FONT.score, "THICKOUTLINE"); EXMRH.ScoreText:SetPoint("TOPLEFT", sLabel, "BOTTOMLEFT", 18,
         -6)
     --@@ 前多少%
     EXMRH.PctText = scoreGroup:CreateFontString(nil, "OVERLAY")
-    EXMRH.PctText:SetFont(MAIN_FONT, 18, "OUTLINE"); EXMRH.PctText:SetPoint("TOPLEFT", EXMRH.ScoreText, "BOTTOMLEFT",
+    EXMRH.PctText:SetFont(MAIN_FONT, GUI_FONT.heading, "OUTLINE"); EXMRH.PctText:SetPoint("TOPLEFT", EXMRH.ScoreText, "BOTTOMLEFT",
         -20, -2)
     EXMRH.PctText:SetTextColor(unpack(EXWIND_THEME.Success))
     --@@ 国服排名
     EXMRH.RankNumText = scoreGroup:CreateFontString(nil, "OVERLAY")
-    EXMRH.RankNumText:SetFont(MAIN_FONT, 16, "OUTLINE"); EXMRH.RankNumText:SetPoint("TOPRIGHT", EXMRH.ScoreText,
+    EXMRH.RankNumText:SetFont(MAIN_FONT, GUI_FONT.column, "OUTLINE"); EXMRH.RankNumText:SetPoint("TOPRIGHT", EXMRH.ScoreText,
         "BOTTOMRIGHT", 20, -2)
     EXMRH.RankNumText:SetTextColor(unpack(EXWIND_THEME.TextSub))
 
@@ -439,7 +442,7 @@ function EXMRH.InitHeader()
 
     EXMRH.NextRankText = barGroup:CreateFontString(nil, "OVERLAY")
     --@@ 距离下个阶段(计时条上文字)
-    EXMRH.NextRankText:SetFont(MAIN_FONT, 18, "OUTLINE");
+    EXMRH.NextRankText:SetFont(MAIN_FONT, GUI_FONT.heading, "OUTLINE");
     EXMRH.NextRankText:SetPoint("TOPLEFT", 0, -2);
     EXMRH.NextRankText:SetTextColor(unpack(EXWIND_THEME.Gold))
 
@@ -464,12 +467,12 @@ function EXMRH.InitHeader()
     EXWIND_BarTex:SetVertTile(false)
     --@@ 计时条文字
     EXMRH.RankBarText = EXMRH.RankBar:CreateFontString(nil, "OVERLAY");
-    EXMRH.RankBarText:SetFont(MAIN_FONT, 14, "OUTLINE");
+    EXMRH.RankBarText:SetFont(MAIN_FONT, GUI_FONT.small, "OUTLINE");
     EXMRH.RankBarText:SetPoint("CENTER")
 
     --@@ 称号线文字
     EXMRH.TitleLineText = barGroup:CreateFontString(nil, "OVERLAY")
-    EXMRH.TitleLineText:SetFont(MAIN_FONT, 14, "OUTLINE");
+    EXMRH.TitleLineText:SetFont(MAIN_FONT, GUI_FONT.small, "OUTLINE");
     EXMRH.TitleLineText:SetPoint("TOPLEFT", barBG, "BOTTOMLEFT", 0, -6);
     EXMRH.TitleLineText:SetTextColor(1, 0.92, 0.22)
 
@@ -487,7 +490,7 @@ function EXMRH.InitHeader()
         ic:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- [标准内裁剪]
         --纹章文字设置
         local tx = cF:CreateFontString(nil, "OVERLAY");
-        tx:SetFont(MAIN_FONT, 15, "THINOUTLINE");
+        tx:SetFont(MAIN_FONT, GUI_FONT.label, "THINOUTLINE");
         tx:SetPoint("CENTER", cF, "CENTER", 5, 0)
 
         cF:SetScript("OnEnter", function(self)
@@ -509,10 +512,10 @@ function EXMRH.InitHeader()
     EXMRH.MaxKeyCard:SetPoint("TOPRIGHT", -10, -5)
     EXMRH.MaxKeyCard.icon:SetTexture([[Interface\AddOns\ExwindCore\Textures\Images\ExwindTools\EJ-UI\M1.png]])
     EXMRH.MaxKeyCard.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- [标准内裁剪]
-    EXMRH.MaxKeyCard.title:SetFont(MAIN_FONT, 15, "OUTLINE")
+    EXMRH.MaxKeyCard.title:SetFont(MAIN_FONT, GUI_FONT.label, "OUTLINE")
     EXMRH.MaxKeyCard.title:SetTextColor(0.76, 0.76, 0.76)
     EXMRH.MaxKeyCard.title:SetText(L["最高钥石"])
-    EXMRH.MaxKeyCard.value:SetFont(MAIN_FONT, 32, "THINOUTLINE")
+    EXMRH.MaxKeyCard.value:SetFont(MAIN_FONT, GUI_FONT.summary, "THINOUTLINE")
     EXMRH.MaxKeyCard.value:SetTextColor(unpack(EXWIND_THEME.TextMain))
     EXMRH.MaxKeyText = EXMRH.MaxKeyCard.value
 
@@ -520,10 +523,10 @@ function EXMRH.InitHeader()
     EXMRH.TotalRunsCard:SetPoint("TOPRIGHT", -10, -75)
     EXMRH.TotalRunsCard.icon:SetTexture([[Interface\AddOns\ExwindCore\Textures\Images\ExwindTools\EJ-UI\M2.png]])
     EXMRH.TotalRunsCard.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- [标准内裁剪]
-    EXMRH.TotalRunsCard.title:SetFont(MAIN_FONT, 15, "OUTLINE")
+    EXMRH.TotalRunsCard.title:SetFont(MAIN_FONT, GUI_FONT.label, "OUTLINE")
     EXMRH.TotalRunsCard.title:SetTextColor(0.76, 0.76, 0.76)
     EXMRH.TotalRunsCard.title:SetText(L["赛季总计"])
-    EXMRH.TotalRunsCard.value:SetFont(MAIN_FONT, 32, "THINOUTLINE")
+    EXMRH.TotalRunsCard.value:SetFont(MAIN_FONT, GUI_FONT.summary, "THINOUTLINE")
     EXMRH.TotalRunsCard.value:SetTextColor(unpack(EXWIND_THEME.TextMain))
     EXMRH.TotalRunsText = EXMRH.TotalRunsCard.value
 end
@@ -558,7 +561,7 @@ function EXMRH.InitStatTable()
     local function ColLabel(txt, x, w, justify)
         local fs = header:CreateFontString(nil, "OVERLAY")
         --@@ 标题文字大小 样式
-        fs:SetFont(MAIN_FONT, 16, "OUTLINE"); fs:SetPoint("LEFT", x, 0); fs:SetWidth(w); fs:SetJustifyH(justify or
+        fs:SetFont(MAIN_FONT, GUI_FONT.column, "OUTLINE"); fs:SetPoint("LEFT", x, 0); fs:SetWidth(w); fs:SetJustifyH(justify or
             "CENTER")
         fs:SetText(txt); fs:SetTextColor(unpack(EXWIND_THEME.TextSub))
     end
@@ -613,30 +616,30 @@ function EXMRH.InitStatTable()
         end
 
         -- 样式化
-        r.name:SetFont(MAIN_FONT, 20, "THICKOUTLINE")
+        r.name:SetFont(MAIN_FONT, GUI_FONT.row, "THICKOUTLINE")
         r.name:SetTextColor(unpack(EXWIND_THEME.DungeonName))
 
         -- 最高层数 (Cell 1)
         r.max = r.cells[1]
-        r.max:SetFont(MAIN_FONT, 18, "THINOUTLINE")
+        r.max:SetFont(MAIN_FONT, GUI_FONT.heading, "THINOUTLINE")
         r.max:SetPoint("LEFT", 200, 0); r.max:SetWidth(60); r.max:SetJustifyH("CENTER")
 
         -- 副本评分 (Cell 2)
         r.pts = r.cells[2]
-        r.pts:SetFont(MAIN_FONT, 18, "THINOUTLINE")
+        r.pts:SetFont(MAIN_FONT, GUI_FONT.heading, "THINOUTLINE")
         r.pts:SetPoint("LEFT", 275, 0); r.pts:SetWidth(60); r.pts:SetJustifyH("CENTER")
 
         local function SetupStatGroup(startIdx, x)
             local t = r.cells[startIdx]
-            t:SetFont(MAIN_FONT, 20, "THINOUTLINE"); t:SetPoint("LEFT", x + 30, 0); t:SetTextColor(unpack(EXWIND_THEME
+            t:SetFont(MAIN_FONT, GUI_FONT.row, "THINOUTLINE"); t:SetPoint("LEFT", x + 30, 0); t:SetTextColor(unpack(EXWIND_THEME
                 .TextMain))
 
             local l = r.cells[startIdx + 1]
-            l:SetFont(MAIN_FONT, 20, "THINOUTLINE"); l:SetPoint("LEFT", x + 80, 0); l:SetTextColor(unpack(EXWIND_THEME
+            l:SetFont(MAIN_FONT, GUI_FONT.row, "THINOUTLINE"); l:SetPoint("LEFT", x + 80, 0); l:SetTextColor(unpack(EXWIND_THEME
                 .Success))
 
             local o = r.cells[startIdx + 2]
-            o:SetFont(MAIN_FONT, 20, "THINOUTLINE"); o:SetPoint("LEFT", x + 130, 0); o:SetTextColor(unpack(EXWIND_THEME
+            o:SetFont(MAIN_FONT, GUI_FONT.row, "THINOUTLINE"); o:SetPoint("LEFT", x + 130, 0); o:SetTextColor(unpack(EXWIND_THEME
                 .Danger))
 
             return t, l, o
@@ -672,16 +675,16 @@ function EXMRH.InitRightPanel()
         s:SetBackdrop(EXWIND_BACKDROP_ROUNDED); s:SetBackdropColor(1, 1, 1, 0.06); s:SetBackdropBorderColor(unpack(
             EXWIND_THEME.Border))
         --@@ 低保栏位装等
-        s.ilvl = s:CreateFontString(nil, "OVERLAY"); s.ilvl:SetFont(MAIN_FONT, 24, "OUTLINE"); s.ilvl:SetPoint(
+        s.ilvl = s:CreateFontString(nil, "OVERLAY"); s.ilvl:SetFont(MAIN_FONT, GUI_FONT.stat, "OUTLINE"); s.ilvl:SetPoint(
             "CENTER", 0, 6); s.ilvl:SetTextColor(0.64, 0.21, 0.93, 1)
         --@@ 低保栏位神话等级
-        s.rank = s:CreateFontString(nil, "OVERLAY"); s.rank:SetFont(MAIN_FONT, 14, "THINOUTLINE"); s.rank:SetPoint(
+        s.rank = s:CreateFontString(nil, "OVERLAY"); s.rank:SetFont(MAIN_FONT, GUI_FONT.small, "THINOUTLINE"); s.rank:SetPoint(
             "BOTTOM",
             0, 10); s.rank:SetTextColor(1, 0.5, 0, 1)
         EXMRH.Slots[i] = s
     end
 
-    local hLabel = rf:CreateFontString(nil, "OVERLAY"); hLabel:SetFont(MAIN_FONT, 12, "THINOUTLINE"); hLabel:SetPoint(
+    local hLabel = rf:CreateFontString(nil, "OVERLAY"); hLabel:SetFont(MAIN_FONT, GUI_FONT.caption, "THINOUTLINE"); hLabel:SetPoint(
         "TOPLEFT", 15, -100); hLabel:SetTextColor(unpack(EXWIND_THEME.TextSub)); hLabel:SetText(L["本周大秘境记录(前8)"])
     --=======================================================================================
     ----------------------------------------八个低保副本记录----------------------------------
@@ -701,9 +704,9 @@ function EXMRH.InitRightPanel()
             r.HighlightBG:Hide()
         end
 
-        r.text:SetFont(MAIN_FONT, 16, "OUTLINE")
+        r.text:SetFont(MAIN_FONT, GUI_FONT.column, "OUTLINE")
         r.text:SetWidth(155); r.text:SetJustifyH("LEFT")
-        r.ilvl:SetFont(MAIN_FONT, 14, "THINOUTLINE")
+        r.ilvl:SetFont(MAIN_FONT, GUI_FONT.small, "THINOUTLINE")
         r.ilvl:SetTextColor(0.64, 0.21, 0.93, 1)
 
         EXMRH.RunRows[i] = r
@@ -728,7 +731,7 @@ function EXMRH.UpdateAllData()
     local scoreColor = C_ChallengeMode.GetDungeonScoreRarityColor(score)
 
     -- [Fix] 这里的 SetFont 必须指向绝对安全的路径，且不需要条件判断
-    EXMRH.ScoreText:SetFont(MAIN_FONT, 72, "THICKOUTLINE")
+    EXMRH.ScoreText:SetFont(MAIN_FONT, GUI_FONT.score, "THICKOUTLINE")
     EXMRH.ScoreText:SetText(score);
     if scoreColor then
         EXMRH.ScoreText:SetTextColor(scoreColor.r, scoreColor.g, scoreColor.b)
@@ -818,7 +821,7 @@ function EXMRH.UpdateAllData()
         local rowSum = EXMRH.StatRows[9]; rowSum.icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09");
         rowSum.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- [标准内裁剪]
         rowSum.name:SetText("|cff00d9ff" .. L["统计汇总"] .. "|r")
-        rowSum.name:SetFont(MAIN_FONT, 20, "THICKOUTLINE")
+        rowSum.name:SetFont(MAIN_FONT, GUI_FONT.row, "THICKOUTLINE")
         rowSum.max:SetText(summary.minMax == 99 and "0" or summary.minMax); rowSum.pts:SetText("-")
         rowSum.s_total:SetText(summary.s_tot); rowSum.s_timed:SetText(summary.s_tim); rowSum.s_over:SetText(summary
             .s_ovr)

@@ -71,9 +71,27 @@ local PRESET_ITEMS = {
 -- =========================================================
 -- 三、GUI 声明 | GUI Declarations
 -- =========================================================
+local pendingItemInfo = {}
+local function ItemTextCell(itemID)
+    local name, _, quality = C_Item.GetItemInfo(itemID)
+    if not name and not pendingItemInfo[itemID] then
+        pendingItemInfo[itemID] = true
+        C_Item.RequestLoadItemDataByID(itemID)
+    end
+    if name then
+        local _, _, _, hex = C_Item.GetItemQualityColor(quality or 1)
+        name = "|c" .. hex .. name .. "|r"
+    end
+    return {
+        text = name or ("ID: " .. itemID),
+        icon = C_Item.GetItemIconByID(itemID) or 134400,
+        itemID = itemID,
+    }
+end
+
 local function EX_RegisterLayout()
-    -- [声明迁移边界：设置页] 预设/自定义物品顺序、itemID/key/parentKey/subKey、
-    -- 增删按钮、原记录控件与购买逻辑禁止修改；唯一 table 只声明原控件及其顺序。
+    -- 物品身份由正式表格的只读 text/icon 单元格显示；启用、数量、增删
+    -- 继续使用原记录、配置路径和业务回调。
     local layout = {
         version = 1,
         title = L["自动购买 (Auto Buy)"],
@@ -116,10 +134,7 @@ local function EX_RegisterLayout()
                 key = "custom_enabled_" .. id,
                 parentKey = "CustomItems", subKey = id, type = "itemenabled", itemID = id,
             },
-            {
-                key = "custom_identity_" .. id,
-                parentKey = "CustomItems", subKey = id, type = "itemidentity", itemID = id,
-            },
+            ItemTextCell(id),
             {
                 key = "custom_quantity_" .. id,
                 parentKey = "CustomItems", subKey = id, type = "itemquantity", itemID = id,
@@ -147,10 +162,7 @@ local function EX_RegisterLayout()
                             key = "preset_enabled_" .. it.id,
                             parentKey = "Items", subKey = it.id, type = "itemenabled", itemID = it.id,
                         },
-                        {
-                            key = "preset_identity_" .. it.id,
-                            parentKey = "Items", subKey = it.id, type = "itemidentity", itemID = it.id,
-                        },
+                        ItemTextCell(it.id),
                         {
                             key = "preset_quantity_" .. it.id,
                             parentKey = "Items", subKey = it.id, type = "itemquantity", itemID = it.id,
@@ -163,10 +175,23 @@ local function EX_RegisterLayout()
     end
 
     ExwindTools:RegisterModuleLayout(EXWIND_MODULE_KEY, layout)
+    return layout
 end
 
 -- 3. 立即注册
 EX_RegisterLayout()
+
+ExwindTools:RegisterEvent("GET_ITEM_INFO_RECEIVED", EXWIND_MODULE_KEY, function(_, itemID, success)
+    if not pendingItemInfo[itemID] then return end
+    pendingItemInfo[itemID] = nil
+    if not success then return end
+    local layout = EX_RegisterLayout()
+    local ui = ExwindTools.UI
+    if ui.CurrentPage == "ModuleSettings" and ui.CurrentModule == EXWIND_MODULE_KEY then
+        local session = ui.ActivePageFrame and ui.ActivePageFrame._exCardSession
+        if session then session:ReplaceSettingsSection("general", layout.sections[1]) end
+    end
+end)
 
 -- =========================================================
 -- 逻辑绑定：通过事件处理添加与删除

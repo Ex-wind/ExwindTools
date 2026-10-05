@@ -288,7 +288,7 @@ end
 function EXMYRUN:UpdateList(reuseOnly)
     if not self.MainFrame then return end
 
-    local rawData = C_MythicPlus.GetRunHistory(true, true, false)
+    local rawData = C_MythicPlus.GetRunHistory(true, true, true)
     local displayData = {}
 
     for i, run in ipairs(rawData) do

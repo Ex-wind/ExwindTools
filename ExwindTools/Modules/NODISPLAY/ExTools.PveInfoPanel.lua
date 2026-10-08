@@ -87,17 +87,18 @@ local function CreateSectionTitle(parent, text, yOfs)
 end
 
 local function CreateHeaderIcon(parent, texture, xOfs, labelText, clickFunc)
-    local btn = EXUI:CreateButton(parent, 50, 50, "", clickFunc, { compact = true })
-    btn:SetSize(50, 50)
-    btn:SetPoint("CENTER", parent, "TOP", xOfs, -47)
+    local anchor = CreateFrame("Frame", nil, parent)
+    anchor:SetSize(50, 50)
+    anchor:SetPoint("CENTER", parent, "TOP", xOfs, -47)
+    local iconPath = "Interface\\AddOns\\ExwindCore\\Textures\\" .. texture
+    local btn = EXUI:CreatePicButton(anchor, 50, 50, iconPath, nil, nil, clickFunc, true)
+    btn:SetPoint("CENTER", anchor, "CENTER", 0, 0)
 
     -- 阻止 ElvUI 全局扫描给此按钮套皮肤
     btn.IsSkinned = true
     btn.noBackdrop = true
 
-    local icon = btn:CreateTexture(nil, "OVERLAY")
-    icon:SetAllPoints()
-    icon:SetTexture("Interface\\AddOns\\ExwindCore\\Textures\\" .. texture)
+    local icon = btn:GetNormalTexture()
     icon:SetVertexColor(0.85, 0.85, 0.85)
     btn.icon = icon
     local label = btn:CreateFontString(nil, "OVERLAY")
@@ -105,8 +106,7 @@ local function CreateHeaderIcon(parent, texture, xOfs, labelText, clickFunc)
     label:SetPoint("BOTTOM", icon, "BOTTOM", 0, 1)
     label:SetText(labelText)
     label:SetTextColor(1, 0.8, 0)
-    -- OnEnter/OnLeave 槽位上有 Core 的悬停画器（HookScript 接的链），
-    -- SetScript 会把整条链清掉；这里的图标高亮用 HookScript 与画器共存。
+    -- 固定锚点持有布局偏移，图片按钮只围绕零偏移的中心缩放。
     btn:HookScript("OnEnter", function(self)
         self.icon:SetVertexColor(1, 1, 1)
         self:SetScale(1.05)

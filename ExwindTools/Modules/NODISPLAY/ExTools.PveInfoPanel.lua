@@ -15,37 +15,29 @@ local L = (ExwindTools and ExwindTools.L) or setmetatable({}, { __index = functi
 local EXWIND_MODULE_KEY = "ExTools.PveInfoPanel"
 
 -- =============================================================
--- 第一部分：Grid 布局定义
+-- 第一部分：设置页声明
 -- =============================================================
 -- =========================================================
 -- 三、GUI 声明 | GUI Declarations
 -- =========================================================
-local function EX_RegisterLayout()
-    -- [声明迁移边界：设置页] 仅把原设置控件改为唯一 settings 声明。
-    -- key/type、PVE 附着字段与自有侧栏的内容顺序/按钮/显隐回调禁止修改。
-    local layout = {
-        version = 1,
-        sections = {
-            {
-                kind = "settings",
-                id = "common",
-                title = L["通用设置"],
-                description = L["自动依附在 PVE 面板侧边的信息架。"],
-                items = {
-                    { key = "enabled", type = "switch", label = L["启用模块"] },
-                    { key = "side", type = "select", label = L["依附侧"], options = {
-                        { value = "LEFT", label = L["左侧"] },
-                        { value = "RIGHT", label = L["右侧"] },
-                    } },
-                    { key = "offsetX", type = "slider", label = L["水平偏移 (X)"], min = -100, max = 100, step = 1 },
-                    { key = "offsetY", type = "slider", label = L["垂直偏移 (Y)"], min = -500, max = 500, step = 5 },
-                },
-            },
-        },
-    }
-    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
-end
-EX_RegisterLayout()
+EXUI:RegisterModuleSettingsPageV2(EXWIND_MODULE_KEY, {
+    version = 2,
+    cards = {
+        { id = "common", kind = "card", title = L["通用设置"], children = {
+            { id = "desc", kind = "hint", text = L["自动依附在 PVE 面板侧边的信息架。"] },
+            { id = "enabled", kind = "control", controlType = "switch", path = "enabled",
+                label = L["启用模块"] },
+            { id = "side", kind = "control", controlType = "select", path = "side", label = L["依附侧"], options = {
+                { value = "LEFT", label = L["左侧"] },
+                { value = "RIGHT", label = L["右侧"] },
+            } },
+            { id = "offsetX", kind = "control", controlType = "slider", path = "offsetX",
+                label = L["水平偏移 (X)"], min = -100, max = 100, step = 1 },
+            { id = "offsetY", kind = "control", controlType = "slider", path = "offsetY",
+                label = L["垂直偏移 (Y)"], min = -500, max = 500, step = 5 },
+        } },
+    },
+})
 
 if not ExwindTools:IsModuleEnabled(EXWIND_MODULE_KEY) then return end
 

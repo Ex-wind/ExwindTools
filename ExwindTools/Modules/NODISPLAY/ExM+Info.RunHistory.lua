@@ -43,44 +43,25 @@ local EX_DB = ExwindTools:GetModuleDB(EXWIND_MODULE_KEY, EXMYRUN_DEFAULTS)
 -- =========================================================
 
 
--- 2. Grid 布局
-local function EX_RegisterLayout()
-    -- [声明迁移边界：设置页] 仅把原筛选与打开按钮改为 settings 声明；纯装饰 divider 不进入新合同。
-    -- key/type、筛选/按钮绑定及历史记录排序禁止修改。
-    local layout = {
-        version = 1,
-        sections = {
-            {
-                kind = "settings",
-                id = "filters",
-                title = L["过滤设置"],
-                description = {
-                    key = "desc",
-                    type = "description",
-                    label = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"],
-                },
-                items = {
-                    { key = "filterThisWeek", type = "switch", label = L["只看本周记录"] },
-                    { key = "filterTimed", type = "switch", label = L["只看限时记录"] },
-                    { key = "size", type = "slider", label = L["显示字号"], min = 10, max = 30 },
-                },
-            },
-            {
-                kind = "settings",
-                id = "preview",
-                title = L["记录预览"],
-                items = {
-                    { key = "open", type = "button", label = L["打开记录预览"] },
-                },
-            },
-        },
-    }
-
-    EXUI:RegisterSettingsPage(EXWIND_MODULE_KEY, layout)
-end
-
--- 3. 立即注册
-EX_RegisterLayout()
+-- 2. 设置页（V2）
+EXUI:RegisterModuleSettingsPageV2(EXWIND_MODULE_KEY, {
+    version = 2,
+    cards = {
+        { id = "filters", kind = "card", title = L["过滤设置"], children = {
+            { id = "desc", kind = "hint",
+                text = L["此模块提供了一个可随时调用的详细战绩表格。使用 /emr 打开窗口。"] },
+            { id = "filterThisWeek", kind = "control", controlType = "switch", path = "filterThisWeek",
+                label = L["只看本周记录"] },
+            { id = "filterTimed", kind = "control", controlType = "switch", path = "filterTimed",
+                label = L["只看限时记录"] },
+            { id = "size", kind = "control", controlType = "slider", path = "size",
+                label = L["显示字号"], min = 10, max = 30 },
+        } },
+        { id = "preview", kind = "card", title = L["记录预览"], children = {
+            { id = "open", kind = "button", text = L["打开记录预览"], clickKey = "open" },
+        } },
+    },
+})
 
 -- 按钮监听
 ExwindTools:WatchState(EXWIND_MODULE_KEY .. ".ButtonClicked", EXWIND_MODULE_KEY, function(data)

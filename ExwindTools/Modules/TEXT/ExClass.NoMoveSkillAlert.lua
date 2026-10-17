@@ -607,12 +607,14 @@ end
 local function SetAlertDuration(durationObject, formatString)
     runtimeText = ""
     runtimeDuration = durationObject
-    runtimeDurationFormat = formatString or "{}"
+    -- Translate saved templates before replacing %t so existing profiles use L[].
+    -- Unknown templates pass through the locale proxy, preserving custom text.
+    runtimeDurationFormat = formatString and (L[formatString]:gsub("%%t", "{}")) or "{}"
     RefreshRuntimeVisual()
 end
 
 BuildSamplePresentation = function()
-    local format = DB.displayFormat or "我没有闪 (%t)"
+    local format = L[DB.displayFormat or "我没有闪 (%t)"]
     -- gsub 会额外返回替换次数；括号强制只把替换后的文本交给中央 presentation，
     -- 绝不能把次数误传为 nativeRemainingDuration。
     return BuildPresentation((format:gsub("%%t", "12")))
@@ -692,7 +694,7 @@ local function UpdateRogueDirectAlert()
         SetRuntimeVisible(false)
         return
     end
-    SetAlertDuration(duration, (fmt:gsub("%%t", "{}")))
+    SetAlertDuration(duration, fmt)
     SetRuntimeVisible(true)
 end
 
@@ -753,7 +755,7 @@ local function UpdateMageDirectAlert()
         HideMageDirectAlert()
         return
     end
-    SetAlertDuration(duration, (fmt:gsub("%%t", "{}")))
+    SetAlertDuration(duration, fmt)
     SetRuntimeVisible(true)
 end
 
@@ -783,7 +785,7 @@ local function UpdatePaladinDirectAlert()
         HidePaladinDirectAlert()
         return
     end
-    SetAlertDuration(duration, (fmt:gsub("%%t", "{}")))
+    SetAlertDuration(duration, fmt)
     SetRuntimeVisible(true)
 end
 

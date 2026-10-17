@@ -140,9 +140,9 @@ end
 local function BuildActionDropdownItems()
     local items = {}
     for _, actionDef in ipairs(ACTION_LIST) do
-        local text = actionDef.label
+        local text = L[actionDef.label]
         if actionDef.atlas then
-            text = CreateAtlasMarkup(actionDef.atlas, 16, 16) .. " " .. actionDef.label
+            text = CreateAtlasMarkup(actionDef.atlas, 16, 16) .. " " .. text
         end
         items[#items + 1] = { text, actionDef.id }
     end
@@ -245,7 +245,7 @@ local function BuildIconPickerChoices()
                 themeId = "blizzard",
                 iconId = iconId,
                 label = GetActionLabel(iconId),
-                themeName = THEME_BY_ID.blizzard.name,
+                themeName = L[THEME_BY_ID.blizzard.name],
             }
         end
     end
@@ -259,8 +259,8 @@ local function BuildIconPickerChoices()
                     choices[#choices + 1] = {
                         themeId = theme.id,
                         iconId = iconId,
-                        label = "图标 " .. iconId,
-                        themeName = theme.name,
+                        label = string.format(L["图标 %s"], iconId),
+                        themeName = L[theme.name],
                     }
                 end
             end
@@ -273,7 +273,7 @@ end
 local function BuildThemeDropdownItems()
     local items = {}
     for _, theme in ipairs(ICON_THEMES) do
-        items[#items + 1] = { theme.name, theme.id }
+        items[#items + 1] = { L[theme.name], theme.id }
     end
     return items
 end
@@ -411,7 +411,7 @@ local function BuildSlotEditorItems(selectedSide, selectedIndex)
             parentKey = slotPath,
             subKey = "leftClick.action",
             type = "select",
-            label = "左键点击",
+            label = L["左键点击"],
             optionsSource = "ExwindTools.GetMicroMenuActionItems",
         },
         {
@@ -419,7 +419,7 @@ local function BuildSlotEditorItems(selectedSide, selectedIndex)
             parentKey = slotPath,
             subKey = "rightClick.action",
             type = "select",
-            label = "右键点击",
+            label = L["右键点击"],
             optionsSource = "ExwindTools.GetMicroMenuActionItems",
         },
     }
@@ -430,7 +430,7 @@ local function BuildSlotEditorItems(selectedSide, selectedIndex)
             parentKey = slotPath,
             subKey = "leftClick.cmd",
             type = "input",
-            label = "左键命令",
+            label = L["左键命令"],
         }
     end
 
@@ -440,7 +440,7 @@ local function BuildSlotEditorItems(selectedSide, selectedIndex)
             parentKey = slotPath,
             subKey = "rightClick.cmd",
             type = "input",
-            label = "右键命令",
+            label = L["右键命令"],
         }
     end
 
@@ -455,40 +455,40 @@ local function BuildLayout(selectedSide, selectedIndex)
     -- 左/右槽位选择与动作顺序、selectedSlot 绑定、图标选择器、预览/运行回调禁止修改。
     local layout = {
         version = 1,
-        title = "微型选单",
+        title = L["微型选单"],
         sections = {
             {
-                kind = "settings", id = "basic", title = "基础设置",
+                kind = "settings", id = "basic", title = L["基础设置"],
                 description = {
                     key = "desc", type = "description",
-                    label = "中间时间是唯一根点；左右动作固定相对它排列，三宿主都只展示这一套选单。",
+                    label = L["中间时间是唯一根点；左右动作固定相对它排列，三宿主都只展示这一套选单。"],
                 },
                 items = {
-                    { key = "enabled", type = "switch", label = "启用" },
-                    { key = "showBackground", type = "switch", label = "显示背景" },
-                    { key = "barScale", type = "slider", label = "整体缩放", min = 0.5, max = 2.0, step = 0.05 },
-                    { key = "bgAlpha", type = "slider", label = "背景透明度", min = 0, max = 1, step = 0.05 },
+                    { key = "enabled", type = "switch", label = L["启用"] },
+                    { key = "showBackground", type = "switch", label = L["显示背景"] },
+                    { key = "barScale", type = "slider", label = L["整体缩放"], min = 0.5, max = 2.0, step = 0.05 },
+                    { key = "bgAlpha", type = "slider", label = L["背景透明度"], min = 0, max = 1, step = 0.05 },
                 },
             },
             {
-                kind = "settings", id = "theme", title = "图标风格",
+                kind = "settings", id = "theme", title = L["图标风格"],
                 items = {
-                    { key = "iconTheme", type = "select", label = "整体风格", optionsSource = "ExwindTools.GetMicroMenuThemeItems" },
-                    { key = "leftCount", type = "slider", label = "左侧数量", min = 0, max = MAX_SLOTS, step = 1 },
-                    { key = "rightCount", type = "slider", label = "右侧数量", min = 0, max = MAX_SLOTS, step = 1 },
+                    { key = "iconTheme", type = "select", label = L["整体风格"], optionsSource = "ExwindTools.GetMicroMenuThemeItems" },
+                    { key = "leftCount", type = "slider", label = L["左侧数量"], min = 0, max = MAX_SLOTS, step = 1 },
+                    { key = "rightCount", type = "slider", label = L["右侧数量"], min = 0, max = MAX_SLOTS, step = 1 },
                 },
             },
             {
-                kind = "settings", id = "time", title = "时间文字",
+                kind = "settings", id = "time", title = L["时间文字"],
                 items = {
                     {
-                        key = "timeFormat", type = "select", label = "时间格式",
+                        key = "timeFormat", type = "select", label = L["时间格式"],
                         options = {
-                            { value = "24小时制", label = "24小时制" },
-                            { value = "12小时制", label = "12小时制" },
+                            { value = "24小时制", label = L["24小时制"] },
+                            { value = "12小时制", label = L["12小时制"] },
                         },
                     },
-                    { key = "showSeconds", type = "switch", label = "显示秒数" },
+                    { key = "showSeconds", type = "switch", label = L["显示秒数"] },
                 },
             },
             {
@@ -496,29 +496,29 @@ local function BuildLayout(selectedSide, selectedIndex)
                 component = "anchorgroup", key = "anchorGroup", opts = MICRO_MENU_ANCHOR_OPTS,
             },
             {
-                kind = "settings", id = "slot", title = "当前槽位：" .. selectedTitle,
+                kind = "settings", id = "slot", title = L["当前槽位："] .. selectedTitle,
                 description = {
                     key = "slot_desc", type = "description",
-                    label = "先选择左右分组与槽位编号，再编辑图标和左右键动作；上方预览只展示同一套选单。",
+                    label = L["先选择左右分组与槽位编号，再编辑图标和左右键动作；上方预览只展示同一套选单。"],
                 },
                 items = {
                     {
-                        key = "selectedSlotSide", type = "select", label = "分组",
+                        key = "selectedSlotSide", type = "select", label = L["分组"],
                         options = {
                             { value = "左侧", label = "left" },
                             { value = "右侧", label = "right" },
                         },
                     },
-                    { key = "selectedSlotIndex", type = "slider", label = "槽位编号", min = 1, max = MAX_SLOTS, step = 1 },
-                    { key = "btn_select_icon", type = "button", label = "选择图案" },
+                    { key = "selectedSlotIndex", type = "slider", label = L["槽位编号"], min = 1, max = MAX_SLOTS, step = 1 },
+                    { key = "btn_select_icon", type = "button", label = L["选择图案"] },
                 },
             },
             {
-                kind = "composite", id = "time_font", title = "时间文字",
+                kind = "composite", id = "time_font", title = L["时间文字"],
                 component = "fontgroup", key = "timeFont", opts = {},
             },
             {
-                kind = "composite", id = "icon_style", title = "整体图标",
+                kind = "composite", id = "icon_style", title = L["整体图标"],
                 component = "icongroup", key = "iconStyle", opts = { enableOffset = false },
             },
         },
@@ -899,7 +899,7 @@ end
 
 GetActionLabel = function(actionId)
     local actionDef = ACTION_BY_ID[actionId]
-    return actionDef and actionDef.label or ACTION_BY_ID.none.label
+    return L[actionDef and actionDef.label or ACTION_BY_ID.none.label]
 end
 
 local function GetTimeString()

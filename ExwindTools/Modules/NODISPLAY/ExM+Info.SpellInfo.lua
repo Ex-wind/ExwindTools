@@ -60,7 +60,8 @@ local EXDB = _G.EXDB
 local function CreateSettingsOwner()
     local owner = { controls = {} }
     owner.controls.mythicLevel = EXUI:CreateSettingsV2Control(
-        { controlType = "slider", label = L["模拟层数"], min = 0, max = 30, step = 1 },
+        { controlType = "slider", label = L["模拟层数"], min = 0, max = 30, step = 1,
+            description = L["注：模拟层数与“大秘境伤害计算”模块共享数据。"] },
         function()
             return EXUI:CreateSettingsV2Binding("ExM+.MythicDamage",
                 ExwindTools:GetModuleDB("ExM+.MythicDamage"), "mythicLevel")
@@ -72,12 +73,13 @@ EXUI:RegisterModuleSettingsPageV2(EXWIND_MODULE_KEY, {
     version = 2,
     cards = {
         { id = "guide", kind = "card", title = L["法术手册"], children = {
-            { id = "desc", kind = "hint", text = L["此模块提供了一个极度详细的地下城百科，涵盖所有层数下的怪物技能数值。"] },
-            { id = "open", kind = "button", text = L["立即打开手册"], clickKey = "open" },
+            { id = "open_row", kind = "setting", label = L["立即打开手册"],
+                description = L["此模块提供了一个极度详细的地下城百科，涵盖所有层数下的怪物技能数值。"], children = {
+                { id = "open", kind = "button", text = L["立即打开手册"], clickKey = "open" },
+            } },
         } },
         { id = "simulation", kind = "card", title = L["数值模拟 (全局同步)"], children = {
             { id = "mythicLevel", kind = "control", controlType = "slider", ref = "mythicLevel" },
-            { id = "info", kind = "hint", text = "|cff888888" .. L["注：模拟层数与“大秘境伤害计算”模块共享数据。"] .. "|r" },
         } },
     },
 }, CreateSettingsOwner)

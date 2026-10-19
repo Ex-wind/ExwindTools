@@ -221,7 +221,7 @@ local function BuildIconPickerChoices()
                 themeId = "blizzard",
                 iconId = iconId,
                 label = GetActionLabel(iconId),
-                themeName = THEME_BY_ID.blizzard.name,
+                themeName = L[THEME_BY_ID.blizzard.name],
             }
         end
     end
@@ -235,8 +235,8 @@ local function BuildIconPickerChoices()
                     choices[#choices + 1] = {
                         themeId = theme.id,
                         iconId = iconId,
-                        label = "图标 " .. iconId,
-                        themeName = theme.name,
+                        label = string.format(L["图标 %s"], iconId),
+                        themeName = L[theme.name],
                     }
                 end
             end
@@ -674,7 +674,7 @@ end
 
 GetActionLabel = function(actionId)
     local actionDef = ACTION_BY_ID[actionId]
-    return actionDef and actionDef.label or ACTION_BY_ID.none.label
+    return L[actionDef and actionDef.label or ACTION_BY_ID.none.label]
 end
 
 local function GetTimeString()

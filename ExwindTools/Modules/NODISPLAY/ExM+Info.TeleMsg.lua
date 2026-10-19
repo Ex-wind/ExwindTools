@@ -38,7 +38,7 @@ local DEFAULT_MSG = EXWIND_DEFAULTS.teleportShoutText
 
 -- 设置页（V2）
 local function BuildPreviewText()
-    local fmt = EX_DB.teleportShoutText or DEFAULT_MSG
+    local fmt = L[EX_DB.teleportShoutText or DEFAULT_MSG]
     local name = (EXDB.GetLocalizedInstanceNoteName and EXDB:GetLocalizedInstanceNoteName(658)) or L["萨隆矿坑"]
     local link = "|cff71d5ff|Hspell:444222|h[" .. name .. "]|h|r"
     local out = fmt:gsub("%%link", link):gsub("%%name", name)
@@ -129,7 +129,7 @@ local function HandleSpellCast(unit, spellID)
     local spellLink = C_Spell.GetSpellLink(spellID)
     if not spellLink then return end
 
-    local msgFormat = EX_DB.teleportShoutText or DEFAULT_MSG
+    local msgFormat = L[EX_DB.teleportShoutText or DEFAULT_MSG]
     local message = msgFormat:gsub("%%link", spellLink):gsub("%%name", dungeonName)
     SendChatMessage(message, "PARTY")
 end

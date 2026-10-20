@@ -81,7 +81,7 @@ local EXMRH_PYTHON_DATA = {
     },
     TotalPopulation = 1208826,
     DataTime = "2026.10.20 17:59",
-    ExwindVersion = "v26.10.20.1836",
+    ExwindVersion = "v26.10.20.1848",
 }
 -- [[ PYTHON_DATA_END ]]
 
@@ -744,10 +744,10 @@ function EXMRH.UpdateAllData()
     local function UpdateItem(slotID, ic, tx, btn)
         local link = GetInventoryItemLink("player", slotID)
         if link then
-            local itemName, _, quality, _, _, _, _, _, _, itemTexture = GetItemInfo(link)
+            local itemName, _, quality, _, _, _, _, _, _, itemTexture = C_Item.GetItemInfo(link)
             if itemName then
                 tx:SetText(itemName)
-                local r, g, b = GetItemQualityColor(quality or 4)
+                local r, g, b = C_Item.GetItemQualityColor(quality or 4)
                 tx:SetTextColor(r, g, b)
                 ic:SetTexture(itemTexture)
             else

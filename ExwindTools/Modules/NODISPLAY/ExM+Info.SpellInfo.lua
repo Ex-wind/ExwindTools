@@ -298,12 +298,6 @@ EX_FACTORY:InitPool("SpellInfo_MobButton", "Button", "BackdropTemplate", functio
     b:SetSize(275, 65)
     b:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 10, insets = { left = 2, right = 2, top = 2, bottom = 2 } })
 
-    b.ex_selBar = b:CreateTexture(nil, "OVERLAY")
-    b.ex_selBar:SetWidth(4)
-    b.ex_selBar:SetPoint("TOPLEFT", 2, -2)
-    b.ex_selBar:SetPoint("BOTTOMLEFT", 2, 2)
-    b.ex_selBar:SetColorTexture(0, 0.7, 1, 1)
-
     b.portrait = b:CreateTexture(nil, "ARTWORK")
     b.portrait:SetSize(58, 58)
     b.portrait:SetPoint("LEFT", 4, 0)
@@ -510,11 +504,8 @@ function EXSP_RefreshMobList(dungeonName, filter)
             local b = EX_FACTORY:Acquire("SpellInfo_MobButton", container)
             b.poolType = "SpellInfo_MobButton" -- 标记来源，方便回收
             b:SetPoint("TOPLEFT", 5, -(idx * 70) - 5)
-            if EXSP.CurrentMob == name then
-                b:SetBackdropColor(0.1, 0.4, 0.8, 0.3); b:SetBackdropBorderColor(0, 0.8, 1, 1); b.ex_selBar:Show()
-            else
-                b:SetBackdropColor(0.04, 0.04, 0.04, 0.8); b:SetBackdropBorderColor(0.4, 0.4, 0.4, 1); b.ex_selBar:Hide()
-            end
+            b:SetBackdropColor(0.04, 0.04, 0.04, 0.8); b:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+            EXUI:PaintSelectCell(b, EXSP.CurrentMob == name, ExwindTools.GUIMetrics.radius.control)
             if data.displayID then
                 SetPortraitTextureFromCreatureDisplayID(b.portrait, data.displayID); b.portrait:SetTexCoord(0.15, 0.85,
                     0.15, 0.85)
